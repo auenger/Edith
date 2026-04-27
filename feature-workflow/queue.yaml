@@ -12,15 +12,6 @@ pending:
       蒸馏文档，生成三层知识产物（routing-table / quick-ref / distillates）。
       对接 distillator Skill。
 
-  - id: feat-tool-query
-    name: "jarvis_query 工具（三层加载查询）"
-    priority: 90
-    size: M
-    dependencies: [feat-extension-core]
-    description: |
-      查询 JARVIS 知识库，实现三层渐进加载策略。
-      Layer 0 常驻 → Layer 1 按需 → Layer 2 精准定位。
-
   - id: feat-tool-route
     name: "jarvis_route 工具（对接 requirement-router Skill）"
     priority: 85
@@ -118,21 +109,24 @@ pending:
       知识回写历史时间线，展示组织知识演化过程。
 
 active:
-  - id: feat-tool-scan
-    name: "jarvis_scan 工具（对接 document-project Skill）"
-    priority: 95
-    size: M
-    dependencies: [feat-extension-core]
-    branch: feature/feat-tool-scan
-    worktree: ../JARVIS-feat-tool-scan
-    started_at: "2026-04-27T22:00:00+08:00"
-    description: |
-      扫描项目代码，逆向生成项目文档。
-      对接 document-project Skill 的 jarvis_scan 工具实现。
 
 blocked:
 
 completed:
+  - id: feat-tool-query
+    name: "jarvis_query 工具（三层加载查询）"
+    priority: 90
+    size: M
+    completed_at: "2026-04-27T22:20:00+08:00"
+    tag: feat-tool-query-20260427
+
+  - id: feat-tool-scan
+    name: "jarvis_scan 工具（对接 document-project Skill）"
+    priority: 95
+    size: M
+    completed_at: "2026-04-27T22:15:00+08:00"
+    tag: feat-tool-scan-20260427
+
   - id: feat-init-jarvis
     name: "JARVIS 知识基础设施项目初始化"
     priority: 100
@@ -162,7 +156,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-27T22:00:00+08:00"
+  last_updated: "2026-04-27T22:20:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"

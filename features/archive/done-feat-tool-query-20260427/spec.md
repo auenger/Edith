@@ -10,6 +10,17 @@
 - **Children**: []
 - **Created**: 2026-04-27
 
+## Merge Record
+- **Completed**: 2026-04-27T22:20:00+08:00
+- **Merged Branch**: feature/feat-tool-query
+- **Merge Commit**: 0022024
+- **Archive Tag**: feat-tool-query-20260427
+- **Conflicts**: none
+- **Verification**: 24/24 tests passed, 8/8 Gherkin scenarios verified
+- **Duration**: ~10 min
+- **Commits**: 1
+- **Files Changed**: 10 (3 new, 2 modified, 2 renamed, 2 deleted, 1 new evidence)
+
 ## Description
 
 实现 jarvis_query 工具：三层渐进加载策略查询知识库。Layer 0 routing-table.md 常驻（<500 token），Layer 1 quick-ref.md 按需加载，Layer 2 distillates/*.md 精准定位。

@@ -1,4 +1,52 @@
 archived:
+  - id: feat-tool-query
+    name: "jarvis_query 工具（三层加载查询）"
+    priority: 90
+    size: M
+    completed_at: "2026-04-27T22:20:00+08:00"
+    tag: feat-tool-query-20260427
+    merge_commit: "0022024"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-tool-query
+    worktree_deleted: true
+    worktree_path: ../JARVIS-feat-tool-query
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 8
+      scenarios_passed: 8
+    stats:
+      started: "2026-04-27T22:10:00+08:00"
+      duration: "10 min"
+      commits: 1
+      files_changed: 10
+
+  - id: feat-tool-scan
+    name: "jarvis_scan 工具（对接 document-project Skill）"
+    completed: "2026-04-27T22:15:00+08:00"
+    tag: feat-tool-scan-20260427
+    merge_commit: fef0237
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-tool-scan
+    worktree_deleted: true
+    worktree_path: ../JARVIS-feat-tool-scan
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 8
+      scenarios_passed: 8
+    stats:
+      started: "2026-04-27T22:00:00+08:00"
+      duration: "15 min"
+      commits: 3
+      files_changed: 6
+
   - id: feat-agent-scaffold
     name: "Agent 项目骨架 + pi SDK 环境搭建"
     completed: "2026-04-27T20:35:00+08:00"

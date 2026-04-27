@@ -175,3 +175,19 @@ And 错误类型为 PATH_NOT_FOUND
 | `UNSUPPORTED_TECH_STACK` | 无法识别或不支持的技术栈 | 422 |
 | `SCAN_TIMEOUT` | 扫描超过配置的超时时间 | 408 |
 | `PERMISSION_DENIED` | 无读取目录权限 | 403 |
+
+---
+
+## Merge Record
+
+| Field | Value |
+|-------|-------|
+| Completed | 2026-04-27T22:15:00+08:00 |
+| Merged Branch | feature/feat-tool-scan |
+| Merge Commit | fef0237 |
+| Archive Tag | feat-tool-scan-20260427 |
+| Conflicts | None |
+| Verification | PASSED (8/8 Gherkin scenarios, code analysis) |
+| Duration | ~15 min |
+| Commits | 3 |
+| Files Changed | 6 |
