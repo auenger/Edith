@@ -12,6 +12,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@mariozechner/pi-coding-agent": "^0.70.0",
+    "@sinclair/typebox": "^0.34.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
