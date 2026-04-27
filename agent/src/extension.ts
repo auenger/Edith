@@ -20,6 +20,7 @@ import { loadConfig } from "./config.js";
 
 import { executeScan, formatScanSummary, formatScanError } from "./tools/scan.js";
 import { executeDistill, formatDistillSummary, formatDistillError } from "./tools/distill.js";
+import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/route.js";
 
 // ── TypeBox Parameter Schemas ──────────────────────────────────────
 
@@ -43,6 +44,7 @@ const DistillParams = Type.Object({
 
 const RouteParams = Type.Object({
   requirement: Type.String({ description: "需求描述" }),
+  context: Type.Optional(Type.Array(Type.String({ description: "已加载的上下文文件路径" }), { description: "已加载的上下文文件（避免重复建议）" })),
 });
 
 const QueryParams = Type.Object({
@@ -210,22 +212,46 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
       label: "JARVIS Route",
       description: "需求路由分析，判断是否需要加载上下文及加载策略。",
       parameters: RouteParams,
-      execute: async (_toolCallId, params: RouteInput) => {
+      execute: async (_toolCallId, params: RouteInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
         console.log(FRIENDLY_ACTION["jarvis_route"]);
         const skill = loadSkill("route");
         if (!skill.loaded) {
           return { content: [{ type: "text" as const, text: `[JARVIS] 需求路由暂不可用: ${skill.error}` }], isError: true };
         }
-        return {
-          content: [
+
+        try {
+          const config = loadConfig();
+
+          const outcome = executeRoute(
             {
-              type: "text" as const,
-              text: `JARVIS 需求路由分析 (未实现)\n` +
-                `  需求: ${params.requirement}\n` +
-                `  完整功能将由后续 feature 实现。`,
+              requirement: params.requirement,
+              context: params.context,
             },
-          ],
-        };
+            config.workspace.root,
+          );
+
+          if (outcome.ok) {
+            const summary = formatRouteSummary(outcome.result);
+            console.log(`[JARVIS] Route decision: ${outcome.result.decision} for services: ${outcome.result.services.join(", ")}`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatRouteError(outcome.error);
+            console.warn(`[JARVIS] Route failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[JARVIS] Route error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[JARVIS] 路由分析失败: ${message}` }],
+            isError: true,
+          };
+        }
       },
     },
     {
