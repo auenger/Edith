@@ -210,7 +210,7 @@ async function main() {
         );
         if (!hasExpected) {
           correct = false;
-          notes.push(`Expected keywords not found: ${query.expectedContents || query.expectedContains.join(", ")}`);
+          notes.push(`Expected keywords not found: ${query.expectedContains.join(", ")}`);
         }
 
         // Check source citations

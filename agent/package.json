@@ -1,14 +1,23 @@
 {
-  "name": "jarvis-agent",
+  "name": "@jarvis/agent",
   "version": "0.1.0",
   "description": "JARVIS Agent - AI Knowledge Infrastructure Terminal Agent",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "jarvis": "./dist/bin/jarvis.js"
+  },
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node dist/scripts/post-install.js 2>/dev/null || true"
   },
+  "files": [
+    "dist/",
+    "templates/",
+    "CHANGELOG.md"
+  ],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@mariozechner/pi-coding-agent": "^0.70.0",
