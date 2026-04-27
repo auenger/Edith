@@ -1,4 +1,52 @@
 archived:
+  - id: feat-tool-route
+    name: "jarvis_route 工具（对接 requirement-router Skill）"
+    completed: "2026-04-27T23:00:00+08:00"
+    tag: feat-tool-route-20260427
+    merge_commit: c9c6f46
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-tool-route
+    worktree_deleted: true
+    worktree_path: ../JARVIS-feat-tool-route
+    conflicts:
+      had_conflict: true
+      conflict_files: [agent/src/extension.ts]
+      resolved_at: "2026-04-27T23:00:00+08:00"
+      re_verified: false
+    verification:
+      status: passed
+      scenarios_total: 7
+      scenarios_passed: 7
+    stats:
+      started: "2026-04-27T22:35:00+08:00"
+      duration: "25 min"
+      commits: 1
+      files_changed: 4
+
+  - id: feat-tool-distill
+    name: "jarvis_distill 工具（对接 distillator Skill）"
+    completed: "2026-04-27T22:50:00+08:00"
+    tag: feat-tool-distill-20260427
+    merge_commit: "001c88c"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-tool-distill
+    worktree_deleted: true
+    worktree_path: ../JARVIS-feat-tool-distill
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 7
+      scenarios_passed: 7
+    stats:
+      started: "2026-04-27T22:30:00+08:00"
+      duration: "20 min"
+      commits: 1
+      files_changed: 3
+
   - id: feat-tool-query
     name: "jarvis_query 工具（三层加载查询）"
     priority: 90

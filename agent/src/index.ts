@@ -2,9 +2,9 @@
  * JARVIS Agent Entry Point
  *
  * Loads configuration, initializes the pi SDK agent session,
- * and starts the interactive agent loop.
+ * and starts the interactive agent loop with JARVIS branding.
  *
- * Flow: load config → create agent session → display welcome → enter loop
+ * Flow: load config -> display branded banner -> create agent session -> enter loop
  */
 
 import { resolve, dirname } from "node:path";
@@ -20,34 +20,24 @@ import {
 
 import { loadConfig, ConfigError, type JarvisConfig } from "./config.js";
 import jarvisExtension from "./extension.js";
+import { createTheme } from "./theme/index.js";
+import { countWorkspaceStats } from "./theme/workspace-stats.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// ── Constants ─────────────────────────────────────────────────────
-
-const BANNER = `
-╔══════════════════════════════════════════════════════════╗
-║                                                          ║
-║      ██╗██████╗  █████╗ ███████╗███████╗███████╗        ║
-║      ██║██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝        ║
-║      ██║██████╔╝███████║███████╗███████╗███████╗        ║
-║      ██║██╔═══╝ ██╔══██║╚════██║╚════██║╚════██║        ║
-║      ██║██║     ██║  ██║███████║███████║███████║        ║
-║      ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝        ║
-║                                                          ║
-║          AI Knowledge Infrastructure Agent               ║
-║          Phase 1 MVP — Agent Skeleton                    ║
-║                                                          ║
-╚══════════════════════════════════════════════════════════╝
-`;
-
 const DEFAULT_CONFIG_PATH = resolve(__dirname, "..", "jarvis.yaml");
 
-// ── Main ──────────────────────────────────────────────────────────
+// -- Main ---------------------------------------------------------------
 
 async function main(): Promise<void> {
-  console.log(BANNER);
+  // Step 0: Initialize TUI theme with Arc Reactor branding
+  const theme = createTheme();
+
+  // Display the Arc Reactor banner
+  console.log();
+  console.log(theme.banner);
+  console.log();
   console.log("[JARVIS] Starting agent initialization...\n");
 
   // Step 1: Load configuration
@@ -75,6 +65,7 @@ async function main(): Promise<void> {
   console.log(`[JARVIS]   Repositories:    ${config.repos.length}`);
   console.log(`[JARVIS]   Token Budget:    routing_table=${config.agent.token_budget.routing_table}, quick_ref=${config.agent.token_budget.quick_ref}, distillate_fragment=${config.agent.token_budget.distillate_fragment}`);
   console.log(`[JARVIS]   Auto Refresh:    ${config.agent.auto_refresh}`);
+  console.log(`[JARVIS]   Theme:           ${theme.colorSupport} color support`);
   console.log();
 
   // Step 2: Initialize pi SDK
@@ -104,10 +95,15 @@ async function main(): Promise<void> {
     });
 
     console.log("[JARVIS] Agent session created successfully.\n");
-    console.log("─".repeat(56));
-    console.log("  JARVIS Agent is ready. Type your message below.");
+
+    // Display status bar with workspace statistics
+    const stats = countWorkspaceStats(config.workspace.root);
+    console.log(theme.separator);
+    console.log(theme.statusBar(stats.workspacePath, stats.serviceCount, stats.artifactCount));
+    console.log(theme.separator);
+    console.log();
+    console.log(`  ${theme.prompt}Agent is ready. Type your message below.`);
     console.log("  Press Ctrl+C to exit.");
-    console.log("─".repeat(56));
     console.log();
 
     // Step 3: Send initial prompt to verify agent is alive.
