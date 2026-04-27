@@ -15,3 +15,9 @@ agent:
     distillate_fragment: 4000
   auto_refresh: true
   refresh_interval: 24h
+
+# Optional theme configuration (defaults shown)
+# theme:
+#   style: "arc-reactor"        # arc-reactor (default) | minimal | classic
+#   color_scheme: "iron-man"    # iron-man (default) | warm | monochrome
+#   show_reactor: true           # show Arc Reactor LOGO on startup

@@ -2,34 +2,6 @@
 # 基于 JARVIS-PRODUCT-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1: JARVIS Agent MVP (Week 2) ═══
-  - id: feat-tool-distill
-    name: "jarvis_distill 工具（对接 distillator Skill）"
-    priority: 90
-    size: M
-    dependencies: [feat-extension-core, feat-tool-scan]
-    description: |
-      蒸馏文档，生成三层知识产物（routing-table / quick-ref / distillates）。
-      对接 distillator Skill。
-
-  - id: feat-tool-route
-    name: "jarvis_route 工具（对接 requirement-router Skill）"
-    priority: 85
-    size: S
-    dependencies: [feat-extension-core]
-    description: |
-      需求路由分析，判断是否需要加载上下文及加载策略。
-      对接 requirement-router Skill。
-
-  - id: feat-tui-branding
-    name: "TUI 主题定制（JARVIS 品牌化）"
-    priority: 80
-    size: S
-    dependencies: [feat-agent-scaffold]
-    description: |
-      JARVIS 品牌化终端界面：ASCII art banner、状态栏、
-      服务计数统计。基于 pi SDK TUI 框架。
-
   # ═══ Phase 1: JARVIS Agent MVP (Week 3) ═══
   - id: feat-system-prompt
     name: "System Prompt 调优"
@@ -109,10 +81,35 @@ pending:
       知识回写历史时间线，展示组织知识演化过程。
 
 active:
+  - id: feat-tui-branding
+    name: "TUI 主题定制（JARVIS 品牌化）"
+    priority: 80
+    size: S
+    dependencies: [feat-agent-scaffold]
+    branch: feature/tui-branding
+    worktree: ../JARVIS-tui-branding
+    started_at: "2026-04-27T23:30:00+08:00"
+    description: |
+      JARVIS 品牌化终端界面：ASCII art banner、状态栏、
+      服务计数统计。基于 pi SDK TUI 框架。
 
 blocked:
 
 completed:
+  - id: feat-tool-route
+    name: "jarvis_route 工具（对接 requirement-router Skill）"
+    priority: 85
+    size: S
+    completed_at: "2026-04-27T23:00:00+08:00"
+    tag: feat-tool-route-20260427
+
+  - id: feat-tool-distill
+    name: "jarvis_distill 工具（对接 distillator Skill）"
+    priority: 90
+    size: M
+    completed_at: "2026-04-27T22:50:00+08:00"
+    tag: feat-tool-distill-20260427
+
   - id: feat-tool-query
     name: "jarvis_query 工具（三层加载查询）"
     priority: 90
@@ -156,7 +153,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-27T22:20:00+08:00"
+  last_updated: "2026-04-27T23:30:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"
