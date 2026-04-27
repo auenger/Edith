@@ -8,6 +8,7 @@
  */
 
 import { resolve, dirname } from "node:path";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -87,11 +88,21 @@ export async function startAgent(configPath?: string): Promise<void> {
     });
     await resourceLoader.reload();
 
+    // Resolve model from jarvis.yaml config
+    const model = modelRegistry.find(config.llm.provider, config.llm.model);
+    if (!model) {
+      throw new Error(
+        `Model not found: ${config.llm.provider}/${config.llm.model}. ` +
+        `Run the agent interactively and use /model to see available models.`
+      );
+    }
+
     const { session } = await createAgentSession({
       sessionManager,
       authStorage,
       modelRegistry,
       resourceLoader,
+      model,
     });
 
     console.log("[JARVIS] Agent session created successfully.\n");
@@ -109,6 +120,44 @@ export async function startAgent(configPath?: string): Promise<void> {
     // Step 3: Build and send System Prompt
     const systemPrompt = buildSystemPrompt(config.workspace.language);
     await session.prompt(systemPrompt);
+
+    // Step 4: Enter interactive REPL loop
+    session.subscribe((event) => {
+      if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
+        process.stdout.write(event.assistantMessageEvent.delta);
+      }
+      if (event.type === "agent_end") {
+        console.log("\n");
+      }
+    });
+
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    const prompt = () => {
+      rl.question(`${theme.prompt}`, async (input) => {
+        const trimmed = input.trim();
+        if (!trimmed) {
+          prompt();
+          return;
+        }
+        if (trimmed.toLowerCase() === "exit" || trimmed.toLowerCase() === "quit") {
+          console.log("\n  JARVIS shutting down. Goodbye.\n");
+          rl.close();
+          process.exit(0);
+        }
+        try {
+          await session.prompt(trimmed);
+        } catch (err) {
+          console.error(`\n[ERROR] ${(err as Error).message}\n`);
+        }
+        prompt();
+      });
+    };
+
+    prompt();
   } catch (err) {
     console.error(`\n[ERROR] Failed to initialize pi SDK agent:\n  ${(err as Error).message}\n`);
     process.exit(1);
