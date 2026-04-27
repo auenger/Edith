@@ -1,7 +1,7 @@
 ---
-last_updated: '2026-04-27'
-version: 1
-features_completed: 1
+last_updated: '2026-04-28'
+version: 2
+features_completed: 2
 ---
 
 # Project Context: JARVIS
@@ -15,12 +15,14 @@ features_completed: 1
 | Category | Technology | Notes |
 |----------|-----------|-------|
 | 核心产出物 | Markdown | 所有知识产物为纯 Markdown，Agent 无关 |
-| Agent 框架 | pi SDK (`@mariozechner/pi-coding-agent`) | 不 fork，跟随上游 |
+| Agent 框架 | pi SDK (`@mariozechner/pi-coding-agent`) v0.70+ | 不 fork，跟随上游 |
+| Agent 应用 | TypeScript (`agent/`) | `@jarvis/agent` package，npm start 启动 |
 | Extension | TypeScript | 消息路由 + 工具注册 |
 | 技能定义 | SKILL.md (Markdown) | 知识提取逻辑，编译后分发 |
 | 配置 | jarvis.yaml (YAML) | 用户定制，不改代码 |
+| TUI | Node.js readline + ANSI true-color | Banner、渐变色、状态栏 |
 | Web 看板 | React + Next.js | Phase 2，Board 只读 |
-| 唯一脚本 | Python (`distillator/scripts/analyze_sources.py`) | 代码分析辅助 |
+| 辅助脚本 | Python (`distillator/scripts/analyze_sources.py`) | 代码分析辅助 |
 
 ## Directory Structure
 
@@ -31,6 +33,19 @@ HS_jarvis/
 ├── JARVIS-PRODUCT-DESIGN.md   ← 产品设计（Agent / Board / Artifacts）
 ├── SCALABILITY-ANALYSIS.md    ← 微服务规模瓶颈分析
 ├── README.md / README.zh.md   ← 项目说明
+│
+├── agent/                     ← JARVIS Agent TypeScript 应用
+│   ├── src/
+│   │   ├── index.ts           ← npm start 入口
+│   │   ├── agent-startup.ts   ← Agent 初始化 + REPL 循环
+│   │   ├── extension.ts       ← Extension 路由层
+│   │   ├── config.ts          ← jarvis.yaml 配置加载
+│   │   ├── system-prompt.ts   ← System Prompt 构建
+│   │   ├── theme/             ← TUI 品牌化
+│   │   ├── tools/             ← jarvis_scan / jarvis_distill / jarvis_route
+│   │   └── bin/jarvis.ts      ← CLI 入口
+│   ├── jarvis.yaml            ← Agent 运行配置
+│   └── package.json           ← @jarvis/agent
 │
 ├── jarvis-skills/             ← 三个运营 Skill（用户不可见）
 │   ├── document-project/      ← jarvis_scan（代码考古→文档）
@@ -49,11 +64,11 @@ HS_jarvis/
 │   └── templates/
 │
 ├── .claude/                   ← Claude Code 技能与配置
-│   ├── skills/                ← 16 个 feature-workflow skills
+│   ├── skills/                ← feature-workflow skills
 │   ├── commands/              ← dev-agent, run-feature
 │   └── hooks/                 ← on-stop, on-subagent-complete
 │
-└── features/                  ← Feature 归档目录（待创建）
+└── features/                  ← Feature 归档目录
 ```
 
 ## Critical Rules
@@ -100,11 +115,11 @@ HS_jarvis/
 Agent 分层架构：
 
   用户 (自然语言)
-    → TUI 层 (JARVIS 品牌化界面)
+    → TUI 层 (Banner + readline REPL + 主题渲染)
     → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册)
     → Skill 执行层 (document-project / distillator / requirement-router)
     → Tool 实现层 (jarvis_scan / jarvis_distill / jarvis_route / jarvis_query)
-    → pi SDK (Agent Loop + 20+ LLM + Tool Calling + 流式输出)
+    → pi SDK (AgentSession + 20+ LLM + Tool Calling + 流式输出)
     → 产出物 (纯 Markdown)
 ```
 
@@ -123,16 +138,20 @@ Agent 分层架构：
 
 | Date | Feature | Notes |
 |------|---------|-------|
+| 2026-04-28 | fix-agent-repl | 修复 Agent 启动后立即退出：添加 readline REPL 交互循环 |
+| 2026-04-27 | feat-packaging | Pi Package 打包与分发配置（CLI entry + post-install） |
+| 2026-04-27 | feat-tui-branding | TUI 品牌化：Banner 渐变色、JARVIS 提示符、状态栏 |
 | 2026-04-27 | feat-init-jarvis | JARVIS 知识基础设施项目初始化 |
 
 ## Product Phases
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| Phase 1 | JARVIS Agent MVP（终端 Agent） | 待开发 |
+| Phase 1 | JARVIS Agent MVP（终端 Agent） | 开发中 |
 | Phase 2 | JARVIS Board 基础版（Web 看板） | 待开发 |
 | Phase 3 | 增值功能（增量更新、团队协作、行业模板） | 待规划 |
 
 ## Update Log
 
+- 2026-04-28: Updated for agent REPL fix, agent/ directory documentation, tech stack update
 - 2026-04-27: Initial project context created from full project analysis

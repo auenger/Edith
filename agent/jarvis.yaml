@@ -1,6 +1,6 @@
 llm:
-  provider: anthropic
-  model: claude-sonnet-4-6
+  provider: deepseek
+  model: deepseek-v4-pro
 
 workspace:
   root: ./company-jarvis

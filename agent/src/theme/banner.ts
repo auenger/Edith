@@ -32,17 +32,19 @@ interface BannerLine {
   zone: "outer" | "middle" | "inner" | "core" | "text" | "empty";
 }
 
-const ARC_REACTOR_LINES: BannerLine[] = [
-  { text: "              ·  ✦  ·             ", zone: "outer" },
-  { text: "          ·  ░░████░░░  ·          ", zone: "middle" },
-  { text: "       ·  ░░████████████░░  ·      ", zone: "middle" },
-  { text: "     ·  ░░██  ╔═══════╗  ██░░  ·   ", zone: "inner" },
-  { text: "    ·  ░░██   ║ JARVIS║   ██░░  ·  ", zone: "core" },
-  { text: "     ·  ░░██  ╚═══════╝  ██░░  ·   ", zone: "inner" },
-  { text: "       ·  ░░████████████░░  ·      ", zone: "middle" },
-  { text: "          ·  ░░████░░░  ·          ", zone: "middle" },
-  { text: "              ·  ✦  ·             ", zone: "outer" },
-];
+// JARVIS bold block letters with gradient
+const JARVIS_TEXT = `
+·  ✦  ·               ·  ✦  ·                ·  ✦  ·
+  ████▓▒░    █████▓▒░  ██████▓▒░ ███▓▒░ ██╗ ███▓▒░ ███████▓▒░
+  ╚══██╔══╝ ██╔══██╗   ██╔══██╗  ██║    ██║ ██║    ██╔════░░
+     ██║ ·  ███████║   ██████╔╝  ██║    ██║ ██║    ███████╗ ✦
+ ██╗ ██║    ██╔══██║   ██╔══██╗  ╚████╔═╝   ██║    ╚════██║
+ ╚█████╔╝ ✦ ██║  ██║   ██║  ██║   ╚███╔╝    ██║    ███████║ ·
+  ╚════╝    ╚═╝  ╚═╝   ╚═╝  ╚═╝    ╚══╝     ╚═╝    ╚══════╝
+    ·  ✦  ·              ·  ✦  ·               ·  ✦  ·
+`;
+
+// 建议加上颜色，效果更好（需要安装 chalk）
 
 const SUBTITLE_LINE = "       AI Knowledge Infrastructure";
 const MINIMAL_BANNER = "JARVIS — AI Knowledge Infrastructure";
@@ -60,19 +62,19 @@ const ZONE_COLORS: Record<string, RGB> = {
 
 // Special character color overrides for enhanced visual effect
 const CHAR_COLOR_OVERRIDES: Record<string, RGB> = {
-  "✦": ARC_REACTOR_PALETTE.coreGlow,       // Stars glow bright cyan
-  "╔": ARC_REACTOR_PALETTE.coreGlow,       // Box drawing glows
-  "╗": ARC_REACTOR_PALETTE.coreGlow,
-  "╚": ARC_REACTOR_PALETTE.coreGlow,
-  "╝": ARC_REACTOR_PALETTE.coreGlow,
-  "║": ARC_REACTOR_PALETTE.coreWhite,       // Vertical bars are bright
-  "═": ARC_REACTOR_PALETTE.innerRing,       // Horizontal bars ice blue
-  "J": ARC_REACTOR_PALETTE.coreWhite,       // JARVIS letters glow white
-  "A": ARC_REACTOR_PALETTE.coreWhite,
-  "R": ARC_REACTOR_PALETTE.coreWhite,
-  "V": ARC_REACTOR_PALETTE.coreWhite,
-  "I": ARC_REACTOR_PALETTE.coreWhite,
-  "S": ARC_REACTOR_PALETTE.coreWhite,
+  "╭": ARC_REACTOR_PALETTE.coreGlow,       // Box corners glow cyan
+  "╮": ARC_REACTOR_PALETTE.coreGlow,
+  "╰": ARC_REACTOR_PALETTE.coreGlow,
+  "╯": ARC_REACTOR_PALETTE.coreGlow,
+  "─": ARC_REACTOR_PALETTE.innerRing,       // Horizontal lines ice blue
+  "│": ARC_REACTOR_PALETTE.coreWhite,       // Vertical bars white
+  "╱": ARC_REACTOR_PALETTE.coreGlow,        // Triangle slashes bright cyan
+  "╲": ARC_REACTOR_PALETTE.coreGlow,
+  "█": ARC_REACTOR_PALETTE.coreWhite,       // Block chars white (JARVIS bold)
+  "▀": ARC_REACTOR_PALETTE.coreWhite,
+  "▄": ARC_REACTOR_PALETTE.coreWhite,
+  "▌": ARC_REACTOR_PALETTE.coreWhite,
+  "▐": ARC_REACTOR_PALETTE.coreWhite,
 };
 
 // ── No-Color Density Map ────────────────────────────────────────
@@ -91,16 +93,10 @@ const ZONE_DENSITY: Record<string, string> = {
  * with density-appropriate characters to express depth without ANSI codes.
  */
 function applyDensityMapping(text: string, zone: string): string {
-  // For core zone, keep JARVIS text and box drawing but replace block chars
-  if (zone === "core") {
-    return text
-      .replace(/█/g, "▒")
-      .replace(/░/g, "░");
-  }
-  // For other zones, replace block characters with density markers
   return text
-    .replace(/█/g, ZONE_DENSITY[zone] || "░")
-    .replace(/░/g, ZONE_DENSITY[zone] || "░");
+    .replace(/█/g, ZONE_DENSITY[zone] || "█")
+    .replace(/╱/g, "/")
+    .replace(/╲/g, "\\");
 }
 
 // ── Banner Generation ────────────────────────────────────────────
@@ -139,15 +135,14 @@ export function generateBanner(support: ColorSupport): string {
   const lines: string[] = [];
   const P = ARC_REACTOR_PALETTE;
 
-  for (const line of ARC_REACTOR_LINES) {
+  // Bold uppercase JARVIS text with gradient
+  const jarvisLines = JARVIS_TEXT.split("\n");
+  for (const line of jarvisLines) {
     if (support === "none") {
-      // No color: apply density mapping and output plain text
-      const mappedText = applyDensityMapping(line.text, line.zone);
-      lines.push(mappedText);
+      lines.push(line);
     } else {
-      // Colored: build per-character color array and render
-      const chars = line.text.split("");
-      const colors = buildLineColors(line.text, line.zone);
+      const chars = line.split("");
+      const colors = interpolateColor(P.coreGlow, P.innerRing, chars.length);
       lines.push(renderColoredLine(chars, colors, support));
     }
   }

@@ -103,6 +103,19 @@ Jarvis/
 ├── JARVIS-PRODUCT-DESIGN.md   ← 产品设计文档
 ├── SCALABILITY-ANALYSIS.md    ← 微服务规模下的瓶颈分析
 │
+├── agent/                     ← JARVIS Agent TypeScript 应用
+│   ├── src/
+│   │   ├── index.ts           ← npm start 入口
+│   │   ├── agent-startup.ts   ← Agent 初始化 + REPL 循环
+│   │   ├── extension.ts       ← Extension 路由层（工具 + 命令注册）
+│   │   ├── config.ts          ← jarvis.yaml 配置加载
+│   │   ├── system-prompt.ts   ← System Prompt 构建
+│   │   ├── theme/             ← TUI 品牌化（Banner、渐变色、状态栏）
+│   │   ├── tools/             ← jarvis_scan / jarvis_distill / jarvis_route
+│   │   └── bin/jarvis.ts      ← CLI 入口（jarvis 命令）
+│   ├── jarvis.yaml            ← Agent 运行配置
+│   └── package.json           ← @jarvis/agent
+│
 ├── jarvis-skills/             ← 三个运营 Skill（Agent 内部实现）
 │   ├── document-project/      ← 代码考古 → jarvis_scan
 │   ├── distillator/           ← 文档蒸馏 → jarvis_distill
