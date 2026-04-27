@@ -15,12 +15,15 @@ import type {
 } from "@mariozechner/pi-coding-agent";
 import { Type, Static } from "@sinclair/typebox";
 
+import { executeScan, formatScanSummary, formatScanError } from "./tools/scan.js";
+import { loadConfig } from "./config.js";
+
 // ── TypeBox Parameter Schemas ──────────────────────────────────────
 
 const ScanParams = Type.Object({
   target: Type.String({ description: "项目名或路径" }),
   mode: Type.Optional(
-    Type.String({ description: "扫描模式: global | module", enum: ["global", "module"] })
+    Type.String({ description: "扫描模式: full | quick", enum: ["full", "quick"] })
   ),
 });
 
@@ -107,24 +110,45 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
       label: "JARVIS Scan",
       description: "扫描项目代码，逆向生成项目文档。支持全局扫描和模块深入两种模式。",
       parameters: ScanParams,
-      execute: async (_toolCallId, params: ScanInput) => {
+      execute: async (_toolCallId, params: ScanInput, _signal, _onUpdate, ctx: ExtensionContext) => {
         console.log(FRIENDLY_ACTION["jarvis_scan"]);
         const skill = loadSkill("scan");
         if (!skill.loaded) {
           return { content: [{ type: "text" as const, text: `[JARVIS] 知识扫描暂不可用: ${skill.error}` }], isError: true };
         }
-        // Stub: actual business logic from feat-tool-scan
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `JARVIS 知识扫描 (未实现)\n` +
-                `  目标: ${params.target}\n` +
-                `  模式: ${params.mode ?? "global"}\n` +
-                `  完整功能将由后续 feature 实现。`,
-            },
-          ],
-        };
+
+        try {
+          // Load config to get repos and workspace settings
+          const config = loadConfig();
+
+          const outcome = await executeScan(
+            { target: params.target, mode: params.mode as "full" | "quick" | undefined },
+            config.repos,
+            config.workspace.root,
+          );
+
+          if (outcome.ok) {
+            const summary = formatScanSummary(outcome.result);
+            console.log(`[JARVIS] Scan completed: ${outcome.result.service} → ${outcome.result.outputDir}`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatScanError(outcome.error);
+            console.warn(`[JARVIS] Scan failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[JARVIS] Scan error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[JARVIS] 扫描执行失败: ${message}` }],
+            isError: true,
+          };
+        }
       },
     },
     {
