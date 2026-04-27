@@ -2,16 +2,6 @@
 # 基于 JARVIS-PRODUCT-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1: JARVIS Agent MVP (Week 1) ═══
-  - id: feat-tool-scan
-    name: "jarvis_scan 工具（对接 document-project Skill）"
-    priority: 95
-    size: M
-    dependencies: [feat-extension-core]
-    description: |
-      扫描项目代码，逆向生成项目文档。
-      对接 document-project Skill 的 jarvis_scan 工具实现。
-
   # ═══ Phase 1: JARVIS Agent MVP (Week 2) ═══
   - id: feat-tool-distill
     name: "jarvis_distill 工具（对接 distillator Skill）"
@@ -128,6 +118,17 @@ pending:
       知识回写历史时间线，展示组织知识演化过程。
 
 active:
+  - id: feat-tool-scan
+    name: "jarvis_scan 工具（对接 document-project Skill）"
+    priority: 95
+    size: M
+    dependencies: [feat-extension-core]
+    branch: feature/feat-tool-scan
+    worktree: ../JARVIS-feat-tool-scan
+    started_at: "2026-04-27T22:00:00+08:00"
+    description: |
+      扫描项目代码，逆向生成项目文档。
+      对接 document-project Skill 的 jarvis_scan 工具实现。
 
 blocked:
 
@@ -161,7 +162,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-27T21:30:00+08:00"
+  last_updated: "2026-04-27T22:00:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"
