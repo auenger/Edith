@@ -10,6 +10,14 @@
 - **Children**: []
 - **Created**: 2026-04-27
 
+## Merge Record
+- **Completed**: 2026-04-27T23:00:00+08:00
+- **Branch**: feature/feat-tool-route
+- **Merge commit**: c9c6f46 (rebased), merge via --no-ff
+- **Archive tag**: feat-tool-route-20260427
+- **Conflicts**: 1 (agent/src/extension.ts — import merge with feat-tool-distill)
+- **Verification**: PASS (31 route + 24 regression = 55 tests, 7/7 scenarios)
+
 ## Description
 
 实现 jarvis_route 工具：需求路由分析，判断用户需求是否需要加载额外上下文，以及加载策略（direct / quick-ref / deep-dive）。

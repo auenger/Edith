@@ -181,3 +181,13 @@ And 记录合并冲突的 warning
 | `BUDGET_EXCEEDED` | 超出 token 预算（截断后继续） | warning |
 | `PARTIAL_GENERATION` | 部分层/片段生成失败 | warning |
 | `MERGE_CONFLICT` | routing-table 全局合并冲突 | warning |
+
+## Merge Record
+
+- **Completed**: 2026-04-27T22:50:00+08:00
+- **Merged Branch**: feature/feat-tool-distill
+- **Merge Commit**: 001c88c
+- **Archive Tag**: feat-tool-distill-20260427
+- **Conflicts**: None
+- **Verification**: Passed (7/7 Gherkin scenarios, 41/41 tasks, TypeScript clean)
+- **Stats**: 1 commit, 3 files changed, 5786 insertions, 18 deletions, ~20 min duration

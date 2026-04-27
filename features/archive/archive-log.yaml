@@ -1,13 +1,47 @@
 archived:
+  - id: feat-e2e-pilot
+    name: "端到端试点验证（真实项目扫描→蒸馏→查询→路由）"
+    priority: 85
+    size: L
+    dependencies: [feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route]
+    parent: feat-agent-mvp
+    completed: "2026-04-27T22:30:00+08:00"
+    tag: feat-e2e-pilot-20260427
+    merge_commit: "unknown"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-e2e-pilot
+    worktree_deleted: true
+    worktree_path: ../JARVIS-feat-e2e-pilot
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 8
+      scenarios_passed: 8
+    stats:
+      started: "2026-04-27T22:00:00+08:00"
+      duration: "30 min"
+      commits: 1
+      files_changed: 5
+    notes: |
+      End-to-end pilot verification completed.
+      Log entry added retroactively during cleanup.
+
   - id: feat-packaging
     name: "Pi Package 打包与分发配置"
+    priority: 75
+    size: S
+    dependencies: [feat-e2e-pilot]
+    parent: feat-agent-mvp
     completed: "2026-04-28T00:15:00+08:00"
     tag: feat-packaging-20260427
     merge_commit: "09993e5"
-    merged_to: feature/feat-packaging
-    branch_deleted: false
+    merged_to: main
+    branch_deleted: true
     branch_name: feature/feat-packaging
-    worktree_deleted: false
+    worktree_deleted: true
     worktree_path: ../JARVIS-feat-packaging
     conflicts:
       had_conflict: false
@@ -30,6 +64,10 @@ archived:
 
   - id: feat-system-prompt
     name: "System Prompt 调优"
+    priority: 80
+    size: S
+    dependencies: [feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route]
+    parent: feat-agent-mvp
     completed: "2026-04-27T23:50:00+08:00"
     tag: feat-system-prompt-20260427
     merge_commit: "33caf34"
@@ -55,6 +93,10 @@ archived:
 
   - id: feat-tui-branding
     name: "TUI 主题定制（JARVIS 品牌化）"
+    priority: 80
+    size: S
+    dependencies: [feat-agent-scaffold]
+    parent: feat-agent-mvp
     completed: "2026-04-27T23:50:00+08:00"
     tag: feat-tui-branding-20260427
     merge_commit: "83e9789"
@@ -80,6 +122,10 @@ archived:
 
   - id: feat-tool-route
     name: "jarvis_route 工具（对接 requirement-router Skill）"
+    priority: 85
+    size: S
+    dependencies: [feat-extension-core]
+    parent: feat-agent-mvp
     completed: "2026-04-27T23:00:00+08:00"
     tag: feat-tool-route-20260427
     merge_commit: c9c6f46
@@ -105,6 +151,10 @@ archived:
 
   - id: feat-tool-distill
     name: "jarvis_distill 工具（对接 distillator Skill）"
+    priority: 90
+    size: M
+    dependencies: [feat-extension-core, feat-tool-scan]
+    parent: feat-agent-mvp
     completed: "2026-04-27T22:50:00+08:00"
     tag: feat-tool-distill-20260427
     merge_commit: "001c88c"
@@ -130,7 +180,9 @@ archived:
     name: "jarvis_query 工具（三层加载查询）"
     priority: 90
     size: M
-    completed_at: "2026-04-27T22:20:00+08:00"
+    dependencies: [feat-extension-core]
+    parent: feat-agent-mvp
+    completed: "2026-04-27T22:20:00+08:00"
     tag: feat-tool-query-20260427
     merge_commit: "0022024"
     merged_to: main
@@ -153,6 +205,10 @@ archived:
 
   - id: feat-tool-scan
     name: "jarvis_scan 工具（对接 document-project Skill）"
+    priority: 95
+    size: M
+    dependencies: [feat-extension-core]
+    parent: feat-agent-mvp
     completed: "2026-04-27T22:15:00+08:00"
     tag: feat-tool-scan-20260427
     merge_commit: fef0237
@@ -176,6 +232,10 @@ archived:
 
   - id: feat-agent-scaffold
     name: "Agent 项目骨架 + pi SDK 环境搭建"
+    priority: 100
+    size: M
+    dependencies: []
+    parent: feat-agent-mvp
     completed: "2026-04-27T20:35:00+08:00"
     tag: feat-agent-scaffold-20260427
     merge_commit: HEAD
@@ -199,6 +259,10 @@ archived:
 
   - id: feat-config-management
     name: "jarvis.yaml 配置管理"
+    priority: 90
+    size: S
+    dependencies: [feat-agent-scaffold]
+    parent: feat-agent-mvp
     completed: "2026-04-27T21:25:00+08:00"
     tag: feat-config-management-20260427
     merge_commit: ace2d50
@@ -222,6 +286,10 @@ archived:
 
   - id: feat-extension-core
     name: "jarvis.ts Extension 核心路由层"
+    priority: 95
+    size: M
+    dependencies: [feat-agent-scaffold]
+    parent: feat-agent-mvp
     completed: "2026-04-27T21:30:00+08:00"
     tag: feat-extension-core-20260427
     merge_commit: b6199d1

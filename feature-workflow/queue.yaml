@@ -62,6 +62,8 @@ completed:
     name: "Pi Package 打包与分发配置"
     priority: 75
     size: S
+    dependencies: [feat-e2e-pilot]
+    parent: feat-agent-mvp
     completed_at: "2026-04-28T00:15:00+08:00"
     tag: feat-packaging-20260427
 
@@ -69,6 +71,8 @@ completed:
     name: "System Prompt 调优"
     priority: 80
     size: S
+    dependencies: [feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route]
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T23:50:00+08:00"
     tag: feat-system-prompt-20260427
 
@@ -76,6 +80,8 @@ completed:
     name: "TUI 主题定制（JARVIS 品牌化）"
     priority: 80
     size: S
+    dependencies: [feat-agent-scaffold]
+    parent: feat-agent-mvp
     completed_at: "2026-04-28T00:05:00+08:00"
     tag: feat-tui-branding-20260427
 
@@ -83,6 +89,8 @@ completed:
     name: "端到端试点验证（真实项目扫描→蒸馏→查询）"
     priority: 85
     size: L
+    dependencies: [feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route]
+    parent: feat-agent-mvp
     completed_at: "2026-04-28T00:00:00+08:00"
     tag: feat-e2e-pilot-20260427
 
@@ -90,6 +98,8 @@ completed:
     name: "jarvis_route 工具（对接 requirement-router Skill）"
     priority: 85
     size: S
+    dependencies: [feat-extension-core]
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T23:00:00+08:00"
     tag: feat-tool-route-20260427
 
@@ -97,6 +107,8 @@ completed:
     name: "jarvis_distill 工具（对接 distillator Skill）"
     priority: 90
     size: M
+    dependencies: [feat-extension-core, feat-tool-scan]
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T22:50:00+08:00"
     tag: feat-tool-distill-20260427
 
@@ -104,6 +116,8 @@ completed:
     name: "jarvis_query 工具（三层加载查询）"
     priority: 90
     size: M
+    dependencies: [feat-extension-core]
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T22:20:00+08:00"
     tag: feat-tool-query-20260427
 
@@ -111,6 +125,8 @@ completed:
     name: "jarvis_scan 工具（对接 document-project Skill）"
     priority: 95
     size: M
+    dependencies: [feat-extension-core]
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T22:15:00+08:00"
     tag: feat-tool-scan-20260427
 
@@ -118,6 +134,8 @@ completed:
     name: "JARVIS 知识基础设施项目初始化"
     priority: 100
     size: L
+    dependencies: []
+    parent: null
     completed_at: "2026-04-27T00:00:00+08:00"
     tag: feat-init-jarvis-20260427
 
@@ -125,6 +143,8 @@ completed:
     name: "Agent 项目骨架 + pi SDK 环境搭建"
     priority: 100
     size: M
+    dependencies: []
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T20:35:00+08:00"
     tag: feat-agent-scaffold-20260427
 
@@ -132,6 +152,8 @@ completed:
     name: "jarvis.yaml 配置管理"
     priority: 90
     size: S
+    dependencies: [feat-agent-scaffold]
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T21:25:00+08:00"
     tag: feat-config-management-20260427
 
@@ -139,6 +161,8 @@ completed:
     name: "jarvis.ts Extension 核心路由层"
     priority: 95
     size: M
+    dependencies: [feat-agent-scaffold]
+    parent: feat-agent-mvp
     completed_at: "2026-04-27T21:30:00+08:00"
     tag: feat-extension-core-20260427
 
