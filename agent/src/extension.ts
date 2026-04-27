@@ -14,6 +14,8 @@ import type {
   ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
 import { Type, Static } from "@sinclair/typebox";
+import { executeQuery, validateQueryParams } from "./query.js";
+import { loadConfig, ConfigError, type JarvisConfig } from "./config.js";
 
 // ── TypeBox Parameter Schemas ──────────────────────────────────────
 
@@ -35,8 +37,9 @@ const RouteParams = Type.Object({
 });
 
 const QueryParams = Type.Object({
-  question: Type.String({ description: "问题" }),
-  service: Type.Optional(Type.String({ description: "限定服务名" })),
+  question: Type.String({ description: "用户的问题" }),
+  services: Type.Optional(Type.Array(Type.String({ description: "限定查询的服务范围" }), { description: "限定查询的服务范围（为空时自动检测）" })),
+  max_depth: Type.Optional(Type.Union([Type.Literal(0), Type.Literal(1), Type.Literal(2)], { description: "最大加载深度（0=仅路由表, 1=到quick-ref, 2=到distillates）" })),
 });
 
 type ScanInput = Static<typeof ScanParams>;
@@ -178,22 +181,87 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
     {
       name: "jarvis_query",
       label: "JARVIS Query",
-      description: "查询 JARVIS 知识库，实现三层渐进加载策略。",
+      description:
+        "查询 JARVIS 知识库，实现三层渐进加载策略。" +
+        " Layer 0 routing-table 常驻，Layer 1 quick-ref 按需，Layer 2 distillates 精准定位。",
       parameters: QueryParams,
-      execute: async (_toolCallId, params: QueryInput) => {
+      execute: async (_toolCallId, params: QueryInput, _signal, _onUpdate, ctx: ExtensionContext) => {
         console.log(FRIENDLY_ACTION["jarvis_query"]);
-        // query uses three-layer strategy, no single Skill mapping
-        return {
-          content: [
+
+        // Validate parameters
+        const validationError = validateQueryParams(params);
+        if (validationError) {
+          return {
+            content: [{ type: "text" as const, text: `[JARVIS] 参数错误: ${validationError}` }],
+            isError: true,
+          };
+        }
+
+        // Load config to get workspace root and token budgets
+        let config: JarvisConfig;
+        try {
+          config = loadConfig();
+        } catch (err) {
+          const msg = err instanceof ConfigError ? err.message : (err as Error).message;
+          return {
+            content: [{ type: "text" as const, text: `[JARVIS] 配置加载失败: ${msg}` }],
+            isError: true,
+          };
+        }
+
+        // Execute three-layer query
+        try {
+          const result = executeQuery(
             {
-              type: "text" as const,
-              text: `JARVIS 知识查询 (未实现)\n` +
-                `  问题: ${params.question}\n` +
-                `  限定服务: ${params.service ?? "全部"}\n` +
-                `  完整功能将由后续 feature 实现。`,
+              question: params.question,
+              services: params.services,
+              max_depth: params.max_depth,
             },
-          ],
-        };
+            config
+          );
+
+          // Format the output
+          const outputParts: string[] = [];
+          outputParts.push(result.answer);
+          outputParts.push("");
+          outputParts.push("---");
+          outputParts.push("**查询元数据**:");
+          outputParts.push(`- 加载层级: ${result.layersLoaded.join(", ")}`);
+          outputParts.push(`- 查询服务: ${result.servicesQueried.join(", ") || "无"}`);
+          outputParts.push(`- Token 消耗: ${result.tokensConsumed}`);
+
+          if (result.sources.length > 0) {
+            outputParts.push("- 来源:");
+            for (const src of result.sources) {
+              const sectionInfo = src.section ? ` § ${src.section}` : "";
+              outputParts.push(
+                `  - Layer ${src.layer}: ${src.file}${sectionInfo} (相关度: ${src.relevance})`
+              );
+            }
+          }
+
+          if (result.warnings.length > 0) {
+            outputParts.push("- 警告:");
+            for (const w of result.warnings) {
+              outputParts.push(`  - [${w.code}] ${w.message}`);
+            }
+          }
+
+          return {
+            content: [{ type: "text" as const, text: outputParts.join("\n") }],
+            isError: !!result.error,
+          };
+        } catch (err) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `[JARVIS] 查询执行失败: ${(err as Error).message}`,
+              },
+            ],
+            isError: true,
+          };
+        }
       },
     },
   ];

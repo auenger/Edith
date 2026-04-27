@@ -1,0 +1,30 @@
+{
+  "feature_id": "feat-tool-query",
+  "timestamp": "2026-04-27T22:15:00+08:00",
+  "test_framework": "node:test (tsx)",
+  "command": "npx tsx --test src/__tests__/query.test.ts",
+  "results": {
+    "suites": 11,
+    "tests": 24,
+    "passed": 24,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "duration_ms": 1099
+  },
+  "type_check": {
+    "command": "npx tsc --noEmit",
+    "errors": 0,
+    "status": "pass"
+  },
+  "scenarios": {
+    "scenario_1_simple_query": "pass",
+    "scenario_2_cross_service": "pass",
+    "scenario_3_empty_kb": "pass",
+    "scenario_4_missing_layer1": "pass",
+    "scenario_5_missing_layer2": "pass",
+    "scenario_6_corrupted_file": "pass",
+    "scenario_7_large_kb_performance": "pass",
+    "scenario_8_service_not_found": "pass"
+  }
+}
