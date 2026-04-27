@@ -1,0 +1,199 @@
+# JARVIS Feature Queue
+# 基于 JARVIS-PRODUCT-DESIGN.md 路线图生成
+
+pending:
+  # ═══ Phase 1: JARVIS Agent MVP (Week 1) ═══
+  - id: feat-agent-scaffold
+    name: "Agent 项目骨架 + pi SDK 环境搭建"
+    priority: 100
+    size: M
+    description: |
+      搭建 Agent 项目结构：初始化 TypeScript 项目、集成 pi SDK、
+      配置 jarvis.yaml 解析、建立 Extension 骨架。
+
+  - id: feat-extension-core
+    name: "jarvis.ts Extension 核心路由层"
+    priority: 95
+    size: M
+    dependencies: [feat-agent-scaffold]
+    description: |
+      实现消息拦截 + Skill 自动加载 + 工具注册 + 事件钩子。
+      包含 jarvis_scan / jarvis_distill / jarvis_route / jarvis_query 四个工具注册。
+
+  - id: feat-tool-scan
+    name: "jarvis_scan 工具（对接 document-project Skill）"
+    priority: 95
+    size: M
+    dependencies: [feat-extension-core]
+    description: |
+      扫描项目代码，逆向生成项目文档。
+      对接 document-project Skill 的 jarvis_scan 工具实现。
+
+  - id: feat-config-management
+    name: "jarvis.yaml 配置管理"
+    priority: 90
+    size: S
+    dependencies: [feat-agent-scaffold]
+    description: |
+      实现 jarvis.yaml 的解析、验证、热加载。
+      支持 LLM provider、workspace、repos、token budget 等配置项。
+
+  # ═══ Phase 1: JARVIS Agent MVP (Week 2) ═══
+  - id: feat-tool-distill
+    name: "jarvis_distill 工具（对接 distillator Skill）"
+    priority: 90
+    size: M
+    dependencies: [feat-extension-core, feat-tool-scan]
+    description: |
+      蒸馏文档，生成三层知识产物（routing-table / quick-ref / distillates）。
+      对接 distillator Skill。
+
+  - id: feat-tool-query
+    name: "jarvis_query 工具（三层加载查询）"
+    priority: 90
+    size: M
+    dependencies: [feat-extension-core]
+    description: |
+      查询 JARVIS 知识库，实现三层渐进加载策略。
+      Layer 0 常驻 → Layer 1 按需 → Layer 2 精准定位。
+
+  - id: feat-tool-route
+    name: "jarvis_route 工具（对接 requirement-router Skill）"
+    priority: 85
+    size: S
+    dependencies: [feat-extension-core]
+    description: |
+      需求路由分析，判断是否需要加载上下文及加载策略。
+      对接 requirement-router Skill。
+
+  - id: feat-tui-branding
+    name: "TUI 主题定制（JARVIS 品牌化）"
+    priority: 80
+    size: S
+    dependencies: [feat-agent-scaffold]
+    description: |
+      JARVIS 品牌化终端界面：ASCII art banner、状态栏、
+      服务计数统计。基于 pi SDK TUI 框架。
+
+  # ═══ Phase 1: JARVIS Agent MVP (Week 3) ═══
+  - id: feat-system-prompt
+    name: "System Prompt 调优"
+    priority: 80
+    size: S
+    dependencies: [feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route]
+    description: |
+      JARVIS Agent 的 System Prompt 设计与调优。
+      包含行为规则、工具触发条件、知识来源标注。
+
+  - id: feat-e2e-pilot
+    name: "端到端试点验证（真实项目扫描→蒸馏→查询）"
+    priority: 85
+    size: L
+    dependencies: [feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route]
+    description: |
+      使用真实项目进行端到端验证：扫描 → 蒸馏 → 三层加载查询。
+      输出 pilot-ready 声明和试点报告。
+
+  - id: feat-packaging
+    name: "Pi Package 打包与分发配置"
+    priority: 75
+    size: S
+    dependencies: [feat-e2e-pilot]
+    description: |
+      配置 Pi Package 打包、npm/git 分发、安装脚本。
+
+  # ═══ Phase 2: JARVIS Board 基础版 (Week 1-2) ═══
+  - id: feat-board-scaffold
+    name: "Board 项目脚手架（Next.js + API Server）"
+    priority: 60
+    size: M
+    description: |
+      初始化 JARVIS Board 前端项目：Next.js + React、
+      API Server 骨架、Git 知识仓库读取层。
+
+  - id: feat-board-dashboard
+    name: "Dashboard 总览仪表盘"
+    priority: 60
+    size: M
+    dependencies: [feat-board-scaffold]
+    description: |
+      知识库健康度、服务覆盖率、最近变更、产出物统计。
+
+  - id: feat-board-services
+    name: "Services 服务列表页"
+    priority: 55
+    size: S
+    dependencies: [feat-board-scaffold]
+    description: |
+      服务列表、筛选搜索、知识覆盖详情、Layer 补全操作。
+
+  # ═══ Phase 2: JARVIS Board 基础版 (Week 3-4) ═══
+  - id: feat-board-artifacts
+    name: "Artifacts 产出物浏览器（Markdown 预览）"
+    priority: 55
+    size: M
+    dependencies: [feat-board-scaffold]
+    description: |
+      文件树 + Markdown 预览 + Token 计数 + Monaco Editor。
+
+  - id: feat-board-knowledge-map
+    name: "Knowledge Map 服务依赖图谱"
+    priority: 50
+    size: M
+    dependencies: [feat-board-services]
+    description: |
+      D3.js 力导向图可视化服务依赖关系。
+      节点大小=知识完整度，线条粗细=调用频率。
+
+  - id: feat-board-timeline
+    name: "Timeline 知识时间线"
+    priority: 50
+    size: S
+    dependencies: [feat-board-scaffold]
+    description: |
+      知识回写历史时间线，展示组织知识演化过程。
+
+active:
+
+blocked:
+
+completed:
+  - id: feat-init-jarvis
+    name: "JARVIS 知识基础设施项目初始化"
+    priority: 100
+    size: L
+    completed_at: "2026-04-27T00:00:00+08:00"
+    tag: feat-init-jarvis-20260427
+
+meta:
+  last_updated: "2026-04-27T18:00:00+08:00"
+  phase_label:
+    phase1: "JARVIS Agent MVP"
+    phase2: "JARVIS Board 基础版"
+    phase3: "增值功能（待规划）"
+  parents:
+    - id: feat-agent-mvp
+      name: "JARVIS Agent MVP"
+      split: false
+      children:
+        - feat-agent-scaffold
+        - feat-extension-core
+        - feat-tool-scan
+        - feat-config-management
+        - feat-tool-distill
+        - feat-tool-query
+        - feat-tool-route
+        - feat-tui-branding
+        - feat-system-prompt
+        - feat-e2e-pilot
+        - feat-packaging
+    - id: feat-board-base
+      name: "JARVIS Board 基础版"
+      split: false
+      children:
+        - feat-board-scaffold
+        - feat-board-dashboard
+        - feat-board-services
+        - feat-board-artifacts
+        - feat-board-knowledge-map
+        - feat-board-timeline

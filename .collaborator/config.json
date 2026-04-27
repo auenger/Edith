@@ -8,7 +8,8 @@
     "/Users/ryan/mycode/HS_jarvis/jarvis-skills/distillator/scripts",
     "/Users/ryan/mycode/HS_jarvis/BMAD-METHOD/.github",
     "/Users/ryan/mycode/HS_jarvis",
-    "/Users/ryan/mycode/HS_jarvis/.claude"
+    "/Users/ryan/mycode/HS_jarvis/features",
+    "/Users/ryan/mycode/HS_jarvis/feature-workflow"
   ],
   "agent_skip_permissions": false
 }
