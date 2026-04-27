@@ -3,19 +3,28 @@
  *
  * Parses and validates jarvis.yaml configuration files.
  * Provides typed access to all JARVIS settings.
+ *
+ * Features:
+ * - YAML parsing with js-yaml
+ * - Environment variable resolution (${VAR_NAME} syntax)
+ * - Upward directory search for jarvis.yaml
+ * - Required field validation with clear error messages
+ * - Default value filling for optional fields
+ * - Interactive jarvis-init wizard
  */
 
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { load as loadYaml } from "js-yaml";
+import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { resolve, dirname, join } from "node:path";
+import { load as loadYaml, YAMLException } from "js-yaml";
+import * as readline from "node:readline";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
 export interface LlmConfig {
   provider: string;
   model: string;
-  apiKey?: string;
-  baseUrl?: string;
+  api_key?: string;
+  base_url?: string;
 }
 
 export interface WorkspaceConfig {
@@ -26,22 +35,43 @@ export interface WorkspaceConfig {
 export interface RepoConfig {
   name: string;
   path: string;
-  description?: string;
-  languages?: string[];
+  stack?: string;
+}
+
+export interface TokenBudget {
+  routing_table: number;
+  quick_ref: number;
+  distillate_fragment: number;
 }
 
 export interface AgentConfig {
-  tokenBudget?: number;
-  maxContextFiles?: number;
-  autoScan?: boolean;
+  token_budget: TokenBudget;
+  auto_refresh: boolean;
+  refresh_interval: string;
 }
 
 export interface JarvisConfig {
   llm: LlmConfig;
   workspace: WorkspaceConfig;
   repos: RepoConfig[];
-  agent?: AgentConfig;
+  agent: AgentConfig;
 }
+
+// ── Default Values ────────────────────────────────────────────────
+
+const DEFAULT_TOKEN_BUDGET: TokenBudget = {
+  routing_table: 500,
+  quick_ref: 2000,
+  distillate_fragment: 4000,
+};
+
+const DEFAULT_AGENT: Omit<AgentConfig, never> = {
+  token_budget: { ...DEFAULT_TOKEN_BUDGET },
+  auto_refresh: true,
+  refresh_interval: "24h",
+};
+
+const CONFIG_FILENAME = "jarvis.yaml";
 
 // ── Error Classes ─────────────────────────────────────────────────
 
@@ -53,13 +83,15 @@ export class ConfigError extends Error {
 }
 
 export class ConfigNotFoundError extends ConfigError {
+  public readonly searchedPath: string;
+
   constructor(configPath: string) {
     super(
-      `未找到 jarvis.yaml 配置文件，请先创建配置。\n` +
-        `  期望路径: ${configPath}\n` +
-        `  可参考 agent/jarvis.yaml.example 创建最小配置。`
+      `未找到 jarvis.yaml，运行 jarvis-init 生成配置文件。\n` +
+        `  搜索路径: ${configPath}`
     );
     this.name = "ConfigNotFoundError";
+    this.searchedPath = configPath;
   }
 }
 
@@ -68,11 +100,19 @@ export class ConfigParseError extends ConfigError {
   public readonly yamlMessage: string;
 
   constructor(configPath: string, originalError: unknown) {
-    const yamlError = originalError as { mark?: { line?: number }; message?: string };
-    const line = yamlError?.mark?.line;
-    const msg = yamlError?.message ?? String(originalError);
+    let line: number | undefined;
+    let msg: string;
 
-    let message = `jarvis.yaml 格式错误: ${configPath}\n  ${msg}`;
+    if (originalError instanceof YAMLException) {
+      line = originalError.mark?.line;
+      msg = originalError.message ?? String(originalError);
+    } else {
+      const err = originalError as { mark?: { line?: number }; message?: string };
+      line = err?.mark?.line;
+      msg = err?.message ?? String(originalError);
+    }
+
+    let message = `配置文件解析失败: ${configPath}\n  ${msg}`;
     if (line !== undefined) {
       message += `\n  出错行号: ${line + 1}`;
     }
@@ -84,85 +124,510 @@ export class ConfigParseError extends ConfigError {
   }
 }
 
-// ── Loader ────────────────────────────────────────────────────────
-
-/**
- * Validate that the config file exists at the given path.
- * Throws ConfigNotFoundError if missing.
- */
-export function validateConfigExists(configPath: string): void {
-  const resolved = resolve(configPath);
-  if (!existsSync(resolved)) {
-    throw new ConfigNotFoundError(resolved);
+export class ConfigValidationError extends ConfigError {
+  constructor(message: string) {
+    super(`配置校验失败: ${message}`);
+    this.name = "ConfigValidationError";
   }
 }
+
+// ── Environment Variable Resolution ───────────────────────────────
+
+const ENV_VAR_PATTERN = /^\$\{([^}]+)\}$/;
+
+/**
+ * Resolve environment variable references in a string value.
+ * Supports ${VAR_NAME} syntax. If the environment variable is not set,
+ * returns undefined. Only applies to string-typed values.
+ */
+export function resolveEnvVars(value: string): string | undefined {
+  const match = ENV_VAR_PATTERN.exec(value);
+  if (match) {
+    const varName = match[1];
+    return process.env[varName];
+  }
+  return value;
+}
+
+/**
+ * Recursively resolve environment variables in a config object.
+ * Only string values matching ${...} pattern are resolved.
+ */
+function resolveEnvVarsDeep(obj: unknown): unknown {
+  if (typeof obj === "string") {
+    return resolveEnvVars(obj);
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(resolveEnvVarsDeep);
+  }
+  if (typeof obj === "object" && obj !== null) {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = resolveEnvVarsDeep(value);
+    }
+    return result;
+  }
+  return obj;
+}
+
+// ── Config File Search ────────────────────────────────────────────
+
+/**
+ * Search for jarvis.yaml starting from startDir and moving upward.
+ * Returns the resolved path to the config file, or null if not found.
+ */
+export function findConfigFile(startDir?: string): string | null {
+  let currentDir = resolve(startDir ?? process.cwd());
+  const root = resolve("/");
+
+  while (currentDir !== root) {
+    const candidate = join(currentDir, CONFIG_FILENAME);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+    const parent = dirname(currentDir);
+    if (parent === currentDir) break;
+    currentDir = parent;
+  }
+
+  // Check root directory too
+  const rootCandidate = join(root, CONFIG_FILENAME);
+  if (existsSync(rootCandidate)) {
+    return rootCandidate;
+  }
+
+  return null;
+}
+
+// ── Validation ────────────────────────────────────────────────────
+
+/**
+ * Validate the parsed configuration object.
+ * Throws ConfigValidationError with field path and current value on failure.
+ */
+export function validateConfig(raw: unknown): void {
+  if (typeof raw !== "object" || raw === null) {
+    throw new ConfigValidationError(
+      `配置内容无效: 期望对象，得到 ${raw === null ? "null" : typeof raw}`
+    );
+  }
+
+  const config = raw as Record<string, unknown>;
+
+  // Validate llm section
+  if (!config.llm || typeof config.llm !== "object") {
+    throw new ConfigValidationError("缺少 llm 配置段");
+  }
+
+  const llm = config.llm as Record<string, unknown>;
+  if (!llm.provider || typeof llm.provider !== "string") {
+    throw new ConfigValidationError(
+      `llm.provider 是必填项${llm.provider !== undefined ? `，当前值: ${JSON.stringify(llm.provider)}` : ""}`
+    );
+  }
+  if (!llm.model || typeof llm.model !== "string") {
+    throw new ConfigValidationError(
+      `llm.model 是必填项${llm.model !== undefined ? `，当前值: ${JSON.stringify(llm.model)}` : ""}`
+    );
+  }
+
+  // Validate workspace section
+  if (!config.workspace || typeof config.workspace !== "object") {
+    throw new ConfigValidationError("缺少 workspace 配置段");
+  }
+
+  const workspace = config.workspace as Record<string, unknown>;
+  if (!workspace.root || typeof workspace.root !== "string") {
+    throw new ConfigValidationError(
+      `workspace.root 是必填项${workspace.root !== undefined ? `，当前值: ${JSON.stringify(workspace.root)}` : ""}`
+    );
+  }
+
+  if (!workspace.language || typeof workspace.language !== "string") {
+    throw new ConfigValidationError(
+      `workspace.language 是必填项${workspace.language !== undefined ? `，当前值: ${JSON.stringify(workspace.language)}` : ""}`
+    );
+  }
+
+  // Validate language enum
+  if (workspace.language !== "zh" && workspace.language !== "en") {
+    throw new ConfigValidationError(
+      `workspace.language 必须为 'zh' 或 'en'，当前值: '${workspace.language}'`
+    );
+  }
+
+  // Validate repos array elements
+  if (config.repos !== undefined) {
+    if (!Array.isArray(config.repos)) {
+      throw new ConfigValidationError(
+        `repos 必须为数组，当前类型: ${typeof config.repos}`
+      );
+    }
+
+    config.repos.forEach((repo: unknown, index: number) => {
+      if (typeof repo !== "object" || repo === null) {
+        throw new ConfigValidationError(
+          `repos[${index}] 必须为对象，当前类型: ${typeof repo}`
+        );
+      }
+      const r = repo as Record<string, unknown>;
+      if (!r.name || typeof r.name !== "string") {
+        throw new ConfigValidationError(
+          `repos[${index}].name 是必填项`
+        );
+      }
+      if (!r.path || typeof r.path !== "string") {
+        throw new ConfigValidationError(
+          `repos[${index}].path 是必填项`
+        );
+      }
+    });
+  }
+
+  // Validate agent section if present
+  if (config.agent && typeof config.agent === "object") {
+    const agent = config.agent as Record<string, unknown>;
+
+    if (agent.token_budget && typeof agent.token_budget === "object") {
+      const tb = agent.token_budget as Record<string, unknown>;
+      for (const field of ["routing_table", "quick_ref", "distillate_fragment"] as const) {
+        const val = tb[field];
+        if (val !== undefined && (typeof val !== "number" || val <= 0 || !Number.isInteger(val))) {
+          throw new ConfigValidationError(
+            `agent.token_budget.${field} 必须为正整数，当前值: ${JSON.stringify(val)}`
+          );
+        }
+      }
+    }
+  }
+}
+
+// ── Default Value Application ─────────────────────────────────────
+
+/**
+ * Apply default values for optional fields.
+ * Only fills in fields that are not provided — never overwrites existing values.
+ */
+export function applyDefaults(config: Partial<JarvisConfig>): JarvisConfig {
+  const llm = config.llm ?? {
+    provider: "",
+    model: "",
+  };
+
+  const workspace = config.workspace ?? {
+    root: "./company-jarvis",
+    language: "zh" as const,
+  };
+
+  const repos = config.repos ?? [];
+
+  const existingAgent = config.agent;
+  const agent: AgentConfig = {
+    token_budget: {
+      routing_table: existingAgent?.token_budget?.routing_table ?? DEFAULT_TOKEN_BUDGET.routing_table,
+      quick_ref: existingAgent?.token_budget?.quick_ref ?? DEFAULT_TOKEN_BUDGET.quick_ref,
+      distillate_fragment: existingAgent?.token_budget?.distillate_fragment ?? DEFAULT_TOKEN_BUDGET.distillate_fragment,
+    },
+    auto_refresh: existingAgent?.auto_refresh ?? DEFAULT_AGENT.auto_refresh,
+    refresh_interval: existingAgent?.refresh_interval ?? DEFAULT_AGENT.refresh_interval,
+  };
+
+  return {
+    llm: {
+      provider: llm.provider,
+      model: llm.model,
+      api_key: llm.api_key,
+      base_url: llm.base_url,
+    },
+    workspace: {
+      root: workspace.root,
+      language: workspace.language,
+    },
+    repos: repos.map((r) => ({
+      name: r.name,
+      path: r.path,
+      stack: r.stack,
+    })),
+    agent,
+  };
+}
+
+// ── Config Loader ─────────────────────────────────────────────────
 
 /**
  * Load and parse a jarvis.yaml file.
  *
- * @param configPath - Path to the jarvis.yaml file
- * @returns Parsed JarvisConfig object
+ * If filePath is provided, loads that specific file.
+ * If filePath is omitted, searches upward from cwd for jarvis.yaml.
+ *
+ * @param filePath - Optional explicit path to the config file
+ * @returns Fully resolved and validated JarvisConfig object
  * @throws ConfigNotFoundError if file does not exist
- * @throws ConfigParseError if YAML is invalid
+ * @throws ConfigParseError if YAML syntax is invalid
+ * @throws ConfigValidationError if required fields are missing or invalid
  */
-export function loadConfig(configPath: string): JarvisConfig {
-  const resolved = resolve(configPath);
-
-  validateConfigExists(resolved);
-
-  let rawContent: string;
-  try {
-    rawContent = readFileSync(resolved, "utf-8");
-  } catch (err) {
-    throw new ConfigError(`无法读取配置文件: ${resolved}\n  ${(err as Error).message}`);
+export function loadConfig(filePath?: string): JarvisConfig {
+  // Determine config file path
+  let configPath: string | null;
+  if (filePath) {
+    configPath = resolve(filePath);
+    if (!existsSync(configPath)) {
+      throw new ConfigNotFoundError(configPath);
+    }
+  } else {
+    configPath = findConfigFile();
+    if (!configPath) {
+      throw new ConfigNotFoundError(resolve(process.cwd(), CONFIG_FILENAME));
+    }
   }
 
+  // Read file content
+  let rawContent: string;
+  try {
+    rawContent = readFileSync(configPath, "utf-8");
+  } catch (err) {
+    throw new ConfigError(`无法读取配置文件: ${configPath}\n  ${(err as Error).message}`);
+  }
+
+  // Parse YAML
   let parsed: unknown;
   try {
     parsed = loadYaml(rawContent);
   } catch (err) {
-    throw new ConfigParseError(resolved, err);
+    throw new ConfigParseError(configPath, err);
   }
 
-  if (typeof parsed !== "object" || parsed === null) {
-    throw new ConfigError(`jarvis.yaml 内容无效: 期望对象，得到 ${typeof parsed}`);
+  // Resolve environment variables
+  const resolved = resolveEnvVarsDeep(parsed);
+
+  // Validate
+  validateConfig(resolved);
+
+  // Apply defaults and return typed config
+  return applyDefaults(resolved as Partial<JarvisConfig>);
+}
+
+// ── jarvis-init Interactive Wizard ────────────────────────────────
+
+const PROVIDER_MODEL_HINTS: Record<string, string[]> = {
+  openai: ["gpt-4", "gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
+  anthropic: ["claude-sonnet-4-6", "claude-3.5-sonnet", "claude-3-opus", "claude-3-haiku"],
+  ollama: ["llama3", "mistral", "codellama", "qwen2"],
+  other: [],
+};
+
+function createReadlineInterface(): readline.ReadLine {
+  return readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+}
+
+function question(rl: readline.ReadLine, prompt: string): Promise<string> {
+  return new Promise((resolve) => {
+    rl.question(prompt, (answer) => {
+      resolve(answer.trim());
+    });
+  });
+}
+
+function questionWithDefault(rl: readline.ReadLine, prompt: string, defaultValue: string): Promise<string> {
+  return new Promise((resolve) => {
+    rl.question(`${prompt} [${defaultValue}]: `, (answer) => {
+      resolve(answer.trim() || defaultValue);
+    });
+  });
+}
+
+/**
+ * Interactive configuration wizard that generates a jarvis.yaml file.
+ *
+ * Steps:
+ * 1. Select LLM provider
+ * 2. Input model name
+ * 3. Input API key (optional)
+ * 4. Input workspace root path
+ * 5. Select language
+ * 6. Add repos (repeatable)
+ * 7. Confirm and generate file
+ *
+ * Ctrl+C at any step cancels without generating files.
+ * If jarvis.yaml already exists, asks for overwrite confirmation.
+ */
+export async function initConfigWizard(outputPath?: string): Promise<void> {
+  const targetPath = resolve(outputPath ?? join(process.cwd(), CONFIG_FILENAME));
+
+  // Check if file already exists
+  if (existsSync(targetPath)) {
+    const rl = createReadlineInterface();
+    try {
+      const overwrite = await question(rl, `\njarvis.yaml already exists at ${targetPath}\nOverwrite? (y/N): `);
+      if (overwrite.toLowerCase() !== "y") {
+        console.log("配置向导已取消。");
+        return;
+      }
+    } finally {
+      rl.close();
+    }
   }
 
-  const config = parsed as Record<string, unknown>;
+  const rl = createReadlineInterface();
 
-  // Validate required top-level fields
-  if (!config.llm || typeof config.llm !== "object") {
-    throw new ConfigError("jarvis.yaml 缺少 llm 配置段");
+  // Handle Ctrl+C gracefully
+  let cancelled = false;
+  rl.on("close", () => {
+    if (cancelled) return;
+    cancelled = true;
+    console.log("\n配置向导已取消。");
+    process.exit(0);
+  });
+
+  try {
+    console.log("\n╔══════════════════════════════════════════╗");
+    console.log("║   JARVIS Configuration Wizard            ║");
+    console.log("║   jarvis-init                            ║");
+    console.log("╚══════════════════════════════════════════╝\n");
+
+    // Step 1: LLM Provider
+    console.log("Step 1: LLM Provider");
+    console.log("  Options: openai / anthropic / ollama / other");
+    const provider = await question(rl, "  Provider: ");
+    if (!provider) {
+      console.log("Provider cannot be empty. Configuration cancelled.");
+      return;
+    }
+
+    const hints = PROVIDER_MODEL_HINTS[provider] ?? [];
+    if (hints.length > 0) {
+      console.log(`  Suggested models: ${hints.join(", ")}`);
+    }
+
+    // Step 2: Model
+    console.log("\nStep 2: Model");
+    const model = await question(rl, "  Model name: ");
+    if (!model) {
+      console.log("Model cannot be empty. Configuration cancelled.");
+      return;
+    }
+
+    // Step 3: API Key (optional)
+    console.log("\nStep 3: API Key (optional, press Enter to skip)");
+    const apiKeyInput = await question(rl, "  API Key: ");
+    const apiKey = apiKeyInput || undefined;
+
+    // Step 4: Workspace Root
+    console.log("\nStep 4: Workspace");
+    const workspaceRoot = await questionWithDefault(rl, "  Workspace root path", "./company-jarvis");
+
+    // Step 5: Language
+    console.log("\nStep 5: Language");
+    const language = await questionWithDefault(rl, "  Language (zh/en)", "zh");
+    if (language !== "zh" && language !== "en") {
+      console.log("Invalid language. Must be 'zh' or 'en'. Configuration cancelled.");
+      return;
+    }
+
+    // Step 6: Repos
+    console.log("\nStep 6: Repositories (press Enter with empty name to finish)");
+    const repos: RepoConfig[] = [];
+    let repoIndex = 1;
+    while (true) {
+      const repoName = await question(rl, `  Repo ${repoIndex} name (empty to finish): `);
+      if (!repoName) break;
+      const repoPath = await question(rl, `  Repo ${repoIndex} path: `);
+      if (!repoPath) {
+        console.log("  Repo path cannot be empty. Skipping.");
+        continue;
+      }
+      const repoStack = await question(rl, `  Repo ${repoIndex} stack (optional, Enter to skip): `);
+      repos.push({
+        name: repoName,
+        path: repoPath,
+        ...(repoStack ? { stack: repoStack } : {}),
+      });
+      repoIndex++;
+    }
+
+    // Step 7: Confirm and generate
+    console.log("\n── Configuration Preview ──────────────────");
+    const yamlContent = generateConfigYaml({
+      llm: {
+        provider,
+        model,
+        ...(apiKey ? { api_key: apiKey.startsWith("sk-") ? `\${${provider.toUpperCase()}_API_KEY}` : apiKey } : {}),
+      },
+      workspace: {
+        root: workspaceRoot,
+        language: language as "zh" | "en",
+      },
+      repos,
+    });
+    console.log(yamlContent);
+    console.log("──────────────────────────────────────────");
+
+    const confirm = await question(rl, "\nGenerate this configuration? (Y/n): ");
+    if (confirm.toLowerCase() === "n") {
+      console.log("配置向导已取消。");
+      return;
+    }
+
+    // Write the file
+    writeFileSync(targetPath, yamlContent, "utf-8");
+    console.log(`\nConfiguration written to: ${targetPath}`);
+    console.log("You can now start JARVIS with: npm start");
+  } finally {
+    rl.close();
   }
-  if (!config.workspace || typeof config.workspace !== "object") {
-    throw new ConfigError("jarvis.yaml 缺少 workspace 配置段");
+}
+
+/**
+ * Generate YAML content string from a partial config.
+ * Uses manual YAML generation to avoid extra dependencies.
+ */
+function generateConfigYaml(config: Partial<JarvisConfig>): string {
+  const lines: string[] = [];
+
+  // LLM section
+  lines.push("llm:");
+  lines.push(`  provider: ${config.llm?.provider ?? "openai"}`);
+  lines.push(`  model: ${config.llm?.model ?? "gpt-4"}`);
+  if (config.llm?.api_key) {
+    lines.push(`  api_key: ${config.llm.api_key}`);
+  }
+  if (config.llm?.base_url) {
+    lines.push(`  base_url: ${config.llm.base_url}`);
   }
 
-  const llm = config.llm as Record<string, unknown>;
-  const workspace = config.workspace as Record<string, unknown>;
+  // Workspace section
+  lines.push("");
+  lines.push("workspace:");
+  lines.push(`  root: ${config.workspace?.root ?? "./company-jarvis"}`);
+  lines.push(`  language: ${config.workspace?.language ?? "zh"}`);
 
-  if (!llm.provider || typeof llm.provider !== "string") {
-    throw new ConfigError("jarvis.yaml: llm.provider 必须为字符串");
-  }
-  if (!llm.model || typeof llm.model !== "string") {
-    throw new ConfigError("jarvis.yaml: llm.model 必须为字符串");
-  }
-  if (!workspace.root || typeof workspace.root !== "string") {
-    throw new ConfigError("jarvis.yaml: workspace.root 必须为字符串");
+  // Repos section
+  lines.push("");
+  if (config.repos && config.repos.length > 0) {
+    lines.push("repos:");
+    for (const repo of config.repos) {
+      lines.push(`  - name: ${repo.name}`);
+      lines.push(`    path: ${repo.path}`);
+      if (repo.stack) {
+        lines.push(`    stack: ${repo.stack}`);
+      }
+    }
+  } else {
+    lines.push("repos: []");
   }
 
-  return {
-    llm: {
-      provider: llm.provider as string,
-      model: llm.model as string,
-      apiKey: llm.apiKey as string | undefined,
-      baseUrl: llm.baseUrl as string | undefined,
-    },
-    workspace: {
-      root: workspace.root as string,
-      language: (workspace.language as "zh" | "en") ?? "zh",
-    },
-    repos: Array.isArray(config.repos) ? (config.repos as RepoConfig[]) : [],
-    agent: config.agent as AgentConfig | undefined,
-  };
+  // Agent section (use defaults)
+  lines.push("");
+  lines.push("agent:");
+  lines.push("  token_budget:");
+  lines.push("    routing_table: 500");
+  lines.push("    quick_ref: 2000");
+  lines.push("    distillate_fragment: 4000");
+  lines.push("  auto_refresh: true");
+  lines.push("  refresh_interval: 24h");
+
+  return lines.join("\n") + "\n";
 }

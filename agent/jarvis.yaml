@@ -7,3 +7,11 @@ workspace:
   language: zh
 
 repos: []
+
+agent:
+  token_budget:
+    routing_table: 500
+    quick_ref: 2000
+    distillate_fragment: 4000
+  auto_refresh: true
+  refresh_interval: 24h

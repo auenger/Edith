@@ -18,7 +18,7 @@ import {
   SessionManager,
 } from "@mariozechner/pi-coding-agent";
 
-import { loadConfig, ConfigError } from "./config.js";
+import { loadConfig, ConfigError, type JarvisConfig } from "./config.js";
 import jarvisExtension from "./extension.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,9 +51,12 @@ async function main(): Promise<void> {
   console.log("[JARVIS] Starting agent initialization...\n");
 
   // Step 1: Load configuration
-  const configPath = process.env.JARVIS_CONFIG ?? DEFAULT_CONFIG_PATH;
+  // If JARVIS_CONFIG env var is set, use that path directly.
+  // Otherwise, loadConfig will search upward from cwd for jarvis.yaml,
+  // falling back to the default path in the agent directory.
+  const configPath = process.env.JARVIS_CONFIG ?? undefined;
 
-  let config;
+  let config: JarvisConfig;
   try {
     config = loadConfig(configPath);
   } catch (err) {
@@ -64,12 +67,14 @@ async function main(): Promise<void> {
     throw err;
   }
 
-  console.log(`[JARVIS] Configuration loaded from: ${configPath}`);
-  console.log(`[JARVIS]   LLM Provider: ${config.llm.provider}`);
-  console.log(`[JARVIS]   Model:        ${config.llm.model}`);
-  console.log(`[JARVIS]   Workspace:    ${config.workspace.root}`);
-  console.log(`[JARVIS]   Language:     ${config.workspace.language}`);
-  console.log(`[JARVIS]   Repositories: ${config.repos.length}`);
+  console.log(`[JARVIS] Configuration loaded successfully.`);
+  console.log(`[JARVIS]   LLM Provider:    ${config.llm.provider}`);
+  console.log(`[JARVIS]   Model:           ${config.llm.model}`);
+  console.log(`[JARVIS]   Workspace:       ${config.workspace.root}`);
+  console.log(`[JARVIS]   Language:        ${config.workspace.language}`);
+  console.log(`[JARVIS]   Repositories:    ${config.repos.length}`);
+  console.log(`[JARVIS]   Token Budget:    routing_table=${config.agent.token_budget.routing_table}, quick_ref=${config.agent.token_budget.quick_ref}, distillate_fragment=${config.agent.token_budget.distillate_fragment}`);
+  console.log(`[JARVIS]   Auto Refresh:    ${config.agent.auto_refresh}`);
   console.log();
 
   // Step 2: Initialize pi SDK
