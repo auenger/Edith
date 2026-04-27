@@ -63,21 +63,17 @@ pending:
       知识回写历史时间线，展示组织知识演化过程。
 
 active:
-  - id: feat-system-prompt
-    name: "System Prompt 调优"
-    priority: 80
-    size: S
-    dependencies: [feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route]
-    branch: feature/feat-system-prompt
-    worktree: ../JARVIS-feat-system-prompt
-    started_at: "2026-04-27T23:35:00+08:00"
-    description: |
-      JARVIS Agent 的 System Prompt 设计与调优。
-      包含行为规则、工具触发条件、知识来源标注。
 
 blocked:
 
 completed:
+  - id: feat-system-prompt
+    name: "System Prompt 调优"
+    priority: 80
+    size: S
+    completed_at: "2026-04-27T23:50:00+08:00"
+    tag: feat-system-prompt-20260427
+
   - id: feat-tui-branding
     name: "TUI 主题定制（JARVIS 品牌化）"
     priority: 80
@@ -149,7 +145,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-27T23:35:00+08:00"
+  last_updated: "2026-04-27T23:50:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"

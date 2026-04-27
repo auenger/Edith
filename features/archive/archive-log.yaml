@@ -1,4 +1,29 @@
 archived:
+  - id: feat-system-prompt
+    name: "System Prompt 调优"
+    completed: "2026-04-27T23:50:00+08:00"
+    tag: feat-system-prompt-20260427
+    merge_commit: "33caf34"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-system-prompt
+    worktree_deleted: true
+    worktree_path: ../JARVIS-feat-system-prompt
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 8
+      scenarios_passed: 8
+      tests_total: 131
+      tests_passed: 131
+    stats:
+      started: "2026-04-27T23:35:00+08:00"
+      duration: "15 min"
+      commits: 3
+      files_changed: 5
+
   - id: feat-tui-branding
     name: "TUI 主题定制（JARVIS 品牌化）"
     completed: "2026-04-27T23:50:00+08:00"
