@@ -15,10 +15,11 @@ import type {
 } from "@mariozechner/pi-coding-agent";
 import { Type, Static } from "@sinclair/typebox";
 import { executeQuery, validateQueryParams } from "./query.js";
-import { loadConfig, ConfigError, type JarvisConfig } from "./config.js";
+import { ConfigError, type JarvisConfig } from "./config.js";
+import { loadConfig } from "./config.js";
 
 import { executeScan, formatScanSummary, formatScanError } from "./tools/scan.js";
-import { loadConfig } from "./config.js";
+import { executeDistill, formatDistillSummary, formatDistillError } from "./tools/distill.js";
 
 // ── TypeBox Parameter Schemas ──────────────────────────────────────
 
@@ -30,9 +31,14 @@ const ScanParams = Type.Object({
 });
 
 const DistillParams = Type.Object({
-  source: Type.String({ description: "源文档路径" }),
-  quick_ref: Type.Optional(Type.Boolean({ description: "是否生成 quick-ref" })),
-  jarvis_mode: Type.Optional(Type.String({ description: "JARVIS 蒸馏模式" })),
+  target: Type.String({ description: "服务名（对应 jarvis.yaml repos 中的 key）" }),
+  token_budget: Type.Optional(
+    Type.Object({
+      routing_table: Type.Optional(Type.Number({ description: "Layer 0 token 预算" })),
+      quick_ref: Type.Optional(Type.Number({ description: "Layer 1 token 预算" })),
+      distillate_fragment: Type.Optional(Type.Number({ description: "Layer 2 单文件 token 预算" })),
+    }, { description: "各层 token 预算覆盖" })
+  ),
 });
 
 const RouteParams = Type.Object({
@@ -159,24 +165,44 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
       label: "JARVIS Distill",
       description: "蒸馏文档，生成三层知识产物（routing-table / quick-ref / distillates）。",
       parameters: DistillParams,
-      execute: async (_toolCallId, params: DistillInput) => {
+      execute: async (_toolCallId, params: DistillInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
         console.log(FRIENDLY_ACTION["jarvis_distill"]);
         const skill = loadSkill("distill");
         if (!skill.loaded) {
           return { content: [{ type: "text" as const, text: `[JARVIS] 知识蒸馏暂不可用: ${skill.error}` }], isError: true };
         }
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `JARVIS 知识蒸馏 (未实现)\n` +
-                `  源文档: ${params.source}\n` +
-                `  quick-ref: ${params.quick_ref ?? false}\n` +
-                `  JARVIS 模式: ${params.jarvis_mode ?? "default"}\n` +
-                `  完整功能将由后续 feature 实现。`,
-            },
-          ],
-        };
+
+        try {
+          const config = loadConfig();
+
+          const outcome = executeDistill(
+            { target: params.target, token_budget: params.token_budget },
+            config,
+            config.repos,
+          );
+
+          if (outcome.ok) {
+            const summary = formatDistillSummary(outcome.result);
+            console.log(`[JARVIS] Distill completed: ${outcome.result.service} → ${outcome.result.layers.layer0.file}`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatDistillError(outcome.error);
+            console.warn(`[JARVIS] Distill failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[JARVIS] Distill error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[JARVIS] 蒸馏执行失败: ${message}` }],
+            isError: true,
+          };
+        }
       },
     },
     {
