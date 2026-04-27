@@ -35,22 +35,22 @@
 ### Reference Code
 - `JARVIS-PRODUCT-DESIGN.md` § 6 技术栈 - 分发行
 
-### Research Required
+### Research Conclusions
 
-> **pi SDK 打包机制调研**（本 Feature 的前置研究任务）
+> **pi SDK 打包机制调研结果**（Phase 0 完成）
 >
-> 需要回答以下问题：
-> 1. `pi package` 命令的完整参数和产出格式是什么？
-> 2. `pi-package.yaml` 的完整配置 schema（必需字段、可选字段）
-> 3. `pi install <package>` 的安装机制（从哪里下载、安装到哪里、如何注册命令）
-> 4. Pi Package 的版本管理机制（如何声明版本、如何做 semver 校验）
-> 5. Pi Package 的 post-install 钩子是否支持？支持什么形式的脚本？
-> 6. 与 npm 分发的关系：Pi Package 和 npm package 是否互斥、可否共存？
+> 1. `pi package` 命令不存在于 pi CLI 中。Pi 使用标准 npm 包作为分发格式。
+> 2. `pi-package.yaml` 不存在于 pi SDK 中。这是原始 spec 中的推测性概念。
+> 3. `pi install` 接受 npm 包 (`npm:@scope/package`) 或 git 仓库 (`git:github.com/user/repo`)。
+> 4. 版本管理使用标准 npm semver，通过 package.json 的 version 字段。
+> 5. Pi 没有内置 post-install 钩子。使用 npm 标准的 `scripts.postinstall` 替代。
+> 6. Pi Package 和 npm package 完全共存：Pi 包就是 npm 包，通过 `pi install npm:@jarvis/agent` 安装。
 >
-> 调研方法：
-> - 阅读 pi SDK 文档：`pi package --help`、`pi install --help`
-> - 查阅 pi SDK 源码中的 package 相关模块
-> - 参考已有的 Pi Package 示例（如 pi SDK 自带的示例包）
+> **实施策略调整：**
+> - 不创建 `pi-package.yaml`（不存在于 pi 生态）
+> - 使用标准 npm 打包：package.json + bin 字段 + files 白名单
+> - Pi 扩展通过 package.json exports 自动发现（`--extension` 标志也可显式指定）
+> - Post-install 通过 npm scripts.postinstall 实现
 
 ## Technical Solution
 

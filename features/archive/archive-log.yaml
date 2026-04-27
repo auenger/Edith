@@ -1,4 +1,33 @@
 archived:
+  - id: feat-packaging
+    name: "Pi Package 打包与分发配置"
+    completed: "2026-04-28T00:15:00+08:00"
+    tag: feat-packaging-20260427
+    merge_commit: "09993e5"
+    merged_to: feature/feat-packaging
+    branch_deleted: false
+    branch_name: feature/feat-packaging
+    worktree_deleted: false
+    worktree_path: ../JARVIS-feat-packaging
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 8
+      scenarios_passed: 6
+      scenarios_skipped: 2
+      scenarios_skipped_reason: "Phase 5 (upgrade) requires actual npm publish"
+    stats:
+      started: "2026-04-27T23:55:00+08:00"
+      duration: "20 min"
+      commits: 1
+      files_changed: 10
+    notes: |
+      Research found pi-package.yaml does not exist in pi SDK.
+      Adapted to standard npm packaging with bin/postinstall/files.
+      Pre-existing type errors in route.ts and e2e-pilot.ts fixed as drive-by.
+
   - id: feat-system-prompt
     name: "System Prompt 调优"
     completed: "2026-04-27T23:50:00+08:00"

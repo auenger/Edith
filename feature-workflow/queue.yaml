@@ -2,15 +2,6 @@
 # 基于 JARVIS-PRODUCT-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1: JARVIS Agent MVP (Week 3) ═══
-  - id: feat-packaging
-    name: "Pi Package 打包与分发配置"
-    priority: 75
-    size: S
-    dependencies: [feat-e2e-pilot]
-    description: |
-      配置 Pi Package 打包、npm/git 分发、安装脚本。
-
   # ═══ Phase 2: JARVIS Board 基础版 (Week 1-2) ═══
   - id: feat-board-scaffold
     name: "Board 项目脚手架（Next.js + API Server）"
@@ -67,6 +58,13 @@ active:
 blocked:
 
 completed:
+  - id: feat-packaging
+    name: "Pi Package 打包与分发配置"
+    priority: 75
+    size: S
+    completed_at: "2026-04-28T00:15:00+08:00"
+    tag: feat-packaging-20260427
+
   - id: feat-system-prompt
     name: "System Prompt 调优"
     priority: 80
@@ -145,7 +143,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-27T23:50:00+08:00"
+  last_updated: "2026-04-28T00:15:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"
