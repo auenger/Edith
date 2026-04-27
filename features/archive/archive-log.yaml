@@ -1,0 +1,23 @@
+archived:
+  - id: feat-agent-scaffold
+    name: "Agent 项目骨架 + pi SDK 环境搭建"
+    completed: "2026-04-27T20:35:00+08:00"
+    tag: feat-agent-scaffold-20260427
+    merge_commit: HEAD
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-agent-scaffold
+    worktree_deleted: true
+    worktree_path: ../JARVIS-feat-agent-scaffold
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-04-27T20:30:00+08:00"
+      duration: "5 min"
+      commits: 3
+      files_changed: 8

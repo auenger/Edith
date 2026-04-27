@@ -146,16 +146,6 @@ pending:
       知识回写历史时间线，展示组织知识演化过程。
 
 active:
-  - id: feat-agent-scaffold
-    name: "Agent 项目骨架 + pi SDK 环境搭建"
-    priority: 100
-    size: M
-    branch: feature/feat-agent-scaffold
-    worktree: ../JARVIS-feat-agent-scaffold
-    started_at: "2026-04-27T20:30:00+08:00"
-    description: |
-      搭建 Agent 项目结构：初始化 TypeScript 项目、集成 pi SDK、
-      配置 jarvis.yaml 解析、建立 Extension 骨架。
 
 blocked:
 
@@ -167,8 +157,15 @@ completed:
     completed_at: "2026-04-27T00:00:00+08:00"
     tag: feat-init-jarvis-20260427
 
+  - id: feat-agent-scaffold
+    name: "Agent 项目骨架 + pi SDK 环境搭建"
+    priority: 100
+    size: M
+    completed_at: "2026-04-27T20:35:00+08:00"
+    tag: feat-agent-scaffold-20260427
+
 meta:
-  last_updated: "2026-04-27T20:30:00+08:00"
+  last_updated: "2026-04-27T20:35:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"
