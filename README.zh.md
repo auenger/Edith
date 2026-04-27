@@ -1,89 +1,174 @@
-# Create JARVIS Skill（中文）
+# JARVIS — AI 知识基础设施
 
-> 英文版：`README.md`
+> 让代码变成 AI 可消费知识，产出物对所有 Agent 开放。
 
-这个仓库用于**指导 agent 为某家公司搭建公司专属 JARVIS**：
-- 先把“第一条可验证的业务闭环”选对
-- 再盘点这条闭环所涉及的 sources / repos / workflows
-- 生成最小可用的骨架与技能骨架
-- 强制人工确认承载事实的字段
-- 通过真实的 START → WORK → END 回写，让 JARVIS 逐步变成熟
+JARVIS 是组织的 AI 知识基础设施。它从代码中提取知识，生成纯 Markdown 产出物，任何 AI Agent 无需安装、无需适配，直接消费。
 
-## 你应该从哪里开始
-
-- **唯一 golden path：`SKILL.md`**（主干流程、默认顺序、停点、交付物）
-
-> 当前版本里：
-> - `references/en/` 与 `references/zh/` 采用**同名镜像文档**结构
-> - `templates/en/` 与 `templates/zh/` 采用**同名镜像模板**结构
-> - `SKILL.md` 仍然是唯一权威执行路径；中英文辅助文档只是在不同语言下表达同一结构语义
-
-## 这项目是什么 / 不是什么
-
-### 是什么
-它是一个“元 skill”：帮助 agent 把一家公司的数字资产、代码仓库、跨团队流程，逐步变成可执行、可维护、可持续迭代的组织能力（而不只是知识库）。
-
-### 不是什么
-- 不是“一次性生成一个漂亮的知识仓库”
-- 不是把原始材料整段复制进文档
-- 不是承诺一个 agent 一次会话就能完成企业级 rollout
-- 不是替代 repo 内的权威来源
-
-## 推荐用法（最小可用）
-
-1. 让 agent 阅读 `SKILL.md`
-2. 先把“第一条闭环”与“成功信号”说清楚
-3. 用模板盘点试点范围内的 sources / repos / workflows
-4. 生成最小骨架 + 必要的 skill 骨架
-5. 做一次人工确认（不要把占位符当真相）
-6. 进入真实试点，通过回写长出真正的组织记忆
-
-## 双语结构
+## 产品矩阵
 
 ```text
-create-jarvis-skill/
-├── README.md
-├── README.zh.md
-├── SKILL.md
-├── references/
-│   ├── en/
-│   │   ├── positioning.md
-│   │   ├── company-adaptation.md
-│   │   ├── instance-generation-contract.md
-│   │   └── ...
-│   └── zh/
-│       ├── positioning.md
-│       ├── company-adaptation.md
-│       ├── instance-generation-contract.md
-│       └── ...
-└── templates/
-    ├── en/
-    │   ├── jarvis-build-brief.md
-    │   ├── source-inventory.md
-    │   ├── repo-inventory.md
-    │   └── ...
-    └── zh/
-        ├── jarvis-build-brief.md
-        ├── source-inventory.md
-        ├── repo-inventory.md
-        └── ...
+┌──────────────┐    ┌──────────────┐    ┌──────────────────┐
+│  JARVIS Agent │    │  JARVIS Board │    │  JARVIS Artifacts │
+│  (终端 Agent)  │    │  (Web 看板)    │    │  (开放产出物)      │
+│              │    │              │    │                  │
+│  对话式交互    │    │  可视化仪表盘  │    │  routing-table   │
+│  知识生产     │    │  项目总览      │    │  quick-ref       │
+│  知识查询     │    │  知识健康度    │    │  distillates     │
+│  需求路由     │    │  服务图谱      │    │  decisions       │
+│              │    │              │    │                  │
+│  生产侧      │    │  展示侧       │    │  消费侧           │
+└──────┬───────┘    └──────┬───────┘    └────────┬─────────┘
+       │                   │                     │
+       └───────────────────┼─────────────────────┘
+                           │
+                  ┌────────▼────────┐
+                  │  知识仓库 (Git)   │
+                  │  单一真相源       │
+                  └─────────────────┘
 ```
 
-## 使用原则
+## 核心原则
 
-- `SKILL.md` 负责主干方法与执行顺序。
-- `references/en/*.md` 与 `references/zh/*.md` 是**一一对应的镜像参考文档**。
-- `templates/en/*.md` 与 `templates/zh/*.md` 是**一一对应的镜像模板**。
-- 修改结构语义时，应优先更新英文与中文镜像，使同名文件保持契约一致。
-- 不要新增 `SKILL.zh.md`；避免出现双份主流程导致漂移。
+| 原则       | 含义                        |
+| -------- | ------------------------- |
+| 产出物开放    | 纯 Markdown，任何 Agent 原生可消费 |
+| 生产侧封装    | 知识生产过程封装为 Agent，用户不感知内部实现 |
+| 知识积累     | 随使用持续积累组织知识，越用越值钱         |
+| Agent 无关 | 不绑定特定 LLM 或 Agent 框架      |
+
+## 三层知识架构
+
+```text
+Layer 0 — routing-table.md    (<500 token，常驻)
+  全局服务路由表，Agent 读取后自动获得路由能力
+
+Layer 1 — quick-ref.md        (~5% 原文，每服务一张)
+  验证命令、关键约束、易错点、API 端点速查
+
+Layer 2 — distillates/*.md    (无损压缩，按需加载)
+  语义拆分的蒸馏片段：接口契约、数据模型、业务逻辑
+```
+
+**消费方式：零适配。** 任何 AI Agent 只需能读 Markdown 文件即可。
+
+```text
+只需要：
+  ✅ 能读 Markdown 文件
+  ✅ 理解文件中的路由规则
+
+不需要：
+  ❌ 安装 JARVIS
+  ❌ 调用 JARVIS API
+  ❌ 适配任何协议
+```
+
+## Phase 1: JARVIS Agent
+
+基于 [pi SDK](https://github.com/nicholasgasior/pi-coding-agent) 的终端 Agent，两种运行模式：
+
+**生产模式** — 自主工作，产出知识：
+
+```bash
+jarvis scan user-service        # 扫描代码 → 产出文档
+jarvis distill user-service     # 蒸馏文档 → 三层知识产物
+jarvis build-routing-table      # 从所有服务提取 → Layer 0 路由表
+jarvis refresh user-service     # 检测代码变更 → 增量更新
+```
+
+**问答模式** — 交互式对话：
+
+```bash
+jarvis
+JARVIS> user-service 的认证流程是什么？
+JARVIS> 订单创建调用了哪些外部服务？
+JARVIS> 这个需求要加载上下文吗：给用户表加 phone 字段
+```
+
+### Agent 架构
+
+```text
+用户 (自然语言)
+  → TUI 层 (JARVIS 品牌化界面)
+  → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册)
+  → Skill 执行层 (document-project / distillator / requirement-router)
+  → Tool 实现层 (jarvis_scan / jarvis_distill / jarvis_route / jarvis_query)
+  → pi SDK (Agent Loop + 20+ LLM + Tool Calling + 流式输出)
+  → 产出物 (纯 Markdown)
+```
+
+## 仓库结构
+
+```text
+Jarvis/
+├── CLAUDE.md                  ← 项目上下文入口
+├── SKILL.md                   ← 黄金路径（8 阶段 JARVIS 构建流程）
+├── JARVIS-PRODUCT-DESIGN.md   ← 产品设计文档
+├── SCALABILITY-ANALYSIS.md    ← 微服务规模下的瓶颈分析
+│
+├── jarvis-skills/             ← 三个运营 Skill（Agent 内部实现）
+│   ├── document-project/      ← 代码考古 → jarvis_scan
+│   ├── distillator/           ← 文档蒸馏 → jarvis_distill
+│   ├── requirement-router/    ← 需求路由 → jarvis_route
+│   └── INTEGRATION.md         ← Skill 融合方案
+│
+├── templates/                 ← 模板（en/ + zh/ 双语）
+├── references/                ← 参考文档（en/ + zh/ 双语）
+└── jarvis.yaml                ← Agent 配置（用户定制）
+```
+
+## JARVIS 构建黄金路径
+
+`SKILL.md` 定义了 8 阶段的唯一权威执行路径：
+
+```text
+1. CLARIFY          — 明确为什么需要 JARVIS，选定第一个闭环
+2. INVENTORY        — 盘点资产、仓库、流程
+3. CLASSIFY         — 分为可自动生成 / 需人工确认 / 必须回写生长
+4. SCAFFOLD         — 生成最小公司级骨架
+5. BOOTSTRAP SKILLS — 生成最小技能集
+6. CONFIRM          — 人工确认通过
+7. PILOT-READY      — 声明试点就绪（非成熟）
+8. GROW BY WRITEBACK — 通过真实工作回写成长
+```
+
+## 技术栈
+
+| 组件              | 技术                   | 说明                              |
+| --------------- | -------------------- | ------------------------------- |
+| Agent 框架        | pi SDK               | Agent Loop + TUI + Tool Calling |
+| LLM 层           | pi AI                | 20+ Provider 统一 API             |
+| 扩展层             | TypeScript Extension | 消息路由 + 工具注册                     |
+| 技能层             | Markdown SKILL.md    | 知识提取逻辑                          |
+| 配置              | YAML                 | jarvis.yaml                     |
+| Board (Phase 2) | React + Next.js      | Web 看板                          |
+
+## 开发路线图
+
+| 阶段      | 内容                             | 周期    |
+| ------- | ------------------------------ | ----- |
+| Phase 1 | JARVIS Agent MVP — 终端对话式知识生产   | 2-3 周 |
+| Phase 2 | JARVIS Board — Web 看板，知识可视化与管理 | 3-4 周 |
+| Phase 3 | 增值功能 — 增量更新、团队协作、行业模板、CI/CD 集成 | 持续迭代  |
+
+## 工作纪律
+
+| 纪律               | 原因                             |
+| ---------------- | ------------------------------ |
+| 产出物永远是纯 Markdown | Agent 无关性，零成本消费                |
+| Skills 不暴露给用户    | 保护核心知识产权                       |
+| 只提取代码中存在的事实      | 不编造不存在的历史                      |
+| 索引不倾倒            | 路由、摘要、提取模式，不复制原文               |
+| 不假装 Mature       | Scaffold 是骨架，Mature 必须通过真实回写生长 |
+| 配置优于代码           | 用户通过 jarvis.yaml 定制，不改代码       |
 
 ## 许可说明
 
 © 2026 [Hengshi](https://github.com/hengshi)。保留所有权利。
 
-JARVIS 是付费咨询产品。这个 skill 提供给已获许可的用户，用于启动他们的 JARVIS 知识库建设。
+JARVIS 是付费咨询产品。如需咨询许可或合作：
 
-如需咨询许可或合作：
-- 🌐 [hengshi.com](https://hengshi.com)
-- 📧 hi@hengshi.com
-- 📞 15810120570
+* 🌐 [hengshi.com](https://hengshi.com)
+
+* 📧 <hi@hengshi.com>
+
+⠀
