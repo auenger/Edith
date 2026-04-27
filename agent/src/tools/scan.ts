@@ -13,8 +13,8 @@
  * - Structured error handling (6 error codes)
  */
 
-import { existsSync, readdirSync, statSync, mkdirSync, writeFileSync, accessSync, constants } from "node:fs";
-import { resolve, join, extname, relative } from "node:path";
+import { existsSync, readdirSync, mkdirSync, writeFileSync, accessSync, constants } from "node:fs";
+import { resolve, join, extname } from "node:path";
 
 import type { RepoConfig } from "../config.js";
 
@@ -432,7 +432,6 @@ function scanProjectStructure(dirPath: string, mode: ScanMode): ScanData {
   let endpoints = 0;
   let models = 0;
   let flows = 0;
-  const sourceDirs: string[] = [];
 
   let entries;
   try {
