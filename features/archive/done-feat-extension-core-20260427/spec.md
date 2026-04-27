@@ -208,3 +208,13 @@ And 包含配置加载状态
 - [ ] 工具注册失败不中断 Agent 启动（graceful degradation）
 - [ ] 未知命令给出友好提示
 - [ ] 审计日志不暴露 Skill 内部名称
+
+## Merge Record
+
+- **Completed**: 2026-04-27T21:30:00+08:00
+- **Branch**: feature/feat-extension-core (deleted)
+- **Merge Commit**: b6199d1
+- **Archive Tag**: feat-extension-core-20260427
+- **Conflicts**: none
+- **Verification**: passed (12/12 Gherkin scenarios structurally verified)
+- **Stats**: 435 insertions, 9 deletions, 2 files changed, 1 commit

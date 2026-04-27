@@ -128,17 +128,6 @@ pending:
       知识回写历史时间线，展示组织知识演化过程。
 
 active:
-  - id: feat-extension-core
-    name: "jarvis.ts Extension 核心路由层"
-    priority: 95
-    size: M
-    dependencies: [feat-agent-scaffold]
-    started_at: "2026-04-27T21:00:00+08:00"
-    branch: feature/feat-extension-core
-    worktree: ../JARVIS-feat-extension-core
-    description: |
-      实现消息拦截 + Skill 自动加载 + 工具注册 + 事件钩子。
-      包含 jarvis_scan / jarvis_distill / jarvis_route / jarvis_query 四个工具注册。
 
 blocked:
 
@@ -164,8 +153,15 @@ completed:
     completed_at: "2026-04-27T21:25:00+08:00"
     tag: feat-config-management-20260427
 
+  - id: feat-extension-core
+    name: "jarvis.ts Extension 核心路由层"
+    priority: 95
+    size: M
+    completed_at: "2026-04-27T21:30:00+08:00"
+    tag: feat-extension-core-20260427
+
 meta:
-  last_updated: "2026-04-27T21:25:00+08:00"
+  last_updated: "2026-04-27T21:30:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"
