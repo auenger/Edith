@@ -12,15 +12,6 @@ pending:
       扫描项目代码，逆向生成项目文档。
       对接 document-project Skill 的 jarvis_scan 工具实现。
 
-  - id: feat-config-management
-    name: "jarvis.yaml 配置管理"
-    priority: 90
-    size: S
-    dependencies: [feat-agent-scaffold]
-    description: |
-      实现 jarvis.yaml 的解析、验证、热加载。
-      支持 LLM provider、workspace、repos、token budget 等配置项。
-
   # ═══ Phase 1: JARVIS Agent MVP (Week 2) ═══
   - id: feat-tool-distill
     name: "jarvis_distill 工具（对接 distillator Skill）"
@@ -166,8 +157,15 @@ completed:
     completed_at: "2026-04-27T20:35:00+08:00"
     tag: feat-agent-scaffold-20260427
 
+  - id: feat-config-management
+    name: "jarvis.yaml 配置管理"
+    priority: 90
+    size: S
+    completed_at: "2026-04-27T21:25:00+08:00"
+    tag: feat-config-management-20260427
+
 meta:
-  last_updated: "2026-04-27T21:00:00+08:00"
+  last_updated: "2026-04-27T21:25:00+08:00"
   phase_label:
     phase1: "JARVIS Agent MVP"
     phase2: "JARVIS Board 基础版"
