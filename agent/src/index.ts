@@ -22,6 +22,7 @@ import { loadConfig, ConfigError, type JarvisConfig } from "./config.js";
 import jarvisExtension from "./extension.js";
 import { createTheme } from "./theme/index.js";
 import { countWorkspaceStats } from "./theme/workspace-stats.js";
+import { buildSystemPrompt } from "./system-prompt.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -106,12 +107,12 @@ async function main(): Promise<void> {
     console.log("  Press Ctrl+C to exit.");
     console.log();
 
-    // Step 3: Send initial prompt to verify agent is alive.
-    // The pi SDK session handles the interactive REPL.
-    await session.prompt(
-      "You are JARVIS, an AI Knowledge Infrastructure assistant. " +
-        "Acknowledge you are ready. Keep it brief."
-    );
+    // Step 3: Build and send System Prompt.
+    // The system prompt defines all agent behavior rules, trigger mappings,
+    // boundary handling scripts, and context management strategies.
+    const systemPrompt = buildSystemPrompt(config.workspace.language);
+
+    await session.prompt(systemPrompt);
   } catch (err) {
     console.error(`\n[ERROR] Failed to initialize pi SDK agent:\n  ${(err as Error).message}\n`);
     process.exit(1);
