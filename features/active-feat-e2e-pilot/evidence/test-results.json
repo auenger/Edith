@@ -1,0 +1,69 @@
+{
+  "feature_id": "feat-e2e-pilot",
+  "verification_date": "2026-04-27T14:00:00+08:00",
+  "status": "pass_with_warnings",
+  "tasks": {
+    "total": 40,
+    "completed": 40,
+    "pending": 0
+  },
+  "e2e_pipeline": {
+    "scan": { "success": true, "files_generated": 3, "tech_stack_detected": false },
+    "distill": {
+      "success": true,
+      "layer0_tokens": 293,
+      "layer0_budget": 500,
+      "layer1_tokens": 293,
+      "layer1_budget": 2000,
+      "layer2_fragments": 4,
+      "layer2_total_tokens": 2152,
+      "truncated": false
+    },
+    "query": {
+      "total": 5,
+      "correct": 2,
+      "accuracy_percent": 40,
+      "results": [
+        { "question": "技术栈", "correct": false },
+        { "question": "API 端点", "correct": true },
+        { "question": "数据模型", "correct": true },
+        { "question": "业务流程", "correct": false },
+        { "question": "配置管理", "correct": false }
+      ]
+    },
+    "route": {
+      "total": 3,
+      "correct": 3,
+      "accuracy_percent": 100,
+      "results": [
+        { "requirement": "功能变更", "expected": "quick-ref", "actual": "quick-ref", "correct": true },
+        { "requirement": "Schema 变更", "expected": "deep-dive", "actual": "deep-dive", "correct": true },
+        { "requirement": "故障修复", "expected": "quick-ref", "actual": "quick-ref", "correct": true }
+      ]
+    },
+    "zero_adapt": { "pass": true }
+  },
+  "gherkin_scenarios": [
+    { "id": 1, "name": "E2E Normal Path", "status": "pass" },
+    { "id": 2, "name": "Pilot Report Generation", "status": "pass" },
+    { "id": 3, "name": "Zero-Adapt Consumption", "status": "pass" },
+    { "id": 4, "name": "Scan Error Handling", "status": "pass" },
+    { "id": 5, "name": "Distill Quality Below Standard", "status": "pass" },
+    { "id": 6, "name": "Query Returns Incorrect", "status": "pass" },
+    { "id": 7, "name": "Multi-Round Query", "status": "pass" },
+    { "id": 8, "name": "Route Decision Accuracy", "status": "pass" }
+  ],
+  "issues": [
+    {
+      "id": 1,
+      "description": "查询准确率低于 80% (40%)",
+      "severity": "P2",
+      "attribution": "feat-tool-query",
+      "root_cause": "Test project is documentation-heavy with no standard code structure"
+    }
+  ],
+  "warnings": [
+    "Query accuracy is 40%, below the 80% target. This is expected for documentation-heavy test projects."
+  ],
+  "pilot_status": "NOT-READY"
+}

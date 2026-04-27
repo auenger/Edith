@@ -6,7 +6,9 @@ workspace:
   root: ./company-jarvis
   language: zh
 
-repos: []
+repos:
+  - name: jarvis-repo
+    path: /Users/ryan/mycode/JARVIS-e2e-pilot
 
 agent:
   token_budget:
