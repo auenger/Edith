@@ -14,7 +14,7 @@ project:
 
 # 并行控制
 parallelism:
-  max_concurrent: 2
+  max_concurrent: 1
 
 # Git 设置
 git:
