@@ -1,4 +1,29 @@
 archived:
+  - id: feat-tui-branding
+    name: "TUI 主题定制（JARVIS 品牌化）"
+    completed: "2026-04-27T23:50:00+08:00"
+    tag: feat-tui-branding-20260427
+    merge_commit: "83e9789"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-branding
+    worktree_deleted: true
+    worktree_path: ../JARVIS-tui-branding
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 8
+      scenarios_passed: 8
+      tests_total: 38
+      tests_passed: 38
+    stats:
+      started: "2026-04-27T23:30:00+08:00"
+      duration: "20 min"
+      commits: 1
+      files_changed: 14
+
   - id: feat-tool-route
     name: "jarvis_route 工具（对接 requirement-router Skill）"
     completed: "2026-04-27T23:00:00+08:00"
