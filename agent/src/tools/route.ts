@@ -661,6 +661,7 @@ function selectDistillateFragments(
     crud: ["data-model", "data_model", "schema", "model"],
     refactor: ["overview", "概览", "architecture", "架构", "api", "data-model"],
     incident: ["api", "contract", "接口", "log", "日志", "error", "错误"],
+    new_service: ["overview", "概览", "architecture", "架构", "api", "data-model", "model"],
     unknown: [],
   };
 
