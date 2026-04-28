@@ -1,4 +1,35 @@
 archived:
+  - id: feat-tui-context-monitor
+    name: "Context 上下文主动监控与预警"
+    priority: 68
+    size: M
+    dependencies: [feat-tui-ink-layout, feat-context-command]
+    parent: feat-tui-redesign
+    completed: "2026-04-28T21:00:00+08:00"
+    tag: feat-tui-context-monitor-20260428
+    merge_commit: HEAD
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-context-monitor
+    worktree_deleted: true
+    worktree_path: ../EDITH-tui-context-monitor
+    conflicts:
+      had_conflict: true
+      conflict_files: [features/active-feat-tui-context-monitor/task.md]
+      resolved_at: "2026-04-28T20:50:00+08:00"
+      re_verified: true
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 5
+      scenarios_skipped: 1
+      scenarios_skipped_reason: "Compact pre-hook requires pi SDK auto-compact interception API"
+    stats:
+      started: "2026-04-28T20:30:00+08:00"
+      duration: "30 min"
+      commits: 1
+      files_changed: 9
+
   - id: feat-context-command
     name: "Context 上下文查看命令"
     priority: 70

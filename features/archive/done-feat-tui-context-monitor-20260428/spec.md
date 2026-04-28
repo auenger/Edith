@@ -53,9 +53,18 @@
 - `SCALABILITY-ANALYSIS.md` — 三层加载与 token 管理设计
 
 ### Related Features
-- `feat-context-command`（pending）— 手动 `/context` 命令，复用相同 API
-- `feat-tui-ink-layout`（pending）— ink TUI 框架，提供状态栏渲染位置
+- `feat-context-command`（completed）— 手动 `/context` 命令，复用相同 API
+- `feat-tui-ink-layout`（completed）— ink TUI 框架，提供状态栏渲染位置
 - `feat-tui-streaming`（pending）— 流式输出，需协调渲染布局
+
+## Merge Record
+- **Completed:** 2026-04-28T21:00:00+08:00
+- **Branch:** feature/tui-context-monitor
+- **Merge commit:** HEAD
+- **Archive tag:** feat-tui-context-monitor-20260428
+- **Conflicts:** task.md (auto-resolved during rebase)
+- **Verification:** 5/6 scenarios passed (Compact pre-hook deferred — SDK limitation)
+- **Stats:** 9 files changed, 453 insertions, 1 commit
 
 ## Technical Solution
 <!-- To be filled during implementation -->
