@@ -2,11 +2,36 @@
 # 基于 EDITH-PRODUCT-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1.5: TUI 交互重设计 ═══
+  # ═══ Phase 1.5: TUI 交互优化 ═══
+
+  - id: feat-tui-interaction-optimize
+    name: "Agent TUI 交互优化"
+    priority: 72
+    size: M
+    dependencies: []
+    parent: null
+    split: true
+    children:
+      - feat-tui-context-fix
+      - feat-tui-layout
+    description: |
+      优化 EDITH Agent TUI 三个交互问题：
+      1. /context 命令数据不准确（Messages/Tools/Token Detail 显示 N/A）
+      2. CTX 状态栏位置不合理
+      3. 对话布局溢出到 Banner 上方
+
+
+  - id: feat-tui-layout
+    name: "对话布局修正 + Markdown 修复 + 思考指示器"
+    priority: 72
+    size: M
+    dependencies: [feat-tui-context-fix]
+    parent: feat-tui-interaction-optimize
+    description: |
+      修正对话布局溢出、Markdown [object Object] 渲染 bug、
+      新增 Claude Code 风格思考过程指示器。
 
 active:
-
-completed:
 
 blocked:
   # ═══ Phase 2: EDITH Board 基础版 — 暂缓 ═══
@@ -84,6 +109,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-tui-context-fix
+    name: "Context 数据修复 + 状态栏位置调整"
+    priority: 72
+    size: S
+    dependencies: []
+    parent: feat-tui-interaction-optimize
+    completed_at: "2026-04-29T00:15:00+08:00"
+    tag: feat-tui-context-fix-20260429
+
   - id: feat-explore-project
     name: "项目探索命令"
     priority: 65
@@ -265,7 +299,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T23:45:00+08:00"
+  last_updated: "2026-04-29T00:15:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"

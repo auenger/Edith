@@ -1,4 +1,31 @@
 archived:
+  - id: feat-tui-context-fix
+    name: "Context 数据修复 + 状态栏位置调整"
+    priority: 72
+    size: S
+    dependencies: []
+    parent: feat-tui-interaction-optimize
+    completed: "2026-04-29T00:15:00+08:00"
+    tag: feat-tui-context-fix-20260429
+    merge_commit: 1e6074e
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-context-fix
+    worktree_deleted: true
+    worktree_path: ../EDITH-tui-context-fix
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-29T00:00:00+08:00"
+      duration: "15 min"
+      commits: 1
+      files_changed: 4
+
   - id: feat-subagent-support
     name: "SubAgent 子代理支持"
     priority: 55
