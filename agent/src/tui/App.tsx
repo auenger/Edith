@@ -97,13 +97,13 @@ export function App() {
   return (
     <Box flexDirection="column" height="100%">
       <BannerArea config={{ workspace: config!.workspace }} />
-      <ContextStatusBar config={config} monitorData={monitorData} />
-      {showWarning && <WarningBar pressure={monitorData!.pressure} />}
       <ContentArea
         messages={messages}
         thinkingBlocks={thinkingBlocks}
         onToggleThinking={handleToggleThinking}
       />
+      <ContextStatusBar config={config} monitorData={monitorData} />
+      {showWarning && <WarningBar pressure={monitorData!.pressure} />}
       <InputArea onSubmit={handleSubmit} isProcessing={isProcessing} />
     </Box>
   );
