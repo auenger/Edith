@@ -1,4 +1,31 @@
 archived:
+  - id: feat-subagent-support
+    name: "SubAgent 子代理支持"
+    priority: 55
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-04-28T23:15:00+08:00"
+    tag: feat-subagent-support-20260428
+    merge_commit: HEAD
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/subagent-support
+    worktree_deleted: true
+    worktree_path: ../EDITH-subagent-support
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 4
+      scenarios_passed: 4
+    stats:
+      started: "2026-04-28T23:00:00+08:00"
+      duration: "15 min"
+      commits: 1
+      files_changed: 6
+
   - id: feat-tui-streaming
     name: "流式输出增强（Markdown 渲染 + 进度指示）"
     priority: 60

@@ -13,18 +13,11 @@ pending:
       /explore 命令：快速浏览项目结构、技术栈、关键文件。
       轻量级概览，区别于 edith_scan 的深度扫描。
 
-  - id: feat-subagent-support
-    name: "SubAgent 子代理支持"
-    priority: 55
-    size: M
-    description: |
-      /delegate 命令 + SubAgentManager：将耗时任务委派给
-      独立子代理执行，支持并行和串行模式。
-      基于 pi SDK 子进程模式实现。
-
   # ═══ Phase 1.5: TUI 交互重设计 ═══
 
 active:
+
+completed:
 
 blocked:
   # ═══ Phase 2: EDITH Board 基础版 — 暂缓 ═══
@@ -102,6 +95,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-subagent-support
+    name: "SubAgent 子代理支持"
+    priority: 55
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-28T23:15:00+08:00"
+    tag: feat-subagent-support-20260428
+
   - id: feat-tui-streaming
     name: "流式输出增强（Markdown 渲染 + 进度指示）"
     priority: 60
@@ -265,7 +267,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T22:35:00+08:00"
+  last_updated: "2026-04-28T23:15:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"

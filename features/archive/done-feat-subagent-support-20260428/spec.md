@@ -191,7 +191,16 @@ And 两个子代理全部完成后汇总结果
 ```
 
 ### General Checklist
-- [ ] 子代理超时控制（默认 120s）
-- [ ] 子代理数量限制（同时最多 3 个）
+- [x] 子代理超时控制（默认 120s）
+- [x] 子代理数量限制（同时最多 3 个）
 - [ ] 子代理结果缓存（相同任务不重复执行）
-- [ ] 使用 EDITH 主题渲染状态信息
+- [x] 使用 EDITH 主题渲染状态信息
+
+## Merge Record
+- **Completed**: 2026-04-28T23:15:00+08:00
+- **Branch**: feature/subagent-support
+- **Merge commit**: HEAD
+- **Archive tag**: feat-subagent-support-20260428
+- **Conflicts**: none
+- **Verification**: passed (4/4 scenarios)
+- **Stats**: 1 commit, 6 files changed, 613 insertions
