@@ -82,7 +82,8 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
             <Box key={idx} flexDirection="column" marginY={1}>
               {level <= 2 && <Text color="gray" dimColor>{"  "}{headingChars}</Text>}
               <Text color={color} bold>
-                {"  " + "#".repeat(level) + " " + (h.tokens ? renderInline(h.tokens) : h.text)}
+                {"  " + "#".repeat(level) + " "}
+                {h.tokens ? renderInline(h.tokens) : h.text}
               </Text>
               {level <= 2 && <Text color="gray" dimColor>{"  "}{headingChars}</Text>}
             </Box>
@@ -149,12 +150,16 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
         case "table": {
           const table = token as Tokens.Table;
           const headers = table.header.map((h, ci) => (
-            <Text key={ci} bold color="cyan">{h.text + "  "}</Text>
+            <Text key={ci} bold color="cyan">
+              {h.tokens ? renderInline(h.tokens) : h.text}{"  "}
+            </Text>
           ));
           const rows = table.rows.map((row, ri) => (
             <Box key={ri}>
               {row.map((cell, ci) => (
-                <Text key={ci}>{cell.text + "  "}</Text>
+                <Text key={ci}>
+                  {cell.tokens ? renderInline(cell.tokens) : cell.text}{"  "}
+                </Text>
               ))}
             </Box>
           ));
