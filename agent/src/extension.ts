@@ -33,13 +33,6 @@ const ScanParams = Type.Object({
 
 const DistillParams = Type.Object({
   target: Type.String({ description: "服务名（对应 edith.yaml repos 中的 key）" }),
-  token_budget: Type.Optional(
-    Type.Object({
-      routing_table: Type.Optional(Type.Number({ description: "Layer 0 token 预算" })),
-      quick_ref: Type.Optional(Type.Number({ description: "Layer 1 token 预算" })),
-      distillate_fragment: Type.Optional(Type.Number({ description: "Layer 2 单文件 token 预算" })),
-    }, { description: "各层 token 预算覆盖" })
-  ),
 });
 
 const RouteParams = Type.Object({
@@ -178,7 +171,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
           const config = loadConfig();
 
           const outcome = executeDistill(
-            { target: params.target, token_budget: params.token_budget },
+            { target: params.target },
             config,
             config.repos,
           );

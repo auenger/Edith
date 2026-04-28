@@ -401,19 +401,16 @@ function generatePilotReport(pilot: PilotResult): void {
   lines.push("## 质量评估");
   const distill = pilot.distillResult;
   if (distill) {
-    const l0Budget = distill.layers.layer0.budget;
     const l0Tokens = distill.layers.layer0.tokens;
-    const l1Budget = distill.layers.layer1.budget;
     const l1Tokens = distill.layers.layer1.tokens;
 
-    lines.push(`- routing-table.md token 数量: ${l0Tokens} (budget: ${l0Budget}) ${l0Tokens <= l0Budget ? "OK" : "EXCEEDED"}`);
-    lines.push(`- quick-ref.md token 数量: ${l1Tokens} (budget: ${l1Budget}) ${l1Tokens <= l1Budget ? "OK" : "EXCEEDED"}`);
+    lines.push(`- routing-table.md token 数量: ${l0Tokens}`);
+    lines.push(`- quick-ref.md token 数量: ${l1Tokens}`);
 
-    // Calculate compression ratio
     const l2Files = distill.layers.layer2.files.length;
     lines.push(`- distillates 语义完整性: ${l2Files} fragments generated`);
     lines.push(`- 总 token 数: ${distill.totalTokens}`);
-    lines.push(`- 截断: ${distill.truncated ? "是" : "否"}`);
+    lines.push(`- 截断: 否（存储端无截断）`);
 
     if (distill.warnings.length > 0) {
       lines.push(`- 警告: ${distill.warnings.length}`);
@@ -489,8 +486,8 @@ function generatePilotReport(pilot: PilotResult): void {
   if (routeAccuracy < 80) {
     lines.push(`| ${issueNum++} | 路由准确率低于 80% (${routeAccuracy}%) | P2 | feat-tool-route |`);
   }
-  if (distill && distill.layers.layer0.tokens > distill.layers.layer0.budget) {
-    lines.push(`| ${issueNum++} | routing-table.md 超出 token 预算 | P2 | feat-tool-distill |`);
+  if (distill && distill.warnings.some(w => w.includes("不完整"))) {
+    lines.push(`| ${issueNum++} | distillate 生成不完整 | P2 | feat-tool-distill |`);
   }
   if (!pilot.zeroAdaptResult.pass) {
     lines.push(`| ${issueNum++} | 零适配消费验证未通过 | P2 | feat-tool-distill |`);

@@ -46,9 +46,9 @@ SKIP_DIRS = {
 # Approximate chars per token for estimation
 CHARS_PER_TOKEN = 4
 
-# Thresholds
-SINGLE_COMPRESSOR_MAX_TOKENS = 15_000
-SINGLE_DISTILLATE_MAX_TOKENS = 5_000
+# Thresholds — removed storage limits; splitting is based on semantics, not token caps
+# SINGLE_COMPRESSOR_MAX_TOKENS and SINGLE_DISTILLATE_MAX_TOKENS removed:
+# storage is now unlimited; only consumption-side budget applies
 
 # Quick-ref thresholds
 QUICK_REF_TARGET_TOKENS = 2_000
@@ -217,35 +217,27 @@ def analyze(inputs: list[str], output_path: str | None = None) -> None:
     total_tokens = total_chars // CHARS_PER_TOKEN
     groups = suggest_groups(files)
 
-    # Routing recommendation
-    if len(files) <= 3 and total_tokens <= SINGLE_COMPRESSOR_MAX_TOKENS:
+    # Routing recommendation — no storage limit, split by semantic size only
+    if len(files) <= 3:
         routing = "single"
         routing_reason = (
             f"{len(files)} file(s), ~{total_tokens:,} estimated tokens — "
-            f"within single compressor threshold"
+            f"small enough for single pass"
         )
     else:
         routing = "fan-out"
         routing_reason = (
             f"{len(files)} file(s), ~{total_tokens:,} estimated tokens — "
-            f"exceeds single compressor threshold "
-            f"({'>' + str(SINGLE_COMPRESSOR_MAX_TOKENS) + ' tokens' if total_tokens > SINGLE_COMPRESSOR_MAX_TOKENS else '> 3 files'})"
+            f"fan-out recommended for multiple files"
         )
 
-    # Split prediction
+    # Split prediction — based on semantic size, no token cap
     estimated_distillate_tokens = total_tokens // 3  # rough: distillate is ~1/3 of source
-    if estimated_distillate_tokens > SINGLE_DISTILLATE_MAX_TOKENS:
-        split_prediction = "likely"
-        split_reason = (
-            f"Estimated distillate ~{estimated_distillate_tokens:,} tokens "
-            f"exceeds {SINGLE_DISTILLATE_MAX_TOKENS:,} threshold"
-        )
-    else:
-        split_prediction = "unlikely"
-        split_reason = (
-            f"Estimated distillate ~{estimated_distillate_tokens:,} tokens "
-            f"within {SINGLE_DISTILLATE_MAX_TOKENS:,} threshold"
-        )
+    split_prediction = "likely" if estimated_distillate_tokens > 5000 else "unlikely"
+    split_reason = (
+        f"Estimated distillate ~{estimated_distillate_tokens:,} tokens — "
+        f"{'semantic splitting recommended' if estimated_distillate_tokens > 5000 else 'single fragment sufficient'}"
+    )
 
     result = {
         "status": "ok",

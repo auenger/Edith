@@ -67,7 +67,7 @@ export async function startAgent(configPath?: string): Promise<void> {
   console.log(`[EDITH]   Workspace:       ${config.workspace.root}`);
   console.log(`[EDITH]   Language:        ${config.workspace.language}`);
   console.log(`[EDITH]   Repositories:    ${config.repos.length}`);
-  console.log(`[EDITH]   Token Budget:    routing_table=${config.agent.token_budget.routing_table}, quick_ref=${config.agent.token_budget.quick_ref}, distillate_fragment=${config.agent.token_budget.distillate_fragment}`);
+  console.log(`[EDITH]   Context Budget:  routing_table=${config.agent.context_budget.routing_table}, quick_ref=${config.agent.context_budget.quick_ref}, distillate_per_query=${config.agent.context_budget.distillate_per_query}, max_fragments_per_route=${config.agent.context_budget.max_fragments_per_route}`);
   console.log(`[EDITH]   Auto Refresh:    ${config.agent.auto_refresh}`);
   console.log(`[EDITH]   Theme:           ${theme.colorSupport} color support`);
   console.log();

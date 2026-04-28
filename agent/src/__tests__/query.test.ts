@@ -111,10 +111,11 @@ function makeConfig(workspaceRoot: string): EdithConfig {
     workspace: { root: workspaceRoot, language: "zh" },
     repos: [],
     agent: {
-      token_budget: {
+      context_budget: {
         routing_table: 500,
         quick_ref: 2000,
-        distillate_fragment: 4000,
+        distillate_per_query: 6000,
+        max_fragments_per_route: 5,
       },
       auto_refresh: true,
       refresh_interval: "24h",
