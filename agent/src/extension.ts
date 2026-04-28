@@ -2,7 +2,7 @@
  * EDITH Extension — Core Routing Layer
  *
  * Registers four EDITH tools (edith_scan, edith_distill, edith_route,
- * edith_query) and context-management commands (/new, /clear, /compact)
+ * edith_query) and context-management commands (/new, /clear, /compact, /context)
  * plus status commands (edith-init, edith-status).
  *
  * Tool handlers are stubs — actual business logic comes from feat-tool-* features.
@@ -21,6 +21,8 @@ import { loadConfig } from "./config.js";
 import { executeScan, formatScanSummary, formatScanError } from "./tools/scan.js";
 import { executeDistill, formatDistillSummary, formatDistillError } from "./tools/distill.js";
 import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/route.js";
+import { renderContextPanel, type SessionStats, type ContextUsage } from "./theme/context-panel.js";
+import { detectColorSupport } from "./theme/color-engine.js";
 
 // ── TypeBox Parameter Schemas ──────────────────────────────────────
 
@@ -546,6 +548,45 @@ export default function edithExtension(pi: ExtensionAPI): void {
     console.error(`[EDITH] Failed to register command "compact": ${(err as Error).message}`);
   }
 
+  // --- /context — Context Usage Panel ---
+  try {
+    pi.registerCommand("context", {
+      description: "显示当前 session 的上下文占用和统计信息",
+      handler: async (_args: string, ctx: ExtensionCommandContext) => {
+        const support = detectColorSupport();
+
+        // Context usage (proven API from edith-status)
+        let usage: ContextUsage | undefined;
+        try {
+          usage = ctx.getContextUsage() as ContextUsage;
+        } catch {
+          // getContextUsage may not be available in all contexts
+        }
+
+        // Session stats (pi SDK session API)
+        let stats: SessionStats | null = null;
+        try {
+          const s = (ctx as any).session;
+          if (s?.getSessionStats) {
+            stats = s.getSessionStats() as SessionStats;
+          }
+        } catch {
+          // Session stats may not be available
+        }
+
+        if (!stats && !usage) {
+          console.log("[EDITH] Context information not available yet.");
+          return;
+        }
+
+        console.log(renderContextPanel(stats, usage, support));
+      },
+    });
+    console.log("[EDITH] Command registered: /context");
+  } catch (err) {
+    console.error(`[EDITH] Failed to register command "context": ${(err as Error).message}`);
+  }
+
   // ═══ Input Event — Unknown Command Friendly Prompt ═════════════
 
   pi.on("input", (event, _ctx) => {
@@ -553,11 +594,11 @@ export default function edithExtension(pi: ExtensionAPI): void {
     const text = event.text.trim();
     if (text.startsWith("/") && text.length > 1) {
       const cmd = text.split(/\s/)[0];
-      const knownCommands = ["/new", "/clear", "/compact", "/help", "/reload"];
+      const knownCommands = ["/new", "/clear", "/compact", "/context", "/help", "/reload"];
       if (!knownCommands.includes(cmd)) {
         console.log(
           `[EDITH] Unknown command: ${cmd}\n` +
-          `  Available EDITH commands: /new, /clear, /compact\n` +
+          `  Available EDITH commands: /new, /clear, /compact, /context\n` +
           `  Use /help to see all commands.`
         );
         // Return "handled" to prevent further processing
@@ -573,6 +614,6 @@ export default function edithExtension(pi: ExtensionAPI): void {
   const totalCount = toolRegistry.length;
   console.log(
     `[EDITH] Extension core routing layer loaded: ` +
-    `${registeredCount}/${totalCount} tools, 6 commands.`
+    `${registeredCount}/${totalCount} tools, 7 commands.`
   );
 }
