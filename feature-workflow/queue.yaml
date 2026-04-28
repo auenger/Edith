@@ -24,16 +24,18 @@ pending:
 
   # ═══ Phase 1.5: TUI 交互重设计 ═══
 
+active:
   - id: feat-tui-streaming
     name: "流式输出增强（Markdown 渲染 + 进度指示）"
     priority: 60
     size: M
     dependencies: [feat-tui-ink-layout]
     parent: feat-tui-redesign
+    branch: feature/tui-streaming
+    worktree: ../EDITH-tui-streaming
+    started_at: "2026-04-28T22:15:00+08:00"
     description: |
       终端 Markdown 渲染、代码高亮、工具调用进度指示器。
-
-active:
 
 blocked:
   # ═══ Phase 2: EDITH Board 基础版 — 暂缓 ═══
@@ -265,7 +267,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T21:45:00+08:00"
+  last_updated: "2026-04-28T22:15:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"
