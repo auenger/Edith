@@ -78,6 +78,7 @@ function chineseTriggerMappingTable(): string {
 | 用户意图关键词（中文）               | 用户意图关键词（英文）           | 操作         |
 |-------------------------------------|---------------------------------|-------------|
 | 扫描、分析代码、项目结构、代码结构    | scan, analyze code, project structure | 知识扫描     |
+| 浏览、概览、探索、了解项目、项目一览  | explore, overview, project overview   | 项目探索     |
 | 蒸馏、知识提取、生成文档、压缩知识    | distill, extract knowledge, generate docs | 知识蒸馏     |
 | 查询、某个接口、数据模型、是什么      | query, search, look up, what is  | 知识查询     |
 | 路由、这个需求归谁、哪个服务、需求分析 | route, which service, requirement analysis | 需求路由     |
@@ -87,6 +88,7 @@ function chineseTriggerMappingTable(): string {
 当关键词不明确但对话上下文可以推断意图时：
 - 用户提到某个服务名 + "看看" / "了解" / "帮我看" → 推断为查询已有知识
 - 用户提到某个服务名 + "整理" / "整理文档" / "梳理" → 推断为扫描 + 蒸馏
+- 用户提到新项目 + "浏览" / "概览" / "了解下" / "探索一下" → 推断为项目探索
 - 用户提到需求 + 服务名 → 推断为需求路由
 
 ## 第三层：澄清模式
@@ -300,6 +302,7 @@ Automatically select the corresponding operation based on user intent.
 | User Intent Keywords                    | Action              |
 |----------------------------------------|---------------------|
 | scan, analyze code, project structure   | Knowledge Scan      |
+| explore, overview, project overview     | Project Explore     |
 | distill, extract knowledge, generate docs | Knowledge Distill |
 | query, search, look up, what is         | Knowledge Query     |
 | route, which service, requirement analysis | Requirement Route |
@@ -309,6 +312,7 @@ Automatically select the corresponding operation based on user intent.
 When keywords are unclear but conversation context can infer intent:
 - User mentions a service name + "look at" / "check" / "help me with" → Infer as query existing knowledge
 - User mentions a service name + "organize" / "document" / "structure" → Infer as scan + distill
+- User mentions a new project + "explore" / "overview" / "get a feel for" → Infer as project explore
 - User mentions a requirement + service name → Infer as requirement routing
 
 ## Layer 3: Clarification Mode
@@ -470,6 +474,7 @@ export function validatePromptNoLeaks(prompt: string): string[] {
     "loadSkill",
     "registerTool",
     "edith_scan",
+    "edith_explore",
     "edith_distill",
     "edith_query",
     "edith_route",

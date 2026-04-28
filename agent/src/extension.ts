@@ -19,6 +19,7 @@ import { ConfigError, type EdithConfig } from "./config.js";
 import { loadConfig } from "./config.js";
 
 import { executeScan, formatScanSummary, formatScanError } from "./tools/scan.js";
+import { executeExplore, formatExploreSummary, formatExploreError } from "./tools/explore.js";
 import { executeDistill, formatDistillSummary, formatDistillError } from "./tools/distill.js";
 import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/route.js";
 import { renderContextPanel, type SessionStats, type ContextUsage } from "./theme/context-panel.js";
@@ -54,10 +55,15 @@ const QueryParams = Type.Object({
   max_depth: Type.Optional(Type.Union([Type.Literal(0), Type.Literal(1), Type.Literal(2)], { description: "最大加载深度（0=仅路由表, 1=到quick-ref, 2=到distillates）" })),
 });
 
+const ExploreParams = Type.Object({
+  target: Type.String({ description: "项目名或路径" }),
+});
+
 type ScanInput = Static<typeof ScanParams>;
 type DistillInput = Static<typeof DistillParams>;
 type RouteInput = Static<typeof RouteParams>;
 type QueryInput = Static<typeof QueryParams>;
+type ExploreInput = Static<typeof ExploreParams>;
 
 // ── Skill Routing Map (internal, never exposed to users) ───────────
 
@@ -98,6 +104,7 @@ const toolRegistry: ToolStatus[] = [];
 
 const FRIENDLY_ACTION: Record<string, string> = {
   edith_scan: "正在执行知识扫描...",
+  edith_explore: "正在探索项目结构...",
   edith_distill: "正在蒸馏知识产物...",
   edith_route: "正在进行需求路由分析...",
   edith_query: "正在查询知识库...",
@@ -114,7 +121,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
     name: string;
     label: string;
     description: string;
-    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams;
+    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams | typeof ExploreParams;
     execute: (toolCallId: string, params: any, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) => Promise<any>;
   }> = [
     {
@@ -158,6 +165,46 @@ export default function edithExtension(pi: ExtensionAPI): void {
           console.error(`[EDITH] Scan error: ${message}`);
           return {
             content: [{ type: "text" as const, text: `[EDITH] 扫描执行失败: ${message}` }],
+            isError: true,
+          };
+        }
+      },
+    },
+    {
+      name: "edith_explore",
+      label: "EDITH Explore",
+      description: "快速浏览项目结构、技术栈、关键文件。轻量级概览，不生成文档。",
+      parameters: ExploreParams,
+      execute: async (_toolCallId, params: ExploreInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
+        console.log(FRIENDLY_ACTION["edith_explore"]);
+
+        try {
+          const config = loadConfig();
+
+          const outcome = await executeExplore(
+            { target: params.target },
+            config.repos,
+          );
+
+          if (outcome.ok) {
+            const summary = formatExploreSummary(outcome.result);
+            console.log(`[EDITH] Explore completed: ${outcome.result.service}`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatExploreError(outcome.error);
+            console.warn(`[EDITH] Explore failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[EDITH] Explore error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[EDITH] 探索执行失败: ${message}` }],
             isError: true,
           };
         }
@@ -656,6 +703,41 @@ export default function edithExtension(pi: ExtensionAPI): void {
     console.error(`[EDITH] Failed to register command "delegate": ${(err as Error).message}`);
   }
 
+  // --- /explore — Project Exploration ---
+  try {
+    pi.registerCommand("explore", {
+      description: "快速浏览项目结构、技术栈、关键文件",
+      handler: async (args: string, _ctx: ExtensionCommandContext) => {
+        const target = args.trim();
+        if (!target) {
+          console.log(
+            "[EDITH] /explore 用法:\n" +
+            "  /explore <项目名或路径>  — 快速浏览项目概览\n" +
+            "  示例: /explore user-service\n" +
+            "        /explore /path/to/project"
+          );
+          return;
+        }
+
+        try {
+          const config = loadConfig();
+          const outcome = await executeExplore({ target }, config.repos);
+
+          if (outcome.ok) {
+            console.log(formatExploreSummary(outcome.result));
+          } else {
+            console.log(formatExploreError(outcome.error));
+          }
+        } catch (err) {
+          console.error(`[EDITH] Explore failed: ${(err as Error).message}`);
+        }
+      },
+    });
+    console.log("[EDITH] Command registered: /explore");
+  } catch (err) {
+    console.error(`[EDITH] Failed to register command "explore": ${(err as Error).message}`);
+  }
+
   // ═══ Input Event — Unknown Command Friendly Prompt ═════════════
 
   pi.on("input", (event, _ctx) => {
@@ -663,11 +745,11 @@ export default function edithExtension(pi: ExtensionAPI): void {
     const text = event.text.trim();
     if (text.startsWith("/") && text.length > 1) {
       const cmd = text.split(/\s/)[0];
-      const knownCommands = ["/new", "/clear", "/compact", "/context", "/delegate", "/help", "/reload"];
+      const knownCommands = ["/new", "/clear", "/compact", "/context", "/delegate", "/explore", "/help", "/reload"];
       if (!knownCommands.includes(cmd)) {
         console.log(
           `[EDITH] Unknown command: ${cmd}\n` +
-          `  Available EDITH commands: /new, /clear, /compact, /context, /delegate\n` +
+          `  Available EDITH commands: /new, /clear, /compact, /context, /delegate, /explore\n` +
           `  Use /help to see all commands.`
         );
         // Return "handled" to prevent further processing
@@ -683,6 +765,6 @@ export default function edithExtension(pi: ExtensionAPI): void {
   const totalCount = toolRegistry.length;
   console.log(
     `[EDITH] Extension core routing layer loaded: ` +
-    `${registeredCount}/${totalCount} tools, 8 commands.`
+    `${registeredCount}/${totalCount} tools, 9 commands.`
   );
 }
