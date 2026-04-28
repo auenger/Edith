@@ -7,7 +7,11 @@ import { StatusBarMetrics } from "./StatusBarMetrics.js";
 import { ThinkingIndicator } from "./ThinkingIndicator.js";
 import { WarningBar } from "./WarningBar.js";
 import { useAgentSession } from "./useAgentSession.js";
+import { findCommand, type SlashCommand } from "./command-registry.js";
+import { getSharedStats } from "../shared-stats.js";
+import { loadConfig } from "../config.js";
 import type { EdithConfig } from "../config.js";
+import type { MessageAction } from "./types.js";
 
 function ContextStatusBar({ config, monitorData }: {
   config: EdithConfig | null;
@@ -30,6 +34,63 @@ function ContextStatusBar({ config, monitorData }: {
   );
 }
 
+function formatContextPanel(): string {
+  const { stats, usage } = getSharedStats();
+  const lines: string[] = [];
+  lines.push("═══ Context ═══");
+  if (usage?.tokens != null && usage.contextWindow) {
+    const pct = usage.percent ?? 0;
+    lines.push(`  Tokens: ${usage.tokens.toLocaleString()} / ${usage.contextWindow.toLocaleString()}`);
+    lines.push(`  Usage:  ${pct.toFixed(1)}%`);
+  } else {
+    lines.push("  Tokens: N/A");
+  }
+  lines.push("");
+  if (stats) {
+    lines.push(`  Messages  User: ${stats.userMessages}   Assistant: ${stats.assistantMessages}`);
+    lines.push(`  Tools     Calls: ${stats.toolCalls}   Results: ${stats.toolResults}`);
+    lines.push("");
+    lines.push("  Token Detail");
+    lines.push(`    Input:   ${stats.tokens.input.toLocaleString()}  Output: ${stats.tokens.output.toLocaleString()}`);
+    lines.push(`    Cache:   R: ${stats.tokens.cacheRead.toLocaleString()}  W: ${stats.tokens.cacheWrite.toLocaleString()}`);
+    lines.push(`    Cost:    $${stats.cost.toFixed(3)}`);
+  }
+  lines.push("═════════════════════");
+  return lines.join("\n");
+}
+
+function formatStatusPanel(): string {
+  const { stats, usage } = getSharedStats();
+  const lines: string[] = [];
+  lines.push("═══ EDITH Status ═══");
+  lines.push("");
+
+  let config: EdithConfig | null = null;
+  try { config = loadConfig(); } catch { /* ignore */ }
+
+  if (config) {
+    lines.push(`  Workspace: ${config.workspace.root}`);
+    lines.push(`  Repos:     ${config.repos.length} configured`);
+    lines.push(`  Language:  ${config.workspace.language}`);
+  }
+
+  if (usage?.tokens != null) {
+    lines.push("");
+    lines.push(`  Context: ${usage.tokens.toLocaleString()} tokens (${usage.percent?.toFixed(1) ?? "N/A"}%)`);
+  }
+
+  if (stats) {
+    lines.push("");
+    lines.push(`  Rounds:   ${stats.assistantMessages}`);
+    lines.push(`  Tokens:   ${stats.tokens.total.toLocaleString()}`);
+    lines.push(`  Cost:     $${stats.cost.toFixed(3)}`);
+  }
+
+  lines.push("");
+  lines.push("═════════════════════");
+  return lines.join("\n");
+}
+
 export function App() {
   const { exit } = useApp();
   const {
@@ -43,13 +104,14 @@ export function App() {
     error,
     config,
     sendUserMessage,
+    sendSlashCommand,
+    dispatch,
     toggleThinking,
     expandAllThinking,
     collapseAllThinking,
     monitorData,
   } = useAgentSession();
 
-  // T: toggle last thinking block, Esc: collapse all
   useInput(useCallback((input: string, key: { escape?: boolean }) => {
     if (key.escape) {
       collapseAllThinking();
@@ -65,15 +127,54 @@ export function App() {
     toggleThinking(id);
   }, [toggleThinking]);
 
+  const handleLocalCommand = useCallback((cmd: SlashCommand, _dispatch: React.Dispatch<MessageAction>) => {
+    switch (cmd.name) {
+      case "context":
+        _dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: formatContextPanel() });
+        break;
+      case "status":
+        _dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: formatStatusPanel() });
+        break;
+      default:
+        _dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `Unknown local command: /${cmd.name}` });
+    }
+  }, []);
+
+  const handleCommand = useCallback(async (text: string) => {
+    const cmdDef = findCommand(text);
+
+    if (!cmdDef) {
+      dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `Unknown command: ${text}\n  Type / to see available commands.` });
+      return;
+    }
+
+    switch (cmdDef.type) {
+      case "local":
+        handleLocalCommand(cmdDef, dispatch);
+        break;
+      case "session":
+        await sendSlashCommand(text);
+        dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `/${cmdDef.name} executed.` });
+        break;
+      case "agent":
+        await sendUserMessage(text);
+        break;
+    }
+  }, [dispatch, handleLocalCommand, sendSlashCommand, sendUserMessage]);
+
   const handleSubmit = useCallback(
     async (text: string) => {
       if (text.toLowerCase() === "exit" || text.toLowerCase() === "quit") {
         await exit();
         return;
       }
+      if (text.startsWith("/")) {
+        await handleCommand(text);
+        return;
+      }
       await sendUserMessage(text);
     },
-    [sendUserMessage, exit]
+    [sendUserMessage, exit, handleCommand]
   );
 
   if (error) {
@@ -114,7 +215,7 @@ export function App() {
         startedAt={processingStartedAt}
         outputChars={outputCharCount}
       />
-      <InputArea onSubmit={handleSubmit} isProcessing={isProcessing} />
+      <InputArea onSubmit={handleSubmit} onCommand={handleCommand} isProcessing={isProcessing} />
     </Box>
   );
 }
