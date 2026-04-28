@@ -492,7 +492,7 @@ Only now should these files begin to accumulate real value:
 
 | Rationalization                                                          | Reality                                                         |
 | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| “Let’s just generate the EDITH repo first.”                             | A repo without a confirmed first loop is just a shell.          |
+| “Let’s just generate the EDITH repo first.”                              | A repo without a confirmed first loop is just a shell.          |
 | “We should inventory the whole company now.”                             | Pilot scope beats fake completeness.                            |
 | “We can fill in the owners later.”                                       | Ownership is a truth-bearing field, not decoration.             |
 | “We already know what the workflow probably is.”                         | Probable is not confirmed. Ask.                                 |

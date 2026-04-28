@@ -2,11 +2,90 @@
 # 基于 EDITH-PRODUCT-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 2: EDITH Board 基础版 (Week 1-2) ═══
+  # ═══ Phase 1.2: 核心架构改进 ═══
+  - id: feat-unlimited-storage
+    name: "知识产物存储与消费分离"
+    priority: 80
+    size: M
+    description: |
+      蒸馏阶段不再截断，完整保存所有知识产物。
+      消费阶段根据相关性评分智能选择加载内容。
+      token_budget 只控制「上下文预算」，不控制「存储量」。
+
+  # ═══ Phase 1.3: Agent 增强命令集 ═══
+  - id: feat-context-command
+    name: "Context 上下文查看命令"
+    priority: 70
+    size: S
+    description: |
+      /context 命令：显示当前 session 的 token 用量、占比、
+      对话轮次、工具调用统计。类似 Claude Code 的 context bar。
+
+  - id: feat-explore-project
+    name: "项目探索命令"
+    priority: 65
+    size: M
+    description: |
+      /explore 命令：快速浏览项目结构、技术栈、关键文件。
+      轻量级概览，区别于 edith_scan 的深度扫描。
+
+  - id: feat-subagent-support
+    name: "SubAgent 子代理支持"
+    priority: 55
+    size: M
+    description: |
+      /delegate 命令 + SubAgentManager：将耗时任务委派给
+      独立子代理执行，支持并行和串行模式。
+      基于 pi SDK 子进程模式实现。
+
+  # ═══ Phase 1.5: TUI 交互重设计 ═══
+  - id: feat-tui-ink-layout
+    name: "TUI 布局框架（ink）"
+    priority: 70
+    size: M
+    parent: feat-tui-redesign
+    description: |
+      使用 ink (React for CLI) 替换 readline REPL，
+      构建全屏 TUI 布局：顶部 Logo、中间内容区、底部输入框。
+
+  - id: feat-tui-thinking
+    name: "AI 思考过程展示（折叠展开式）"
+    priority: 65
+    size: S
+    dependencies: [feat-tui-ink-layout]
+    parent: feat-tui-redesign
+    description: |
+      AI 思考过程折叠式展示，默认一行摘要，按 T 展开。
+
+  - id: feat-tui-streaming
+    name: "流式输出增强（Markdown 渲染 + 进度指示）"
+    priority: 60
+    size: M
+    dependencies: [feat-tui-ink-layout]
+    parent: feat-tui-redesign
+    description: |
+      终端 Markdown 渲染、代码高亮、工具调用进度指示器。
+
+  - id: feat-tui-context-monitor
+    name: "Context 上下文主动监控与预警"
+    priority: 68
+    size: M
+    dependencies: [feat-tui-ink-layout, feat-context-command]
+    parent: feat-tui-redesign
+    description: |
+      常驻状态栏展示 token 用量/缓存命中率，上下文即将不足时
+      主动预警，compact 前提示信息丢失风险。
+
+active:
+
+blocked:
+  # ═══ Phase 2: EDITH Board 基础版 — 暂缓 ═══
   - id: feat-board-scaffold
     name: "Board 项目脚手架（Next.js + API Server）"
     priority: 60
     size: M
+    blocked_at: "2026-04-28"
+    blocked_reason: "Phase 2 暂缓"
     description: |
       初始化 EDITH Board 前端项目：Next.js + React、
       API Server 骨架、Git 知识仓库读取层。
@@ -16,6 +95,8 @@ pending:
     priority: 60
     size: M
     dependencies: [feat-board-scaffold]
+    blocked_at: "2026-04-28"
+    blocked_reason: "Phase 2 暂缓"
     description: |
       知识库健康度、服务覆盖率、最近变更、产出物统计。
 
@@ -24,15 +105,18 @@ pending:
     priority: 55
     size: S
     dependencies: [feat-board-scaffold]
+    blocked_at: "2026-04-28"
+    blocked_reason: "Phase 2 暂缓"
     description: |
       服务列表、筛选搜索、知识覆盖详情、Layer 补全操作。
 
-  # ═══ Phase 2: EDITH Board 基础版 (Week 3-4) ═══
   - id: feat-board-artifacts
     name: "Artifacts 产出物浏览器（Markdown 预览）"
     priority: 55
     size: M
     dependencies: [feat-board-scaffold]
+    blocked_at: "2026-04-28"
+    blocked_reason: "Phase 2 暂缓"
     description: |
       文件树 + Markdown 预览 + Token 计数 + Monaco Editor。
 
@@ -41,6 +125,8 @@ pending:
     priority: 50
     size: M
     dependencies: [feat-board-services]
+    blocked_at: "2026-04-28"
+    blocked_reason: "Phase 2 暂缓"
     description: |
       D3.js 力导向图可视化服务依赖关系。
       节点大小=知识完整度，线条粗细=调用频率。
@@ -50,12 +136,22 @@ pending:
     priority: 50
     size: S
     dependencies: [feat-board-scaffold]
+    blocked_at: "2026-04-28"
+    blocked_reason: "Phase 2 暂缓"
     description: |
       知识回写历史时间线，展示组织知识演化过程。
 
-active:
-
-blocked:
+  - id: feat-workflow-orchestrator
+    name: "Workflow Orchestrator（SKILL.md 8阶段流程编排引擎）"
+    priority: 85
+    size: L
+    parent: feat-agent-mvp
+    blocked_at: "2026-04-28"
+    blocked_reason: "设计待定 — 需确认是否拆分为子 feature、编排模型选择、与 pi SDK 集成方式"
+    description: |
+      实现 SKILL.md 8阶段流程编排：阶段状态机、状态持久化、
+      阶段间数据流、人工确认门控、工具调度、stop condition 检查。
+      当前工具层完成 ~90%，编排层为 0%。
 
 completed:
   - id: feat-packaging
@@ -167,7 +263,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T00:15:00+08:00"
+  last_updated: "2026-04-28T17:00:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"
@@ -188,6 +284,15 @@ meta:
         - feat-system-prompt
         - feat-e2e-pilot
         - feat-packaging
+        - feat-workflow-orchestrator
+    - id: feat-tui-redesign
+      name: "TUI 交互重设计（类 Claude Code / Gemini CLI）"
+      split: true
+      children:
+        - feat-tui-ink-layout
+        - feat-tui-thinking
+        - feat-tui-streaming
+        - feat-tui-context-monitor
     - id: feat-board-base
       name: "EDITH Board 基础版"
       split: false

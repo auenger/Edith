@@ -11,8 +11,11 @@
     "/Users/ryan/mycode/HS_jarvis/features/archive/done-feat-tui-branding-20260427/evidence",
     "/Users/ryan/mycode/HS_jarvis/agent/src/theme",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/edith-repo/distillates",
+    "/Users/ryan/mycode/HS_jarvis/agent",
+    "/Users/ryan/mycode/HS_jarvis/agent/company-edith",
+    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes/docs",
-    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/edith-repo"
+    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes/distillates"
   ],
   "agent_skip_permissions": false
 }

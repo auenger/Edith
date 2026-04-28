@@ -1,6 +1,8 @@
-# EDITH Feature Queue — 全量 Review 报告
+# Spec Review Report: All Pending Features
 
-> 日期: 2026-04-27 | 审查范围: 11 pending + 1 completed + 6 未创建目录
+> 日期: 2026-04-28 | 审查范围: 8 pending features (7 enriched + 1 parent)
+> 归档参考: 13 archived features scanned (Phase 1 MVP，无直接相关问题)
+> 引用文件: 10/10 验证存在 ✅
 
 ---
 
@@ -8,290 +10,259 @@
 
 | # | Feature ID | 名称 | P | Size | Score | 状态 |
 |---|-----------|------|---|------|-------|------|
-| 1 | feat-agent-scaffold | Agent 项目骨架 | 100 | M | 68 | ⚠️ CAUTION |
-| 2 | feat-extension-core | Extension 核心路由层 | 95 | M | 72 | ⚠️ CAUTION |
-| 3 | feat-tool-scan | edith_scan 工具 | 95 | M | 68 | ⚠️ CAUTION |
-| 4 | feat-config-management | edith.yaml 配置管理 | 90 | S | 62 | ⚠️ CAUTION |
-| 5 | feat-tool-distill | edith_distill 工具 | 90 | M | 72 | ⚠️ CAUTION |
-| 6 | feat-tool-query | edith_query 工具 | 90 | M | 70 | ⚠️ CAUTION |
-| 7 | feat-tool-route | edith_route 工具 | 85 | S | 62 | ⚠️ CAUTION |
-| 8 | feat-tui-branding | TUI 主题定制 | 80 | S | **84** | ✅ PASS |
-| 9 | feat-system-prompt | System Prompt 调优 | 80 | S | 62 | ⚠️ CAUTION |
-| 10 | feat-e2e-pilot | 端到端试点验证 | 85 | L | 70 | ⚠️ CAUTION |
-| 11 | feat-packaging | Pi Package 打包与分发 | 75 | S | **52** | 🔴 BLOCK |
+| 1 | feat-context-command | Context 上下文命令 | 70 | S | **90** | ✅ PASS |
+| 2 | feat-context-monitor | Context 主动监控与预警 | 68 | M | **90** | ✅ PASS |
+| 3 | feat-explore-project | 项目探索命令 | 65 | M | **86** | ✅ PASS |
+| 4 | feat-tui-ink-layout | TUI 布局框架 | 70 | M | **84** | ✅ PASS |
+| 5 | feat-tui-thinking | AI 思考过程展示 | 65 | S | **82** | ✅ PASS |
+| 6 | feat-subagent-support | SubAgent 子代理支持 | 55 | M | **76** | ⚠️ CAUTION |
+| 7 | feat-tui-streaming | 流式输出增强 | 60 | M | **76** | ⚠️ CAUTION |
+| 8 | feat-tui-redesign | TUI 交互重设计 (parent) | 70 | L | **74** | ⚠️ CAUTION |
 
-**总评**: 11 个 pending feature 中，1 个 PASS、9 个 CAUTION、1 个 BLOCK。
-- 平均分: **68.2/100**
-- 中位数: **70/100**
+**总评**: 8 个 pending feature 中，5 个 PASS、3 个 CAUTION。
+- 平均分: **82.3/100**（比上一轮 68.2 提升显著，enrichment 效果明显）
+- 唯一 Critical 问题来自 feat-tui-redesign 父子不一致
 
 ---
 
-## 通用问题（影响 10/11 个 feature）
+## Critical Issues（必须修复）
 
-### G1: task.md 全部为模板骨架
-**严重度: Critical | 影响范围: 10/11 feature**
+### C1: feat-tui-redesign — 子特性数量不一致
+- **Location**: `features/pending-feat-tui-redesign/spec.md` > Technical Solution + Children
+- **Dimension**: D3 Consistency
+- **Problem**: spec 声明 "拆分策略: 3 个子特性依次交付"，Children 只列了 3 个。但 queue.yaml 中 feat-tui-redesign 有 **4 个 children**（含 feat-tui-context-monitor）。feat-tui-context-monitor 在父 spec 中完全未被提及。
+- **Impact**: 父 spec 缺失子特性定义，可能导致验收时遗漏 context-monitor 或职责不清。
+- **Suggested Fix**:
+  - 方案 A: 更新 spec.md Children 列表为 4 个，更新依赖链图
+  - 方案 B: 将 feat-tui-context-monitor 从 tui-redesign 中独立（移除 parent 关系）
 
-除 `feat-tui-branding` 外，所有 task.md 都是同一个三段式模板：
-```
-1. Preparation — Read spec.md...
-2. Implementation — Core implementation tasks (see spec.md)...
-3. Verification — Verify acceptance criteria...
-```
+### C2: feat-subagent-support — VP2 并行处理无 Gherkin 场景
+- **Location**: `features/pending-feat-subagent-support/spec.md` > Acceptance Criteria
+- **Dimension**: D5 Gherkin Quality
+- **Problem**: VP2（并行处理能力）是核心价值点，但 3 个 Gherkin 场景全是单任务委派/失败，没有并行执行场景。task.md 的 `parallel()` 方法也无对应验收场景。
+- **Impact**: 并行是 SubAgentManager 的核心方法，没有验收场景意味着无法验证核心价值。
+- **Suggested Fix**: 新增 Scenario 4 — 并行委派多个子代理执行独立任务
 
-这不是可执行的任务分解，只是占位符。开发者无法从中了解具体实施步骤。
+### C3: feat-explore-project — VP2 搜索与发现无 Gherkin 场景
+- **Location**: `features/pending-feat-explore-project/spec.md` > Acceptance Criteria
+- **Dimension**: D5 Gherkin Quality
+- **Problem**: VP2（搜索与发现）描述了 glob/grep 搜索能力，Technical Solution 也提到了搜索功能，但无对应 Gherkin 场景，task 中也没有搜索相关任务。
+- **Impact**: 搜索能力是 spec 定义的 User Value Point，但不被 task 和 Gherkin 覆盖。
+- **Suggested Fix**: 新增搜索场景 Gherkin + task，或将 VP2 从 scope 中移除
 
-**建议**: 每个 task.md 应将 spec.md 的 Technical Solution 拆解为可独立执行、有验收标准的任务项。参考 `feat-tui-branding/task.md`（20+ 具体任务）。
+### C4: feat-tui-streaming — 缺少错误路径场景
+- **Location**: `features/pending-feat-tui-streaming/spec.md` > Acceptance Criteria
+- **Dimension**: D2 Completeness + D5 Gherkin
+- **Problem**: 3 个场景全是 happy path。不完整 Markdown、解析失败、大输出性能均未覆盖。
+- **Impact**: 流式 Markdown 渲染是高风险区域（AST 解析、终端兼容性），没有错误场景容易在边界条件下崩溃。
+- **Suggested Fix**: 新增至少 1 个错误/降级场景
 
-### G2: checklist.md 全部为通用模板
-**严重度: Warning | 影响范围: 10/11 feature**
-
-除 `feat-tui-branding` 外，所有 checklist.md 使用同一个 28 行通用清单。不包含 feature 特有的验收项。
-
-**建议**: 每个 checklist 应从 spec.md 的 Gherkin scenarios 和 value points 派生，包含 feature 特有的验收标准。
-
-### G3: 缺少 OUT scope（不做什么）
-**严重度: Warning | 影响范围: 11/11 feature**
-
-没有任何 feature 定义 "本 feature 不做什么" 的边界。这可能导致开发时范围蔓延。
-
-**建议**: 在每个 spec.md 的 Description 末尾添加明确的 OUT scope：
-```markdown
-## Scope
-- IN: ...
-- OUT: ...
-```
-
----
-
-## 各 Feature 详细评审
-
-### 1. feat-agent-scaffold — 68/100 ⚠️
-
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 14/20 | 无 OUT scope |
-| D2 Completeness | 12/20 | 无错误路径场景（pi SDK 安装失败？edith.yaml 格式错误？） |
-| D3 Consistency | 12/20 | task.md/checklist.md 为模板骨架 |
-| D4 Feasibility | 16/20 | 参考文件均存在 |
-| D5 Gherkin | 14/20 | 3 个场景均为 happy path，无 sad-path |
-
-**风险**: 作为 Phase 1 的根 feature，依赖此节点的 feature 有 10 个。如果骨架搭建不完整，影响面极大。
+### C5: feat-tui-redesign — 缺少 task.md 和 checklist.md
+- **Location**: `features/pending-feat-tui-redesign/` 目录
+- **Dimension**: D3 Consistency
+- **Problem**: 父级 feature 缺少 task.md 和 checklist.md。
+- **Impact**: 作为 split=true 的索引 feature，缺少验证清单。
+- **Suggested Fix**: 至少补充 checklist.md，列出子特性全部通过验收的条件
 
 ---
 
-### 2. feat-extension-core — 72/100 ⚠️
+## Warnings
 
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 16/20 | 无 OUT scope |
-| D2 Completeness | 14/20 | 无工具注册失败、pi SDK API 不兼容等错误场景 |
-| D3 Consistency | 10/20 | task.md 模板，checklist 未覆盖 6 个场景 |
-| D4 Feasibility | 16/20 | 参考文件存在，架构一致 |
-| D5 Gherkin | 16/20 | 6 个场景覆盖完整（4 个工具 + 3 个上下文命令） |
+### W1: 多个 TUI feature 缺少错误/降级 Gherkin 场景
+- **Affected**: feat-tui-ink-layout, feat-tui-thinking, feat-tui-streaming
+- **Dimension**: D2 Completeness
+- **Detail**: ink 渲染失败 fallback、模型无 thinking 内容、流式 Markdown 解析错误均未覆盖
+- **Suggestion**: 每个 feature 补充至少 1 个 sad-path 场景
 
-**亮点**: spec.md 质量较高，Technical Solution 详细描述了 Phase 1/Phase 2 的渐进策略。
+### W2: feat-tui-streaming 缺少量化性能指标
+- **Location**: spec.md > Checklist
+- **Dimension**: D1 Clarity
+- **Detail**: "大输出性能可接受"、">1000 行不卡顿" 无具体阈值
+- **Suggestion**: 定义量化目标，如 "1000 行渲染 < 500ms"
 
-**风险**: 依赖 pi SDK 的 `registerTool()` / `registerCommand()` API，需确认这些 API 已稳定。
+### W3: feat-tui-thinking 的 T 键冲突风险
+- **Location**: spec.md > Technical Solution
+- **Dimension**: D4 Feasibility
+- **Detail**: T 键在输入框聚焦时应输入字母而非触发展开
+- **Suggestion**: 明确快捷键只在非输入状态生效，或改用 Ctrl+T
 
----
+### W4: feat-subagent-support 自动识别逻辑未定义
+- **Location**: spec.md > Technical Solution > 命令注册
+- **Dimension**: D1 Clarity
+- **Detail**: `name: "auto"` 自动选择 agent，但无识别规则
+- **Suggestion**: 补充识别规则或改为用户手动指定
 
-### 3. feat-tool-scan — 68/100 ⚠️
+### W5: feat-tui-ink-layout 缺少回退方案
+- **Location**: spec.md > Technical Solution
+- **Dimension**: D2 Completeness
+- **Detail**: ink 渲染在终端不兼容时无 fallback 到 readline 的机制
+- **Suggestion**: 添加终端能力检测 + 自动回退
 
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 14/20 | 无 OUT scope，mode 参数未详细说明 |
-| D2 Completeness | 14/20 | 缺少边界场景（空项目、超大型代码库、不支持的语言） |
-| D3 Consistency | 10/20 | task.md 模板 |
-| D4 Feasibility | 16/20 | 参考 SKILL.md 和 agents/ 目录均存在 |
-| D5 Gherkin | 14/20 | 有 1 个 sad-path（Scenario 3），覆盖合理 |
+### W6: feat-tui-context-monitor 双依赖风险
+- **Location**: queue.yaml > dependencies
+- **Dimension**: D4 Feasibility
+- **Detail**: 同时依赖 feat-tui-ink-layout + feat-context-command，任一接口变更需返工
+- **Suggestion**: 开发前确认依赖 feature 的接口约定
 
----
-
-### 4. feat-config-management — 62/100 ⚠️
-
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 14/20 | 无 OUT scope |
-| D2 Completeness | 12/20 | 缺少 YAML 语法错误、配置迁移、热加载失败等场景 |
-| D3 Consistency | 10/20 | task.md 模板 |
-| D4 Feasibility | 16/20 | TypeScript interface 定义清晰 |
-| D5 Gherkin | 12/20 | Scenario 3 (edith-init) Then 步骤不够具体 |
-
-**关注点**: "热加载" 在 Description 中提到但 Gherkin 未覆盖。这是一个复杂特性，建议拆分或在 spec 中明确 Phase 1 不做热加载。
-
----
-
-### 5. feat-tool-distill — 72/100 ⚠️
-
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 16/20 | 三层产出物的 token 预算定义清晰 |
-| D2 Completeness | 14/20 | 缺少超 token 预算时的截断策略场景 |
-| D3 Consistency | 10/20 | task.md 模板 |
-| D4 Feasibility | 16/20 | 架构一致，参考文件存在 |
-| D5 Gherkin | 16/20 | 有 sad-path，token 预算场景可验证 |
-
-**亮点**: Token 预算控制场景（Scenario 2）量化清晰（<= 2000）。
+### W7: extension.ts 合并冲突风险
+- **Affected**: feat-context-command, feat-explore-project, feat-tui-ink-layout, feat-subagent-support
+- **Dimension**: D4 Feasibility
+- **Detail**: 归档显示 feat-tool-route 曾在 `extension.ts` 冲突，4 个新 feature 也都修改此文件
+- **Suggestion**: 按 queue.yaml 优先级顺序开发，避免并行修改 extension.ts
 
 ---
 
-### 6. feat-tool-query — 70/100 ⚠️
+## Improvement Suggestions
 
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 16/20 | 三层加载策略描述清晰 |
-| D2 Completeness | 14/20 | 缺少部分 Layer 产物缺失、文件损坏等场景 |
-| D3 Consistency | 10/20 | task.md 模板 |
-| D4 Feasibility | 16/20 | 架构一致 |
-| D5 Gherkin | 14/20 | 有空知识库场景（Scenario 3），覆盖合理 |
+### S1: 统一 Gherkin 格式风格
+- **Affected**: 全部 features
+- **Detail**: feat-context-command 使用 `#### Scenario N:` 格式，TUI 系列使用内联 `Scenario:` 格式
 
----
+### S2: feat-tui-redesign 父子场景去重
+- **Affected**: feat-tui-redesign
+- **Detail**: "启动显示全屏布局"在父子中重复定义，父级应只保留端到端集成场景
 
-### 7. feat-tool-route — 62/100 ⚠️
+### S3: feat-subagent-support checklist 按 Phase 分组
+- **Affected**: feat-subagent-support
+- **Detail**: Phase 1/2 边界清晰但 checklist 未区分
 
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 14/20 | 路由决策表清晰，但无 OUT scope |
-| D2 Completeness | 12/20 | **无错误场景**，无边界情况 |
-| D3 Consistency | 10/20 | task.md 模板 |
-| D4 Feasibility | 16/20 | 架构一致 |
-| D5 Gherkin | 12/20 | **Scenario 1 缺少 Given**；全部为 happy path |
+### S4: feat-tui-streaming 先确定 Markdown 渲染方案
+- **Affected**: feat-tui-streaming
+- **Detail**: "ink-markdown 或自定义方案"未定，开发中决策可能导致返工
 
-**问题**: Scenario 1 没有 Given 前置条件。路由表的格式和内容未在场景中描述。
+### S5: feat-tui-thinking 开发前验证 pi SDK thinking 事件
+- **Affected**: feat-tui-thinking
+- **Detail**: 多次提到"需确认"，是前置不确定性
 
 ---
 
-### 8. feat-tui-branding — 84/100 ✅ **最佳**
+## Per-Feature Score Details
 
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 18/20 | ANSI escape sequence、色值、降级策略极其具体 |
-| D2 Completeness | 16/20 | 覆盖 4 级终端降级，checklist 含窄终端等边界 |
-| D3 Consistency | 16/20 | **唯一有详细 task.md 和定制 checklist 的 feature** |
-| D4 Feasibility | 16/20 | 技术方案成熟，降级策略完整 |
-| D5 Gherkin | 18/20 | 6 个场景覆盖全面，色值精确到 hex |
+### 1. feat-context-command: 90/100 ✅ PASS
 
-**标杆**: 这个 feature 的文档质量是全队列最高。建议其他 feature 参考 `feat-tui-branding` 的 task.md 和 checklist.md 结构。
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 16/20 | 缺显式 OUT scope |
+| D2 Completeness | 18/20 | 空 session 场景覆盖好 |
+| D3 Consistency | 18/20 | spec/task/checklist 对齐良好 |
+| D4 Feasibility | 20/20 | 引用文件均存在，依赖已完成 |
+| D5 Gherkin | 18/20 | 覆盖 2 个 VP + 边界场景 |
+
+### 2. feat-tui-context-monitor: 90/100 ✅ PASS
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 18/20 | 阈值、格式、配置都具体 |
+| D2 Completeness | 18/20 | 6 个场景覆盖全面 |
+| D3 Consistency | 18/20 | 对齐良好 |
+| D4 Feasibility | 18/20 | 三层回退设计（API → config → 查表）|
+| D5 Gherkin | 18/20 | 多压力级别 + 缓存命中率 |
+
+### 3. feat-explore-project: 86/100 ✅ PASS
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 16/20 | 与 edith_scan 区分清晰 |
+| D2 Completeness | 16/20 | 缺性能量化指标 |
+| D3 Consistency | 18/20 | 对齐良好 |
+| D4 Feasibility | 20/20 | 引用文件均存在 |
+| D5 Gherkin | 16/20 | **VP2 搜索能力无场景** (C3) |
+
+### 4. feat-tui-ink-layout: 84/100 ✅ PASS
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 18/20 | 架构和组件树清晰 |
+| D2 Completeness | 14/20 | 无 fallback 场景 |
+| D3 Consistency | 18/20 | 对齐良好 |
+| D4 Feasibility | 18/20 | ink 成熟，但终端兼容需注意 |
+| D5 Gherkin | 16/20 | "不截断不溢出" 主观 |
+
+### 5. feat-tui-thinking: 82/100 ✅ PASS
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 16/20 | 交互设计清晰 |
+| D2 Completeness | 14/20 | 无 thinking 缺失场景 |
+| D3 Consistency | 18/20 | 对齐良好 |
+| D4 Feasibility | 16/20 | 依赖未创建文件 + API 不确定 |
+| D5 Gherkin | 18/20 | 覆盖好 |
+
+### 6. feat-subagent-support: 76/100 ⚠️ CAUTION
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 16/20 | 自动识别逻辑未定义 |
+| D2 Completeness | 14/20 | 缺并行边界和输入验证 |
+| D3 Consistency | 18/20 | 对齐良好 |
+| D4 Feasibility | 18/20 | pi SDK 无内置 subAgent |
+| D5 Gherkin | 10/20 | **VP2 完全无覆盖** (C2) |
+
+### 7. feat-tui-streaming: 76/100 ⚠️ CAUTION
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 16/20 | 无性能量化指标 |
+| D2 Completeness | 12/20 | 无错误路径 |
+| D3 Consistency | 18/20 | 对齐良好 |
+| D4 Feasibility | 16/20 | 技术选型未定 |
+| D5 Gherkin | 14/20 | 无 sad-path (C4) |
+
+### 8. feat-tui-redesign: 74/100 ⚠️ CAUTION
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| D1 Clarity | 16/20 | 拆分策略与实际不一致 |
+| D2 Completeness | 14/20 | 无错误场景 |
+| D3 Consistency | 12/20 | **缺 task/checklist，子特性数不一致** (C1/C5) |
+| D4 Feasibility | 18/20 | 架构决策明确 |
+| D5 Gherkin | 14/20 | 与子 feature 重叠 |
 
 ---
 
-### 9. feat-system-prompt — 62/100 ⚠️
+## Risk Assessment
 
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 14/20 | 触发映射清晰 |
-| D2 Completeness | 10/20 | **仅 3 个场景**，缺少模糊输入、多意图冲突等边界 |
-| D3 Consistency | 10/20 | task.md 模板 |
-| D4 Feasibility | 16/20 | 架构一致 |
-| D5 Gherkin | 12/20 | **3 个场景均缺少 Given**；无 sad-path |
-
-**关注点**: System Prompt 是 Agent 行为的核心，3 个场景远不够。应覆盖：模糊输入、多意图、工具不可用、超长对话等场景。
-
----
-
-### 10. feat-e2e-pilot — 70/100 ⚠️
-
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 16/20 | E2E 流程清晰 |
-| D2 Completeness | 14/20 | 缺少中间步骤失败时的行为 |
-| D3 Consistency | 10/20 | task.md 模板 |
-| D4 Feasibility | 16/20 | 参考文件存在 |
-| D5 Gherkin | 14/20 | "零适配消费验证"（Scenario 3）设计出色 |
-
-**亮点**: Scenario 3 "产出物零适配消费验证" 是一个关键的架构验证点。
+| # | Risk | Level | Affected Feature | Mitigation |
+|---|------|-------|-----------------|------------|
+| 1 | ink 终端兼容性 | Medium | feat-tui-ink-layout | 终端检测 + readline 回退 |
+| 2 | pi SDK 无 thinking 事件 | Medium | feat-tui-thinking | 开发前 API 验证 |
+| 3 | 流式 Markdown 性能瓶颈 | Medium | feat-tui-streaming | 限制渲染行数 + 虚拟滚动 |
+| 4 | 子进程管理复杂度 | Medium | feat-subagent-support | 借鉴 pi SDK 官方示例 |
+| 5 | extension.ts 合并冲突 | Medium | 4 个 feature | 按优先级顺序开发 |
+| 6 | TUI 依赖链过长 | Low | feat-tui-context-monitor | 先稳定 ink-layout 接口 |
 
 ---
 
-### 11. feat-packaging — 52/100 🔴 BLOCK
-
-| 维度 | 得分 | 关键问题 |
-|------|------|---------|
-| D1 Clarity | 12/20 | spec 极薄，Technical Solution 仅 4 行 bullet |
-| D2 Completeness | 8/20 | **仅 2 个场景**，无错误路径、无版本冲突处理 |
-| D3 Consistency | 8/20 | task.md 模板，Technical Solution 不具体 |
-| D4 Feasibility | 14/20 | 依赖 pi SDK 打包机制，成熟度未知 |
-| D5 Gherkin | 10/20 | 场景数量不足，深度不够 |
-
-**建议**: 需要重新丰富 spec：
-- 添加 pi SDK package 机制的调研结果
-- 补充安装失败、版本回退、多环境兼容场景
-- 细化 Technical Solution
-
----
-
-## 依赖图分析
+## 可并行开发的波次
 
 ```text
-feat-agent-scaffold (P100, 68) ─── 根节点，无依赖
-├── feat-extension-core (P95, 72)
-│   ├── feat-tool-scan (P95, 68)
-│   │   └── feat-tool-distill (P90, 72)
-│   ├── feat-tool-query (P90, 70)
-│   └── feat-tool-route (P85, 62)
-├── feat-config-management (P90, 62)
-└── feat-tui-branding (P80, 84)
-
-feat-system-prompt (P80, 62) ← 依赖 [scan, distill, query, route]
-feat-e2e-pilot (P85, 70)     ← 依赖 [scan, distill, query, route]
-feat-packaging (P75, 52)     ← 依赖 [e2e-pilot]
+Wave 1: feat-context-command (S), feat-tui-ink-layout (M)  — 无互相依赖
+Wave 2: feat-explore-project (M)                            — 无依赖，可与 Wave 1 并行
+         feat-subagent-support (M)                           — 无依赖，可与 Wave 1 并行
+Wave 3: feat-tui-thinking (S), feat-tui-streaming (M)       — 依赖 feat-tui-ink-layout
+Wave 4: feat-tui-context-monitor (M)                        — 依赖 ink-layout + context-command
 ```
 
-### 可并行开发的波次
-
-| 波次 | Features | 说明 |
-|------|----------|------|
-| Wave 1 | feat-agent-scaffold | 根节点，必须先完成 |
-| Wave 2 | feat-extension-core, feat-config-management, feat-tui-branding | 三者并行（均仅依赖 scaffold） |
-| Wave 3 | feat-tool-scan, feat-tool-query, feat-tool-route | 三个工具并行（均仅依赖 extension-core） |
-| Wave 4 | feat-tool-distill | 依赖 extension-core + tool-scan |
-| Wave 5 | feat-system-prompt, feat-e2e-pilot | 并行（均依赖全部工具） |
-| Wave 6 | feat-packaging | 收尾，依赖 e2e-pilot |
-
 ---
 
-## 风险评估
+## 建议优先行动
 
-| # | 风险 | 级别 | 影响 feature | 缓解措施 |
-|---|------|------|-------------|---------|
-| 1 | pi SDK API 不稳定 | 🔴 High | scaffold, extension-core, tui-branding, packaging | Wave 1 先验证 pi SDK registerTool/registerCommand API 可用性 |
-| 2 | 范围蔓延（无 OUT scope） | 🟡 Medium | 全部 11 个 | 每个 spec 添加 OUT scope |
-| 3 | feat-packaging spec 过薄 | 🔴 High | packaging | 重新丰富 spec 后再排入开发 |
-| 4 | feat-system-prompt 场景不足 | 🟡 Medium | system-prompt | 补充至少 5 个边界场景 |
-| 5 | 10/11 feature task.md 不可执行 | 🟡 Medium | 除 tui-branding 外全部 | 开发前 enrich task.md |
-| 6 | feat-tool-route 缺少前置条件 | 🟢 Low | tool-route | 补充 Given 步骤 |
+### P0 — 修复后才能启动开发
+1. **C1**: 决定 feat-tui-context-monitor 的归属（独立 or tui-redesign 子特性）
+2. **C2**: feat-subagent-support 补充并行执行 Gherkin 场景
+3. **C5**: feat-tui-redesign 补充 checklist.md
 
----
-
-## 建议的优先行动
-
-### P0 — 阻塞开发（必须先修复）
-1. **enrich feat-agent-scaffold 的 task.md** — 这是根节点，后续所有 feature 依赖它
-2. **验证 pi SDK 可用性** — 确认 `registerTool()` / `registerCommand()` API 存在且可用
-
-### P1 — 开发前修复
-3. **enrich Wave 2 的 task.md** — feat-extension-core、feat-config-management、feat-tui-branding
-4. **重新丰富 feat-packaging 的 spec** — 当前仅 2 个场景，不足以指导开发
+### P1 — 建议在开发前修复
+4. **C3**: feat-explore-project 确认 VP2 搜索能力是否在 scope 内
+5. **C4**: feat-tui-streaming 补充错误路径场景
+6. **W3**: feat-tui-thinking 明确快捷键行为
+7. **W4**: feat-subagent-support 定义自动识别规则
 
 ### P2 — 开发中改进
-5. 每个 feature 开发前补充 OUT scope
-6. feat-system-prompt 补充边界场景
-7. feat-tool-route 补充 Given 前置条件和错误场景
+8. **W5**: feat-tui-ink-layout 添加终端回退方案
+9. **S4**: feat-tui-streaming 确定渲染技术选型
+10. **S5**: feat-tui-thinking 验证 pi SDK thinking 事件
 
 ---
 
-## Phase 2 Features（未创建目录）
-
-以下 6 个 feature 在 queue.yaml 中定义但尚未创建目录和文档：
-- feat-board-scaffold (P60, M)
-- feat-board-dashboard (P60, M)
-- feat-board-services (P55, S)
-- feat-board-artifacts (P55, M)
-- feat-board-knowledge-map (P50, M)
-- feat-board-timeline (P50, S)
-
-这些属于 Phase 2，在 Phase 1 完成前不需要处理。
-
----
-
-*报告生成: 2026-04-27 | 使用 /review-spec skill*
+*报告生成: 2026-04-28 | 使用 /review-spec skill*
