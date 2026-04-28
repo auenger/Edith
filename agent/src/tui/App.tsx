@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Box, Text, useApp } from "ink";
+import { Box, Text, useApp, useInput } from "ink";
 import { BannerArea } from "./BannerArea.js";
 import { ContentArea } from "./ContentArea.js";
 import { InputArea } from "./InputArea.js";
@@ -31,7 +31,35 @@ function ContextStatusBar({ config, monitorData }: {
 
 export function App() {
   const { exit } = useApp();
-  const { messages, isProcessing, initialized, error, config, sendUserMessage, monitorData } = useAgentSession();
+  const {
+    messages,
+    thinkingBlocks,
+    isProcessing,
+    initialized,
+    error,
+    config,
+    sendUserMessage,
+    toggleThinking,
+    expandAllThinking,
+    collapseAllThinking,
+    monitorData,
+  } = useAgentSession();
+
+  // T: toggle last thinking block, Esc: collapse all
+  useInput(useCallback((input: string, key: { escape?: boolean }) => {
+    if (key.escape) {
+      collapseAllThinking();
+      return;
+    }
+    if (input === "t" && thinkingBlocks.length > 0 && isProcessing) {
+      const last = thinkingBlocks[thinkingBlocks.length - 1];
+      toggleThinking(last.id);
+    }
+  }, [collapseAllThinking, toggleThinking, thinkingBlocks, isProcessing]));
+
+  const handleToggleThinking = useCallback((id: string) => {
+    toggleThinking(id);
+  }, [toggleThinking]);
 
   const handleSubmit = useCallback(
     async (text: string) => {
@@ -71,7 +99,11 @@ export function App() {
       <BannerArea config={{ workspace: config!.workspace }} />
       <ContextStatusBar config={config} monitorData={monitorData} />
       {showWarning && <WarningBar pressure={monitorData!.pressure} />}
-      <ContentArea messages={messages} />
+      <ContentArea
+        messages={messages}
+        thinkingBlocks={thinkingBlocks}
+        onToggleThinking={handleToggleThinking}
+      />
       <InputArea onSubmit={handleSubmit} isProcessing={isProcessing} />
     </Box>
   );
