@@ -97,3 +97,12 @@ Scenario: 大输出性能降级
 - 语法高亮支持至少 TS/JS/Python/YAML/JSON
 - 列表缩进正确，层次分明
 - 工具调用进度清晰，不干扰主内容
+
+## Merge Record
+- **Completed**: 2026-04-28T22:35:00+08:00
+- **Merged Branch**: feature/tui-streaming
+- **Merge Commit**: 731af6d
+- **Archive Tag**: feat-tui-streaming-20260428
+- **Conflicts**: task.md (auto-resolved — kept completed version)
+- **Verification**: 5/5 scenarios passed
+- **Stats**: 1 commit, 7 files changed, 427 insertions, duration ~20 min
