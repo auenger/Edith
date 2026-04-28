@@ -23,6 +23,12 @@ import { executeDistill, formatDistillSummary, formatDistillError } from "./tool
 import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/route.js";
 import { renderContextPanel, type SessionStats, type ContextUsage } from "./theme/context-panel.js";
 import { detectColorSupport } from "./theme/color-engine.js";
+import {
+  SubAgentManager,
+  formatSubAgentResult,
+  formatParallelResults,
+} from "./tools/subagent.js";
+import { renderSubAgentPanel } from "./theme/subagent-panel.js";
 
 // ── TypeBox Parameter Schemas ──────────────────────────────────────
 
@@ -587,6 +593,69 @@ export default function edithExtension(pi: ExtensionAPI): void {
     console.error(`[EDITH] Failed to register command "context": ${(err as Error).message}`);
   }
 
+  // --- /delegate — SubAgent Task Delegation ---
+  const subAgentManager = new SubAgentManager();
+  try {
+    pi.registerCommand("delegate", {
+      description: "委派任务给子代理执行（支持 --parallel 和 --chain 模式）",
+      handler: async (args: string, _ctx: ExtensionCommandContext) => {
+        if (!args.trim()) {
+          console.log(
+            "[EDITH] /delegate 用法:\n" +
+            "  /delegate <任务描述>                      — 单任务委派\n" +
+            '  /delegate --parallel "任务1" "任务2"     — 并行委派\n' +
+            '  /delegate --chain "任务1" "任务2"        — 串行链式委派'
+          );
+          return;
+        }
+
+        const parsed = subAgentManager.parseCommand(args);
+        const support = detectColorSupport();
+
+        console.log(renderSubAgentPanel("starting", parsed.configs.length, parsed.mode, support));
+
+        try {
+          let output: string;
+
+          switch (parsed.mode) {
+            case "single": {
+              const result = await subAgentManager.execute(parsed.configs[0]);
+              output = formatSubAgentResult(result);
+              break;
+            }
+            case "parallel": {
+              const results = await subAgentManager.parallel(
+                parsed.configs,
+                (completed: number, total: number) => {
+                  console.log(renderSubAgentPanel("starting", total, "parallel", support).replace("Dispatching", `Running ${completed}/${total}`));
+                },
+              );
+              output = formatParallelResults(results);
+              break;
+            }
+            case "chain": {
+              const results = await subAgentManager.chain(parsed.configs);
+              const chainOutput = results
+                .map((r, i) => `[Step ${i + 1}]\n${formatSubAgentResult(r)}`)
+                .join("\n\n");
+              output = `Chain execution (${results.length}/${parsed.configs.length} steps completed)\n\n${chainOutput}`;
+              break;
+            }
+          }
+
+          console.log(renderSubAgentPanel("completed", parsed.configs.length, parsed.mode, support));
+          console.log(output);
+        } catch (err) {
+          console.log(renderSubAgentPanel("failed", parsed.configs.length, parsed.mode, support));
+          console.error(`[EDITH] SubAgent execution failed: ${(err as Error).message}`);
+        }
+      },
+    });
+    console.log("[EDITH] Command registered: /delegate");
+  } catch (err) {
+    console.error(`[EDITH] Failed to register command "delegate": ${(err as Error).message}`);
+  }
+
   // ═══ Input Event — Unknown Command Friendly Prompt ═════════════
 
   pi.on("input", (event, _ctx) => {
@@ -594,11 +663,11 @@ export default function edithExtension(pi: ExtensionAPI): void {
     const text = event.text.trim();
     if (text.startsWith("/") && text.length > 1) {
       const cmd = text.split(/\s/)[0];
-      const knownCommands = ["/new", "/clear", "/compact", "/context", "/help", "/reload"];
+      const knownCommands = ["/new", "/clear", "/compact", "/context", "/delegate", "/help", "/reload"];
       if (!knownCommands.includes(cmd)) {
         console.log(
           `[EDITH] Unknown command: ${cmd}\n` +
-          `  Available EDITH commands: /new, /clear, /compact, /context\n` +
+          `  Available EDITH commands: /new, /clear, /compact, /context, /delegate\n` +
           `  Use /help to see all commands.`
         );
         // Return "handled" to prevent further processing
@@ -614,6 +683,6 @@ export default function edithExtension(pi: ExtensionAPI): void {
   const totalCount = toolRegistry.length;
   console.log(
     `[EDITH] Extension core routing layer loaded: ` +
-    `${registeredCount}/${totalCount} tools, 7 commands.`
+    `${registeredCount}/${totalCount} tools, 8 commands.`
   );
 }
