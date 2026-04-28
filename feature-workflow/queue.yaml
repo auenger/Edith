@@ -21,16 +21,6 @@ pending:
       3. 对话布局溢出到 Banner 上方
 
 
-  - id: feat-tui-layout
-    name: "对话布局修正 + Markdown 修复 + 思考指示器"
-    priority: 72
-    size: M
-    dependencies: [feat-tui-context-fix]
-    parent: feat-tui-interaction-optimize
-    description: |
-      修正对话布局溢出、Markdown [object Object] 渲染 bug、
-      新增 Claude Code 风格思考过程指示器。
-
 active:
 
 blocked:
@@ -109,6 +99,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-tui-layout
+    name: "对话布局修正 + Markdown 修复 + 思考指示器"
+    priority: 72
+    size: M
+    dependencies: [feat-tui-context-fix]
+    parent: feat-tui-interaction-optimize
+    completed_at: "2026-04-28T23:45:00+08:00"
+    tag: feat-tui-layout-20260428
+
   - id: feat-tui-context-fix
     name: "Context 数据修复 + 状态栏位置调整"
     priority: 72
@@ -299,7 +298,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-29T00:15:00+08:00"
+  last_updated: "2026-04-28T23:45:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"
