@@ -12,8 +12,8 @@ import { fileURLToPath } from "node:url";
 import { loadConfig, type EdithConfig } from "../config.js";
 import edithExtension from "../extension.js";
 import { buildSystemPrompt } from "../system-prompt.js";
-import { messageReducer } from "./types.js";
-import type { Message } from "./types.js";
+import { messageReducer, thinkingReducer } from "./types.js";
+import type { Message, ThinkingBlock } from "./types.js";
 import { ContextMonitor, type PressureState, type RoundData } from "../context-monitor.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,11 +21,15 @@ const __dirname = dirname(__filename);
 
 export interface AgentSessionState {
   messages: Message[];
+  thinkingBlocks: ThinkingBlock[];
   isProcessing: boolean;
   initialized: boolean;
   error: string | null;
   config: EdithConfig | null;
   sendUserMessage: (text: string) => Promise<void>;
+  toggleThinking: (id: string) => void;
+  expandAllThinking: () => void;
+  collapseAllThinking: () => void;
   monitorData: MonitorData | null;
 }
 
@@ -38,6 +42,7 @@ export interface MonitorData {
 
 export function useAgentSession(): AgentSessionState {
   const [messages, dispatch] = useReducer(messageReducer, []);
+  const [thinkingBlocks, thinkingDispatch] = useReducer(thinkingReducer, []);
   const [isProcessing, setIsProcessing] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,11 +96,41 @@ export function useAgentSession(): AgentSessionState {
 
       // Subscribe to session events
       session.subscribe((event: any) => {
+        // Thinking events from message_update
         if (event.type === "message_update") {
-          if (event.assistantMessageEvent.type === "text_delta") {
-            dispatch({ type: "APPEND_TO_ASSISTANT", payload: event.assistantMessageEvent.delta });
+          const sub = event.assistantMessageEvent;
+          if (sub.type === "thinking_start") {
+            thinkingDispatch({ type: "START_THINKING" });
+          } else if (sub.type === "thinking_delta") {
+            thinkingDispatch({ type: "APPEND_THINKING", payload: sub.delta });
+          } else if (sub.type === "thinking_end") {
+            thinkingDispatch({ type: "END_THINKING" });
+          } else if (sub.type === "text_delta") {
+            dispatch({ type: "APPEND_TO_ASSISTANT", payload: sub.delta });
           }
         }
+
+        // Tool execution events
+        if (event.type === "tool_execution_start") {
+          thinkingDispatch({
+            type: "START_TOOL_CALL",
+            payload: { toolCallId: event.toolCallId, toolName: event.toolName },
+          });
+        }
+        if (event.type === "tool_execution_end") {
+          const summary = typeof event.result === "string"
+            ? event.result.slice(0, 80)
+            : event.result?.message ?? event.result?.content ?? "done";
+          thinkingDispatch({
+            type: "END_TOOL_CALL",
+            payload: {
+              toolCallId: event.toolCallId,
+              summary: String(summary).slice(0, 80),
+              isError: event.isError,
+            },
+          });
+        }
+
         if (event.type === "agent_end") {
           dispatch({ type: "COMPLETE_ASSISTANT" });
           setIsProcessing(false);
@@ -166,6 +201,18 @@ export function useAgentSession(): AgentSessionState {
     }
   }, []);
 
+  const toggleThinking = useCallback((id: string) => {
+    thinkingDispatch({ type: "TOGGLE_THINKING", payload: id });
+  }, []);
+
+  const expandAllThinking = useCallback(() => {
+    thinkingDispatch({ type: "EXPAND_ALL_THINKING" });
+  }, []);
+
+  const collapseAllThinking = useCallback(() => {
+    thinkingDispatch({ type: "COLLAPSE_ALL_THINKING" });
+  }, []);
+
   const initStartedRef = useRef(false);
 
   useEffect(() => {
@@ -177,11 +224,15 @@ export function useAgentSession(): AgentSessionState {
 
   return {
     messages,
+    thinkingBlocks,
     isProcessing,
     initialized,
     error,
     config,
     sendUserMessage,
+    toggleThinking,
+    expandAllThinking,
+    collapseAllThinking,
     monitorData,
   };
 }
