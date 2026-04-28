@@ -38,14 +38,22 @@ export interface RepoConfig {
   stack?: string;
 }
 
+/** @deprecated Use ContextBudget instead. Kept for backward compat mapping. */
 export interface TokenBudget {
   routing_table: number;
   quick_ref: number;
   distillate_fragment: number;
 }
 
+export interface ContextBudget {
+  routing_table: number;
+  quick_ref: number;
+  distillate_per_query: number;
+  max_fragments_per_route: number;
+}
+
 export interface AgentConfig {
-  token_budget: TokenBudget;
+  context_budget: ContextBudget;
   auto_refresh: boolean;
   refresh_interval: string;
 }
@@ -59,14 +67,15 @@ export interface EdithConfig {
 
 // ── Default Values ────────────────────────────────────────────────
 
-const DEFAULT_TOKEN_BUDGET: TokenBudget = {
+const DEFAULT_CONTEXT_BUDGET: ContextBudget = {
   routing_table: 500,
   quick_ref: 2000,
-  distillate_fragment: 4000,
+  distillate_per_query: 6000,
+  max_fragments_per_route: 5,
 };
 
 const DEFAULT_AGENT: Omit<AgentConfig, never> = {
-  token_budget: { ...DEFAULT_TOKEN_BUDGET },
+  context_budget: { ...DEFAULT_CONTEXT_BUDGET },
   auto_refresh: true,
   refresh_interval: "24h",
 };
@@ -288,6 +297,7 @@ export function validateConfig(raw: unknown): void {
   if (config.agent && typeof config.agent === "object") {
     const agent = config.agent as Record<string, unknown>;
 
+    // Legacy token_budget validation
     if (agent.token_budget && typeof agent.token_budget === "object") {
       const tb = agent.token_budget as Record<string, unknown>;
       for (const field of ["routing_table", "quick_ref", "distillate_fragment"] as const) {
@@ -295,6 +305,19 @@ export function validateConfig(raw: unknown): void {
         if (val !== undefined && (typeof val !== "number" || val <= 0 || !Number.isInteger(val))) {
           throw new ConfigValidationError(
             `agent.token_budget.${field} 必须为正整数，当前值: ${JSON.stringify(val)}`
+          );
+        }
+      }
+    }
+
+    // New context_budget validation
+    if (agent.context_budget && typeof agent.context_budget === "object") {
+      const cb = agent.context_budget as Record<string, unknown>;
+      for (const field of ["routing_table", "quick_ref", "distillate_per_query", "max_fragments_per_route"] as const) {
+        const val = cb[field];
+        if (val !== undefined && (typeof val !== "number" || val <= 0 || !Number.isInteger(val))) {
+          throw new ConfigValidationError(
+            `agent.context_budget.${field} 必须为正整数，当前值: ${JSON.stringify(val)}`
           );
         }
       }
@@ -321,15 +344,19 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
 
   const repos = config.repos ?? [];
 
-  const existingAgent = config.agent;
+  const existingAgent = config.agent as Record<string, unknown> | undefined;
+  const legacyBudget = existingAgent?.token_budget as Record<string, unknown> | undefined;
+  const newBudget = existingAgent?.context_budget as Record<string, unknown> | undefined;
+
   const agent: AgentConfig = {
-    token_budget: {
-      routing_table: existingAgent?.token_budget?.routing_table ?? DEFAULT_TOKEN_BUDGET.routing_table,
-      quick_ref: existingAgent?.token_budget?.quick_ref ?? DEFAULT_TOKEN_BUDGET.quick_ref,
-      distillate_fragment: existingAgent?.token_budget?.distillate_fragment ?? DEFAULT_TOKEN_BUDGET.distillate_fragment,
+    context_budget: {
+      routing_table: (newBudget?.routing_table ?? legacyBudget?.routing_table ?? DEFAULT_CONTEXT_BUDGET.routing_table) as number,
+      quick_ref: (newBudget?.quick_ref ?? legacyBudget?.quick_ref ?? DEFAULT_CONTEXT_BUDGET.quick_ref) as number,
+      distillate_per_query: (newBudget?.distillate_per_query ?? legacyBudget?.distillate_fragment ?? DEFAULT_CONTEXT_BUDGET.distillate_per_query) as number,
+      max_fragments_per_route: (newBudget?.max_fragments_per_route ?? DEFAULT_CONTEXT_BUDGET.max_fragments_per_route) as number,
     },
-    auto_refresh: existingAgent?.auto_refresh ?? DEFAULT_AGENT.auto_refresh,
-    refresh_interval: existingAgent?.refresh_interval ?? DEFAULT_AGENT.refresh_interval,
+    auto_refresh: ((existingAgent as Record<string, unknown>)?.auto_refresh as boolean) ?? DEFAULT_AGENT.auto_refresh,
+    refresh_interval: ((existingAgent as Record<string, unknown>)?.refresh_interval as string) ?? DEFAULT_AGENT.refresh_interval,
   };
 
   return {
@@ -622,10 +649,11 @@ function generateConfigYaml(config: Partial<EdithConfig>): string {
   // Agent section (use defaults)
   lines.push("");
   lines.push("agent:");
-  lines.push("  token_budget:");
+  lines.push("  context_budget:");
   lines.push("    routing_table: 500");
   lines.push("    quick_ref: 2000");
-  lines.push("    distillate_fragment: 4000");
+  lines.push("    distillate_per_query: 6000");
+  lines.push("    max_fragments_per_route: 5");
   lines.push("  auto_refresh: true");
   lines.push("  refresh_interval: 24h");
 

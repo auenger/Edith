@@ -27,28 +27,19 @@ import {
 } from "node:fs";
 import { resolve, join, basename, extname } from "node:path";
 
-import type { EdithConfig, TokenBudget, RepoConfig } from "../config.js";
+import type { EdithConfig, ContextBudget, RepoConfig } from "../config.js";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
 /** Input parameters for edith_distill */
 export interface DistillParams {
   target: string;
-  token_budget?: Partial<TokenBudget>;
-}
-
-/** Token budget with resolved defaults */
-export interface ResolvedTokenBudget {
-  routing_table: number;
-  quick_ref: number;
-  distillate_per_file: number;
 }
 
 /** Per-layer generation result */
 export interface LayerResult {
   file: string;
   tokens: number;
-  budget: number;
 }
 
 /** Layer 2 file info */
@@ -71,7 +62,6 @@ export interface DistillResult {
     };
   };
   totalTokens: number;
-  truncated: boolean;
   warnings: string[];
   distilledAt: string;
 }
@@ -125,10 +115,6 @@ function corruptedSourceError(file: string): DistillError {
     message: `源文档格式异常: ${file} 不是有效的 Markdown 文件`,
     suggestion: "建议重新扫描该服务以生成有效的源文档。",
   };
-}
-
-function budgetExceededWarning(layer: string, actual: number, budget: number): string {
-  return `${layer} 超出预算（${actual}/${budget} tokens），已应用截断策略`;
 }
 
 function partialGenerationWarning(file: string, reason: string): string {
@@ -211,21 +197,8 @@ export function loadSourceDocuments(
 }
 
 // ── Token Budget Resolution ───────────────────────────────────────
-
-/**
- * Resolve token budget from config with optional parameter overrides.
- */
-export function resolveTokenBudget(
-  config: EdithConfig,
-  overrides?: Partial<TokenBudget>,
-): ResolvedTokenBudget {
-  const cfg = config.agent.token_budget;
-  return {
-    routing_table: overrides?.routing_table ?? cfg.routing_table,
-    quick_ref: overrides?.quick_ref ?? cfg.quick_ref,
-    distillate_per_file: overrides?.distillate_fragment ?? cfg.distillate_fragment,
-  };
-}
+// Storage phase: no budget limits — distill complete content.
+// Budget is only used at consumption time (query/route).
 
 // ── Layer 0: Routing Table Generation ────────────────────────────
 
@@ -270,9 +243,6 @@ function extractRoutingEntry(
   const summaryMatch = content.match(/## Summary\s*\n([\s\S]*?)(?=\n##|\n$|$)/i);
   if (summaryMatch) {
     entry.role = summaryMatch[1].trim().split("\n")[0].replace(/^#+\s*/, "").trim();
-    if (entry.role.length > 80) {
-      entry.role = entry.role.slice(0, 77) + "...";
-    }
   }
 
   // Default role from service name
@@ -298,9 +268,7 @@ export function generateLayer0(
   workspaceRoot: string,
   service: string,
   documents: SourceDocument[],
-  budget: number,
-  warnings: string[],
-): { content: string; tokens: number; budget: number } {
+): { content: string; tokens: number } {
   const entry = extractRoutingEntry(service, documents);
   const entryLine = generateRoutingTableEntry(entry);
 
@@ -340,14 +308,13 @@ export function generateLayer0(
     }
   }
 
-  // Build the full routing table
+  // Build the full routing table — no truncation, all entries preserved
   const allEntries = [...existingEntries, entryLine];
-  const content = buildRoutingTableContent(service, allEntries, budget, warnings);
+  const content = buildRoutingTableContent(service, allEntries);
 
   return {
     content,
     tokens: estimateTokens(content),
-    budget,
   };
 }
 
@@ -357,8 +324,6 @@ export function generateLayer0(
 function buildRoutingTableContent(
   currentService: string,
   entries: string[],
-  budget: number,
-  warnings: string[],
 ): string {
   const lines: string[] = [];
 
@@ -366,7 +331,6 @@ function buildRoutingTableContent(
   lines.push("name: company-edith-routing-table");
   lines.push("description: Layer 0 routing table. Always loaded. Maps services to one-line descriptions and key constraints.");
   lines.push("layer: 0");
-  lines.push(`token_budget: ${budget}`);
   lines.push("---");
   lines.push("");
   lines.push("# Service Routing Table");
@@ -376,36 +340,8 @@ function buildRoutingTableContent(
   lines.push("| Service | Role | Stack | Owner | Key Constraints |");
   lines.push("|---------|------|-------|-------|-----------------|");
 
-  // Check if total exceeds budget and apply truncation
-  let totalTokens = estimateTokens(lines.join("\n"));
-  const maxEntryTokens = budget - totalTokens;
-
-  let usedEntries: string[] = [];
-  let entryTokens = 0;
-
-  for (const entry of entries) {
-    const entryTokenCost = estimateTokens(entry);
-    if (entryTokens + entryTokenCost <= maxEntryTokens) {
-      usedEntries.push(entry);
-      entryTokens += entryTokenCost;
-    } else {
-      // Truncate: keep newer entries (at the end), drop older ones
-      warnings.push(mergeConflictWarning(
-        `routing-table 超出 ${budget} token 预算，已裁剪低优先级条目`
-      ));
-      // Remove oldest entries to make room
-      while (usedEntries.length > 0 && entryTokens + entryTokenCost > maxEntryTokens) {
-        const removed = usedEntries.shift()!;
-        entryTokens -= estimateTokens(removed);
-      }
-      if (entryTokens + entryTokenCost <= maxEntryTokens) {
-        usedEntries.push(entry);
-        entryTokens += entryTokenCost;
-      }
-    }
-  }
-
-  lines.push(...usedEntries);
+  // All entries preserved — no truncation at storage time
+  lines.push(...entries);
 
   // Quick-Ref Paths section
   lines.push("");
@@ -414,7 +350,7 @@ function buildRoutingTableContent(
   lines.push("| Service | Quick-Ref (Layer 1) | Full Distillates (Layer 2) |");
   lines.push("|---------|---------------------|----------------------------|");
 
-  for (const entry of usedEntries) {
+  for (const entry of entries) {
     const cells = entry.split("|").map((c) => c.trim()).filter((c) => c.length > 0);
     if (cells.length >= 1) {
       const svc = cells[0];
@@ -459,9 +395,7 @@ function findRoutingTablePath(workspaceRoot: string): string | null {
 export function generateLayer1(
   service: string,
   documents: SourceDocument[],
-  budget: number,
-  warnings: string[],
-): { content: string; tokens: number; budget: number } {
+): { content: string; tokens: number } {
   const lines: string[] = [];
 
   // Frontmatter
@@ -474,7 +408,6 @@ export function generateLayer1(
     lines.push(`  - "${service}/docs/${doc.filename}"`);
   }
   lines.push(`created: "${new Date().toISOString()}"`);
-  lines.push(`token_budget: ${budget}`);
   lines.push("---");
   lines.push("");
   lines.push(`# ${service} Quick-Ref`);
@@ -488,17 +421,16 @@ export function generateLayer1(
   lines.push("- Run: `npm start`");
   lines.push("- Lint: `npm run lint`");
 
-  // Key Constraints
+  // Key Constraints — all constraints preserved, no top-5 limit
   lines.push("");
   lines.push("## Key Constraints");
   lines.push("");
 
   const constraints = extractConstraints(documents);
-  const topConstraints = constraints.slice(0, 5);
-  for (const c of topConstraints) {
+  for (const c of constraints) {
     lines.push(`- ${c}`);
   }
-  if (topConstraints.length === 0) {
+  if (constraints.length === 0) {
     lines.push("- No specific constraints detected");
   }
 
@@ -546,44 +478,11 @@ export function generateLayer1(
   lines.push(`- Data models: \`${service}/distillates/03-data-models.md\``);
   lines.push(`- Business logic: \`${service}/distillates/04-business-logic.md\``);
 
-  // Token budget enforcement with truncation
-  let content = lines.join("\n");
-  let tokens = estimateTokens(content);
+  // No truncation — complete content preserved at storage time
+  const content = lines.join("\n");
+  const tokens = estimateTokens(content);
 
-  if (tokens > budget) {
-    // Truncation strategy: remove API endpoints first, then trim Deep Dive
-    warnings.push(budgetExceededWarning("quick-ref", tokens, budget));
-
-    // Strategy: truncate API endpoints
-    const apiSectionStart = content.indexOf("## API Endpoints");
-    const deepDiveStart = content.indexOf("## Deep Dive");
-    if (apiSectionStart !== -1 && deepDiveStart !== -1) {
-      const apiSection = content.slice(apiSectionStart, deepDiveStart);
-      const endpointLines = apiSection.split("\n").filter((l) => l.startsWith("|") && !l.includes("---") && !l.includes("Method"));
-      const keptCount = Math.max(0, Math.floor(endpointLines.length * (budget / tokens)));
-
-      if (keptCount < endpointLines.length) {
-        const keptEndpoints = endpointLines.slice(0, keptCount);
-        const truncatedApiSection = [
-          "## API Endpoints",
-          "",
-          "| Method | Path | Purpose |",
-          "|--------|------|---------|",
-          ...keptEndpoints,
-          "",
-          `> Showing ${keptCount}/${endpointLines.length} endpoints (truncated for token budget)`,
-          "",
-        ].join("\n");
-
-        content = content.slice(0, apiSectionStart) + truncatedApiSection + content.slice(deepDiveStart);
-        warnings.push(`quick-ref 超出预算，已截断 API 端点列表（保留 ${keptCount}/${endpointLines.length} 个）`);
-      }
-    }
-
-    tokens = estimateTokens(content);
-  }
-
-  return { content, tokens, budget };
+  return { content, tokens };
 }
 
 interface EndpointInfo {
@@ -737,7 +636,6 @@ interface DistillateTopic {
 export function generateLayer2(
   service: string,
   documents: SourceDocument[],
-  budget: number,
   warnings: string[],
 ): { files: DistillateFileInfo[]; fragments: Map<string, string>; totalTokens: number } {
   const topics = determineTopics(documents);
@@ -749,7 +647,6 @@ export function generateLayer2(
     const filename = `${String(topic.index).padStart(2, "0")}-${topic.slug}.md`;
     const content = buildDistillateFragment(service, topic, documents);
 
-    // Check if content was generated (source may be missing)
     if (!content.trim()) {
       warnings.push(partialGenerationWarning(filename, "源文档不完整"));
       files.push({
@@ -761,19 +658,10 @@ export function generateLayer2(
       continue;
     }
 
-    let fragmentContent = content;
-    let tokens = estimateTokens(fragmentContent);
+    // No truncation — complete content preserved at storage time
+    const tokens = estimateTokens(content);
 
-    // Enforce per-file budget
-    if (tokens > budget) {
-      // Truncate to budget
-      const maxChars = budget * 3;
-      fragmentContent = fragmentContent.slice(0, maxChars) + "\n\n[... truncated for token budget ...]";
-      tokens = estimateTokens(fragmentContent);
-      warnings.push(budgetExceededWarning(`distillate/${filename}`, tokens, budget));
-    }
-
-    fragments.set(filename, fragmentContent);
+    fragments.set(filename, content);
     files.push({
       file: filename,
       tokens,
@@ -1061,7 +949,7 @@ export function persistDistillResult(
  *
  * This is the main entry point called by the extension tool handler.
  *
- * @param params - Distill parameters (target, optional token_budget overrides)
+ * @param params - Distill parameters (target service name)
  * @param config - EDITH configuration for workspace paths and token budgets
  * @param repos - Repository configuration from edith.yaml
  * @returns Distill outcome — either a successful DistillResult or a DistillError
@@ -1089,10 +977,7 @@ export function executeDistill(
 
   const service = params.target.trim();
 
-  // ── Step 2: Resolve token budget ────────────────────────────────
-  const budget = resolveTokenBudget(config, params.token_budget);
-
-  // ── Step 3: Load source documents ───────────────────────────────
+  // ── Step 2: Load source documents ───────────────────────────────
   const sourceResult = loadSourceDocuments(workspaceRoot, service);
   if (!sourceResult.ok) {
     return { ok: false, error: sourceResult.error };
@@ -1100,16 +985,16 @@ export function executeDistill(
 
   const { documents } = sourceResult;
 
-  // ── Step 4: Generate Layer 0 — routing-table.md ────────────────
-  const layer0 = generateLayer0(workspaceRoot, service, documents, budget.routing_table, warnings);
+  // ── Step 3: Generate Layer 0 — routing-table.md (no truncation) ──
+  const layer0 = generateLayer0(workspaceRoot, service, documents);
 
-  // ── Step 5: Generate Layer 1 — quick-ref.md ────────────────────
-  const layer1 = generateLayer1(service, documents, budget.quick_ref, warnings);
+  // ── Step 4: Generate Layer 1 — quick-ref.md (no truncation) ────
+  const layer1 = generateLayer1(service, documents);
 
-  // ── Step 6: Generate Layer 2 — distillate fragments ────────────
-  const layer2 = generateLayer2(service, documents, budget.distillate_per_file, warnings);
+  // ── Step 5: Generate Layer 2 — distillate fragments (no truncation)
+  const layer2 = generateLayer2(service, documents, warnings);
 
-  // ── Step 7: Persist results ─────────────────────────────────────
+  // ── Step 6: Persist results ─────────────────────────────────────
   const persisted = persistDistillResult(
     workspaceRoot,
     service,
@@ -1118,9 +1003,8 @@ export function executeDistill(
     layer2,
   );
 
-  // ── Step 8: Assemble result ─────────────────────────────────────
+  // ── Step 7: Assemble result ─────────────────────────────────────
   const totalTokens = layer0.tokens + layer1.tokens + layer2.totalTokens;
-  const truncated = warnings.some((w) => w.includes("超出预算") || w.includes("truncated"));
 
   const result: DistillResult = {
     service,
@@ -1128,12 +1012,10 @@ export function executeDistill(
       layer0: {
         file: persisted.layer0File,
         tokens: layer0.tokens,
-        budget: layer0.budget,
       },
       layer1: {
         file: persisted.layer1File,
         tokens: layer1.tokens,
-        budget: layer1.budget,
       },
       layer2: {
         files: layer2.files,
@@ -1141,7 +1023,6 @@ export function executeDistill(
       },
     },
     totalTokens,
-    truncated,
     warnings,
     distilledAt: new Date().toISOString(),
   };
@@ -1163,11 +1044,11 @@ export function formatDistillSummary(result: DistillResult): string {
     "",
     "  Layer 0 (routing-table):",
     "    文件: " + result.layers.layer0.file,
-    "    Tokens: " + result.layers.layer0.tokens + " / " + result.layers.layer0.budget,
+    "    Tokens: " + result.layers.layer0.tokens,
     "",
     "  Layer 1 (quick-ref):",
     "    文件: " + result.layers.layer1.file,
-    "    Tokens: " + result.layers.layer1.tokens + " / " + result.layers.layer1.budget,
+    "    Tokens: " + result.layers.layer1.tokens,
     "",
     "  Layer 2 (distillates):",
     "    片段数: " + result.layers.layer2.files.length,
@@ -1181,7 +1062,6 @@ export function formatDistillSummary(result: DistillResult): string {
 
   lines.push("");
   lines.push("  总 Token 数: " + result.totalTokens);
-  lines.push("  截断: " + (result.truncated ? "是" : "否"));
   lines.push("  蒸馏时间: " + result.distilledAt);
 
   if (result.warnings.length > 0) {

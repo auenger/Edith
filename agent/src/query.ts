@@ -475,7 +475,7 @@ function loadLayer2(
   entry: RoutingTableEntry,
   question: string,
   tokenBudget: number
-): { fragments: DistillateFragment[]; warning?: QueryWarning } {
+): { fragments: DistillateFragment[]; unloadedTitles: Array<{ file: string; name: string }>; warning?: QueryWarning } {
   const distillatesDir = entry.distillatesPath
     ? join(workspaceRoot, entry.distillatesPath)
     : join(workspaceRoot, "distillates", entry.service);
@@ -483,6 +483,7 @@ function loadLayer2(
   if (!existsSync(distillatesDir) || !statSync(distillatesDir).isDirectory()) {
     return {
       fragments: [],
+      unloadedTitles: [],
       warning: {
         code: "MISSING_LAYER2",
         service: entry.service,
@@ -500,6 +501,7 @@ function loadLayer2(
   } catch {
     return {
       fragments: [],
+      unloadedTitles: [],
       warning: {
         code: "CORRUPTED_FILE",
         service: entry.service,
@@ -511,6 +513,7 @@ function loadLayer2(
   if (files.length === 0) {
     return {
       fragments: [],
+      unloadedTitles: [],
       warning: {
         code: "MISSING_LAYER2",
         service: entry.service,
@@ -579,13 +582,12 @@ function loadLayer2(
   // Sort by score descending
   scoredFiles.sort((a, b) => b.score - a.score);
 
-  // Load fragments up to token budget
+  // Load fragments up to token budget — no truncation, just budget-aware selection
   const fragments: DistillateFragment[] = [];
+  const unloadedTitles: Array<{ file: string; name: string }> = [];
   let tokensUsed = 0;
 
-  for (const { file } of scoredFiles) {
-    if (tokensUsed >= tokenBudget) break;
-
+  for (const { file, score } of scoredFiles) {
     const filePath = join(distillatesDir, file);
     let content: string;
     try {
@@ -596,26 +598,21 @@ function loadLayer2(
 
     const estimatedTokens = estimateTokens(content);
 
-    // Skip if single fragment exceeds half the budget
-    if (estimatedTokens > tokenBudget / 2) {
-      // Truncate to budget
-      const maxChars = (tokenBudget / 2) * 3;
-      content = content.slice(0, maxChars) + "\n\n[... truncated ...]";
+    if (tokensUsed + estimatedTokens <= tokenBudget) {
+      fragments.push({
+        file: `${entry.distillatesPath || `distillates/${entry.service}`}/${file}`,
+        name: basename(file, ".md"),
+        content,
+        estimatedTokens,
+      });
+      tokensUsed += estimatedTokens;
+    } else {
+      // Budget exceeded — list as unloaded title for reference
+      unloadedTitles.push({
+        file: `${entry.distillatesPath || `distillates/${entry.service}`}/${file}`,
+        name: basename(file, ".md"),
+      });
     }
-
-    const fragmentTokens = estimateTokens(content);
-    if (tokensUsed + fragmentTokens > tokenBudget) {
-      break;
-    }
-
-    fragments.push({
-      file: `${entry.distillatesPath || `distillates/${entry.service}`}/${file}`,
-      name: basename(file, ".md"),
-      content,
-      estimatedTokens: fragmentTokens,
-    });
-
-    tokensUsed += fragmentTokens;
   }
 
   // If no scored matches, load first fragment as fallback
@@ -636,7 +633,7 @@ function loadLayer2(
     }
   }
 
-  return { fragments };
+  return { fragments, unloadedTitles };
 }
 
 // ── Answer Assembly ───────────────────────────────────────────────
@@ -650,6 +647,7 @@ function assembleAnswer(
   matchedEntries: RoutingTableEntry[],
   layer1Data: Map<string, QuickRefData>,
   layer2Fragments: Map<string, DistillateFragment[]>,
+  unloadedTitles: Map<string, Array<{ file: string; name: string }>>,
   maxDepth: 0 | 1 | 2,
   warnings: QueryWarning[]
 ): QueryResult {
@@ -751,6 +749,20 @@ function assembleAnswer(
     }
     if (hasLayer2) {
       layersLoaded.push(2);
+    }
+
+    // Show unloaded fragment titles for reference
+    if (unloadedTitles.size > 0) {
+      answerParts.push("");
+      answerParts.push("---");
+      answerParts.push("## 更多相关片段（未加载，按需查询）");
+      for (const [svc, titles] of unloadedTitles) {
+        answerParts.push("");
+        answerParts.push(`**${svc}**:`);
+        for (const t of titles) {
+          answerParts.push(`- ${t.name} (\`${t.file}\`)`);
+        }
+      }
     }
   }
 
@@ -879,16 +891,20 @@ export function executeQuery(params: QueryParams, config: EdithConfig): QueryRes
 
   // ── Layer 2: Load Distillate Fragments ────────────────────────
   const layer2Fragments = new Map<string, DistillateFragment[]>();
+  const unloadedTitles = new Map<string, Array<{ file: string; name: string }>>();
 
   if (max_depth >= 2) {
-    const tokenBudget = config.agent.token_budget.distillate_fragment;
+    const tokenBudget = config.agent.context_budget.distillate_per_query;
     for (const entry of matched) {
-      const { fragments, warning } = loadLayer2(workspaceRoot, entry, question, tokenBudget);
+      const { fragments, unloadedTitles: titles, warning } = loadLayer2(workspaceRoot, entry, question, tokenBudget);
       if (warning) {
         warnings.push(warning);
       }
       if (fragments.length > 0) {
         layer2Fragments.set(entry.service, fragments);
+      }
+      if (titles.length > 0) {
+        unloadedTitles.set(entry.service, titles);
       }
     }
   }
@@ -900,6 +916,7 @@ export function executeQuery(params: QueryParams, config: EdithConfig): QueryRes
     matched,
     layer1Data,
     layer2Fragments,
+    unloadedTitles,
     max_depth,
     warnings
   );

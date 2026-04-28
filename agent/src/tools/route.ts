@@ -691,10 +691,10 @@ function selectDistillateFragments(
   // Sort by score descending, then alphabetically
   scored.sort((a, b) => b.score - a.score || a.file.localeCompare(b.file));
 
-  // Select top relevant fragments, filtering out already loaded
+  // Select relevant fragments by score, no fixed count limit
   const selected: string[] = [];
   for (const { file, score } of scored) {
-    // If no patterns matched, include first fragment as fallback
+    // Skip zero-score fragments if we already have matches
     if (score === 0 && selected.length > 0) continue;
 
     // Check if already in loaded context
@@ -702,10 +702,6 @@ function selectDistillateFragments(
     if (loadedContext.some((c) => c.includes(relativePath))) continue;
 
     selected.push(file);
-
-    // Limit to top 3 fragments for schema_change, 2 for others
-    const limit = changeType === "schema_change" ? 3 : 2;
-    if (selected.length >= limit) break;
   }
 
   // If no matches at all, include first file as fallback
