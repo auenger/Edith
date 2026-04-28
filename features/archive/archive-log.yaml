@@ -1,4 +1,33 @@
 archived:
+  - id: feat-tui-thinking
+    name: "AI 思考过程展示（折叠展开式）"
+    priority: 65
+    size: S
+    dependencies: [feat-tui-ink-layout]
+    parent: feat-tui-redesign
+    completed: "2026-04-28T21:45:00+08:00"
+    tag: feat-tui-thinking-20260428
+    merge_commit: e1fe8c1
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-thinking
+    worktree_deleted: true
+    worktree_path: ../EDITH-tui-thinking
+    conflicts:
+      had_conflict: true
+      conflict_files: [features/active-feat-tui-thinking/task.md]
+      resolved_at: "2026-04-28T21:42:00+08:00"
+      re_verified: true
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-28T21:30:00+08:00"
+      duration: "15 min"
+      commits: 2
+      files_changed: 6
+
   - id: feat-tui-context-monitor
     name: "Context 上下文主动监控与预警"
     priority: 68

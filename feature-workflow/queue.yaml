@@ -34,17 +34,6 @@ pending:
       终端 Markdown 渲染、代码高亮、工具调用进度指示器。
 
 active:
-  - id: feat-tui-thinking
-    name: "AI 思考过程展示（折叠展开式）"
-    priority: 65
-    size: S
-    dependencies: [feat-tui-ink-layout]
-    parent: feat-tui-redesign
-    branch: feature/tui-thinking
-    worktree: ../EDITH-tui-thinking
-    started_at: "2026-04-28T21:30:00+08:00"
-    description: |
-      AI 思考过程折叠式展示，默认一行摘要，按 T 展开。
 
 blocked:
   # ═══ Phase 2: EDITH Board 基础版 — 暂缓 ═══
@@ -122,6 +111,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-tui-thinking
+    name: "AI 思考过程展示（折叠展开式）"
+    priority: 65
+    size: S
+    dependencies: [feat-tui-ink-layout]
+    parent: feat-tui-redesign
+    completed_at: "2026-04-28T21:45:00+08:00"
+    tag: feat-tui-thinking-20260428
+
   - id: feat-tui-context-monitor
     name: "Context 上下文主动监控与预警"
     priority: 68
@@ -267,7 +265,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T21:30:00+08:00"
+  last_updated: "2026-04-28T21:45:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"
