@@ -34,6 +34,8 @@ export interface AgentSessionState {
   error: string | null;
   config: EdithConfig | null;
   sendUserMessage: (text: string) => Promise<void>;
+  sendSlashCommand: (text: string) => Promise<void>;
+  dispatch: React.Dispatch<import("./types.js").MessageAction>;
   toggleThinking: (id: string) => void;
   expandAllThinking: () => void;
   collapseAllThinking: () => void;
@@ -249,6 +251,16 @@ export function useAgentSession(): AgentSessionState {
     }
   }, []);
 
+  const sendSlashCommand = useCallback(async (text: string) => {
+    if (!sessionRef.current) return;
+
+    try {
+      await sessionRef.current.prompt(text);
+    } catch (err) {
+      dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `[ERROR] ${(err as Error).message}` });
+    }
+  }, [dispatch]);
+
   const toggleThinking = useCallback((id: string) => {
     thinkingDispatch({ type: "TOGGLE_THINKING", payload: id });
   }, []);
@@ -281,6 +293,8 @@ export function useAgentSession(): AgentSessionState {
     error,
     config,
     sendUserMessage,
+    sendSlashCommand,
+    dispatch,
     toggleThinking,
     expandAllThinking,
     collapseAllThinking,
