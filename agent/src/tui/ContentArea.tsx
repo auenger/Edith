@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Box, Static, Text } from "ink";
-import type { Message, ThinkingBlock as ThinkingBlockType } from "./types.js";
+import type { Message, ThinkingBlock as ThinkingBlockType, ToolCallInfo } from "./types.js";
 import { ThinkingBlock } from "./ThinkingBlock.js";
+import { MarkdownRenderer } from "./MarkdownRenderer.js";
+import { ToolCallIndicator } from "./ToolCallIndicator.js";
 
 interface ContentAreaProps {
   messages: Message[];
@@ -9,7 +11,16 @@ interface ContentAreaProps {
   onToggleThinking: (id: string) => void;
 }
 
-function MessageItem({ message }: { message: Message }) {
+function hasMarkdown(content: string): boolean {
+  return /[`#*_\[\]]/m.test(content);
+}
+
+const STREAMING_RENDER_THRESHOLD = 3000;
+
+const MessageItem = React.memo(function MessageItem({ message, toolCalls }: {
+  message: Message;
+  toolCalls?: ToolCallInfo[];
+}) {
   if (message.role === "system") {
     return <Text dimColor>{message.content}</Text>;
   }
@@ -25,21 +36,32 @@ function MessageItem({ message }: { message: Message }) {
   }
 
   return (
-    <Text>
-      <Text color="green">{"EDITH"}</Text>
-      {": "}
-      {message.content}
-      {message.status === "streaming" && <Text color="gray">▌</Text>}
-    </Text>
+    <Box flexDirection="column">
+      <Text>
+        <Text color="green">{"EDITH"}</Text>
+        {":"}
+      </Text>
+      {hasMarkdown(message.content) ? (
+        <MarkdownRenderer content={message.content} />
+      ) : (
+        <Text>{"  "}{message.content}</Text>
+      )}
+      {message.status === "streaming" && <Text color="gray">{"  "}▌</Text>}
+      {toolCalls && toolCalls.length > 0 && (
+        <ToolCallIndicator toolCalls={toolCalls} />
+      )}
+    </Box>
   );
-}
+});
 
 export function ContentArea({ messages, thinkingBlocks, onToggleThinking }: ContentAreaProps) {
-  const completedMessages = messages.filter(
-    (m, i) => m.status === "complete" && i < messages.length - 1
+  const completedMessages = useMemo(
+    () => messages.filter((m, i) => m.status === "complete" && i < messages.length - 1),
+    [messages]
   );
-  const liveMessages = messages.filter(
-    (m, i) => m.status === "streaming" || i === messages.length - 1
+  const liveMessages = useMemo(
+    () => messages.filter((m, i) => m.status === "streaming" || i === messages.length - 1),
+    [messages]
   );
 
   const hasThinkingBlocks = thinkingBlocks.length > 0;
