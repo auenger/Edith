@@ -1,4 +1,31 @@
 archived:
+  - id: feat-tui-slash-commands
+    name: "TUI 斜杠命令系统（本地拦截 + 命令补全）"
+    priority: 75
+    size: M
+    dependencies: []
+    parent: feat-tui-interaction-optimize
+    completed: "2026-04-29T00:15:00+08:00"
+    tag: feat-tui-slash-commands-20260428
+    merge_commit: "8129d57"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-slash-commands
+    worktree_deleted: true
+    worktree_path: ../EDITH-tui-slash-commands
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 7
+      scenarios_passed: 7
+    stats:
+      started: "2026-04-28T23:30:00+08:00"
+      duration: "45 min"
+      commits: 1
+      files_changed: 5
+
   - id: feat-tui-layout
     name: "对话布局修正 + Markdown 渲染修复 + 思考指示器"
     priority: 72

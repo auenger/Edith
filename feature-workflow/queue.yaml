@@ -14,11 +14,14 @@ pending:
     children:
       - feat-tui-context-fix
       - feat-tui-layout
+      - feat-tui-slash-commands
+    all_children_completed: true
     description: |
       优化 EDITH Agent TUI 三个交互问题：
       1. /context 命令数据不准确（Messages/Tools/Token Detail 显示 N/A）
       2. CTX 状态栏位置不合理
       3. 对话布局溢出到 Banner 上方
+      4. 斜杠命令无补全、计数错误、渲染位置不对
 
 
 active:
@@ -99,6 +102,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-tui-slash-commands
+    name: "TUI 斜杠命令系统（本地拦截 + 命令补全）"
+    priority: 75
+    size: M
+    dependencies: []
+    parent: feat-tui-interaction-optimize
+    completed_at: "2026-04-29T00:15:00+08:00"
+    tag: feat-tui-slash-commands-20260428
+
   - id: feat-tui-layout
     name: "对话布局修正 + Markdown 修复 + 思考指示器"
     priority: 72
@@ -298,7 +310,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T23:45:00+08:00"
+  last_updated: "2026-04-29T00:15:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"
