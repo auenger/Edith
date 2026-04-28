@@ -15,6 +15,8 @@ import { buildSystemPrompt } from "../system-prompt.js";
 import { messageReducer, thinkingReducer } from "./types.js";
 import type { Message, ThinkingBlock } from "./types.js";
 import { ContextMonitor, type PressureState, type RoundData } from "../context-monitor.js";
+import { setSharedStats } from "../shared-stats.js";
+import type { SessionStats } from "../theme/context-panel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,6 +53,10 @@ export function useAgentSession(): AgentSessionState {
 
   const sessionRef = useRef<any>(null);
   const monitorRef = useRef<ContextMonitor | null>(null);
+  const userMsgCountRef = useRef(0);
+  const assistantMsgCountRef = useRef(0);
+  const toolCallCountRef = useRef(0);
+  const toolResultCountRef = useRef(0);
 
   const initialize = useCallback(async () => {
     try {
@@ -112,12 +118,14 @@ export function useAgentSession(): AgentSessionState {
 
         // Tool execution events
         if (event.type === "tool_execution_start") {
+          toolCallCountRef.current++;
           thinkingDispatch({
             type: "START_TOOL_CALL",
             payload: { toolCallId: event.toolCallId, toolName: event.toolName },
           });
         }
         if (event.type === "tool_execution_end") {
+          toolResultCountRef.current++;
           const summary = typeof event.result === "string"
             ? event.result.slice(0, 80)
             : event.result?.message ?? event.result?.content ?? "done";
@@ -133,23 +141,44 @@ export function useAgentSession(): AgentSessionState {
 
         if (event.type === "agent_end") {
           dispatch({ type: "COMPLETE_ASSISTANT" });
+          assistantMsgCountRef.current++;
           setIsProcessing(false);
+
+          // Collect session stats and context usage
+          const sdkStats = session.getSessionStats?.();
+          const contextUsage = session.getContextUsage?.() as import("../theme/context-panel.js").ContextUsage | undefined;
+
+          // Build complete SessionStats with counted messages/tools
+          const fullStats: SessionStats = {
+            userMessages: userMsgCountRef.current,
+            assistantMessages: assistantMsgCountRef.current,
+            toolCalls: toolCallCountRef.current,
+            toolResults: toolResultCountRef.current,
+            tokens: {
+              input: sdkStats?.tokens?.input ?? 0,
+              output: sdkStats?.tokens?.output ?? 0,
+              cacheRead: sdkStats?.tokens?.cacheRead ?? 0,
+              cacheWrite: sdkStats?.tokens?.cacheWrite ?? 0,
+              total: sdkStats?.tokens?.total ?? 0,
+            },
+            cost: sdkStats?.cost ?? 0,
+          };
+
+          // Share stats with extension layer for /context command
+          setSharedStats(fullStats, contextUsage ?? null);
 
           // Collect context monitor data after each round
           const mon = monitorRef.current;
           if (mon && loadedConfig.context_monitor.enabled) {
             try {
-              const sessionStats = session.getSessionStats?.();
-              const contextUsage = session.getContextUsage?.();
-
-              if (sessionStats || contextUsage) {
+              if (sdkStats || contextUsage) {
                 mon.record(
                   {
-                    input: sessionStats?.tokens?.input ?? 0,
-                    output: sessionStats?.tokens?.output ?? 0,
-                    cacheRead: sessionStats?.tokens?.cacheRead ?? 0,
-                    cacheWrite: sessionStats?.tokens?.cacheWrite ?? 0,
-                    total: sessionStats?.tokens?.total ?? 0,
+                    input: sdkStats?.tokens?.input ?? 0,
+                    output: sdkStats?.tokens?.output ?? 0,
+                    cacheRead: sdkStats?.tokens?.cacheRead ?? 0,
+                    cacheWrite: sdkStats?.tokens?.cacheWrite ?? 0,
+                    total: sdkStats?.tokens?.total ?? 0,
                   },
                   {
                     tokens: contextUsage?.tokens ?? 0,
@@ -191,6 +220,7 @@ export function useAgentSession(): AgentSessionState {
 
     dispatch({ type: "ADD_USER_MESSAGE", payload: text });
     dispatch({ type: "START_ASSISTANT_MESSAGE" });
+    userMsgCountRef.current++;
     setIsProcessing(true);
 
     try {
