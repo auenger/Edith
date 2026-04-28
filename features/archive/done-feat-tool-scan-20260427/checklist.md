@@ -5,7 +5,7 @@
 ### Parameter & Routing
 - [x] `ScanParams` 接口定义完整（target, mode）
 - [x] target 支持服务名和绝对路径两种形式
-- [x] jarvis.yaml repos 映射查找正确实现
+- [x] edith.yaml repos 映射查找正确实现
 - [x] 参数校验：缺失、无效 mode 有明确错误
 
 ### Skill Integration
@@ -34,7 +34,7 @@
 - [x] 遵循 TypeScript 命名规范
 - [x] 无不必要的抽象层
 
-### JARVIS Discipline
+### EDITH Discipline
 - [x] 输出为纯 Markdown（无专有格式）
 - [x] Skills 不暴露给用户（用户只看到对话结果）
 - [x] 只提取代码中存在的事实（不编造）
@@ -44,7 +44,7 @@
 - [ ] Scenario 1-8 全部覆盖
 - [ ] 错误路径有独立测试
 - [ ] Skill 调用有 mock 隔离
-- [ ] 端到端测试：Agent → jarvis_scan → 结果
+- [ ] 端到端测试：Agent → edith_scan → 结果
 
 ### Documentation
 - [x] spec.md Technical Solution 包含完整参数契约

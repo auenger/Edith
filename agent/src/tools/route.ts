@@ -1,5 +1,5 @@
 /**
- * JARVIS Route Tool — jarvis_route implementation
+ * EDITH Route Tool — edith_route implementation
  *
  * Requirement routing analysis: determines whether a user requirement
  * needs additional context loading and which loading strategy to use.
@@ -27,7 +27,7 @@ import { resolve, join, basename } from "node:path";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
-/** Input parameters for jarvis_route */
+/** Input parameters for edith_route */
 export interface RouteParams {
   requirement: string;
   context?: string[];
@@ -242,8 +242,8 @@ function generateAliases(serviceName: string, role: string): string[] {
  */
 function findRoutingTable(workspaceRoot: string): string | null {
   const candidates = [
-    join(workspaceRoot, "skills", "company-jarvis", "routing-table.md"),
-    join(workspaceRoot, "skills", "jarvis", "routing-table.md"),
+    join(workspaceRoot, "skills", "company-edith", "routing-table.md"),
+    join(workspaceRoot, "skills", "edith", "routing-table.md"),
     join(workspaceRoot, "routing-table.md"),
   ];
 
@@ -284,7 +284,7 @@ function loadRoutingTable(
     return {
       code: "ROUTING_TABLE_NOT_FOUND",
       message: "路由表不存在，请先蒸馏至少一个服务以生成 routing-table.md",
-      suggestion: "使用 jarvis_distill 工具蒸馏至少一个服务，生成路由表后再使用 jarvis_route。",
+      suggestion: "使用 edith_distill 工具蒸馏至少一个服务，生成路由表后再使用 edith_route。",
     };
   }
 
@@ -303,7 +303,7 @@ function loadRoutingTable(
     return {
       code: "ROUTING_TABLE_NOT_FOUND",
       message: "路由表为空，请先蒸馏至少一个服务以生成 routing-table.md",
-      suggestion: "使用 jarvis_distill 工具蒸馏至少一个服务。",
+      suggestion: "使用 edith_distill 工具蒸馏至少一个服务。",
     };
   }
 
@@ -763,12 +763,12 @@ function calculateConfidence(
 // ── Main Route Function ───────────────────────────────────────────
 
 /**
- * Execute a JARVIS route analysis.
+ * Execute a EDITH route analysis.
  *
  * This is the main entry point called by the extension tool handler.
  *
  * @param params - Route parameters (requirement, context)
- * @param workspaceRoot - Workspace root directory from jarvis.yaml
+ * @param workspaceRoot - Workspace root directory from edith.yaml
  * @returns Route outcome — either a successful RouteResult or a RouteError
  */
 export function executeRoute(
@@ -867,7 +867,7 @@ export function executeRoute(
  */
 export function formatRouteSummary(result: RouteResult): string {
   const lines: string[] = [
-    "JARVIS 需求路由分析",
+    "EDITH 需求路由分析",
     "",
     `  决策: ${result.decision}`,
     `  匹配服务: ${result.services.length > 0 ? result.services.join(", ") : "无"}`,
@@ -897,7 +897,7 @@ export function formatRouteSummary(result: RouteResult): string {
  */
 export function formatRouteError(error: RouteError): string {
   return [
-    "JARVIS 需求路由分析失败",
+    "EDITH 需求路由分析失败",
     "",
     `  错误: ${error.message}`,
     `  代码: ${error.code}`,

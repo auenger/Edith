@@ -1,6 +1,6 @@
 # Rollout 确认清单
 
-在把一个生成出来的 JARVIS 称为 试点-ready 之前，使用这份清单。
+在把一个生成出来的 EDITH 称为 试点-ready 之前，使用这份清单。
 
 ## 已由 humans 确认的 truth
 

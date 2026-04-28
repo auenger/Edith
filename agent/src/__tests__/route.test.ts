@@ -1,5 +1,5 @@
 /**
- * Unit tests for jarvis_route tool (route.ts)
+ * Unit tests for edith_route tool (route.ts)
  *
  * Tests all 7 scenarios from the spec:
  *   Scenario 1: Direct routing (single service CRUD)
@@ -48,7 +48,7 @@ function createTestWorkspace(services: Array<{
   quickRef?: string;
   distillates?: Array<{ name: string; content: string }>;
 }>): string {
-  const ws = mkdtempSync(join(tmpdir(), "jarvis-route-test-"));
+  const ws = mkdtempSync(join(tmpdir(), "edith-route-test-"));
 
   // Create routing table
   const routingTableLines: string[] = [
@@ -94,10 +94,10 @@ function createTestWorkspace(services: Array<{
   routingTableLines.push("- Layer 2: on-demand");
 
   // Write routing table
-  const companyJarvisDir = join(ws, "skills", "company-jarvis");
-  mkdirSync(companyJarvisDir, { recursive: true });
+  const companyEdithDir = join(ws, "skills", "company-edith");
+  mkdirSync(companyEdithDir, { recursive: true });
   writeFileSync(
-    join(companyJarvisDir, "routing-table.md"),
+    join(companyEdithDir, "routing-table.md"),
     routingTableLines.join("\n"),
     "utf-8",
   );
@@ -357,7 +357,7 @@ describe("Scenario 4: Ambiguous service name", () => {
 
 describe("Scenario 5: routing-table.md not found", () => {
   it("should return ROUTING_TABLE_NOT_FOUND when no routing table", () => {
-    const ws = mkdtempSync(join(tmpdir(), "jarvis-route-test-empty-"));
+    const ws = mkdtempSync(join(tmpdir(), "edith-route-test-empty-"));
     try {
       const outcome = executeRoute(
         { requirement: "修改订单创建接口" },
@@ -368,7 +368,7 @@ describe("Scenario 5: routing-table.md not found", () => {
       if (outcome.ok) return;
       assert.equal(outcome.error.code, "ROUTING_TABLE_NOT_FOUND");
       assert.ok(outcome.error.message.includes("routing-table.md"));
-      assert.ok(outcome.error.suggestion.includes("jarvis_distill"));
+      assert.ok(outcome.error.suggestion.includes("edith_distill"));
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -614,7 +614,7 @@ describe("Confidence scoring", () => {
   });
 
   it("should have 0 confidence for empty workspace (handled as error)", () => {
-    const emptyWs = mkdtempSync(join(tmpdir(), "jarvis-route-test-conf-"));
+    const emptyWs = mkdtempSync(join(tmpdir(), "edith-route-test-conf-"));
     try {
       const outcome = executeRoute(
         { requirement: "修改订单接口" },
@@ -741,12 +741,12 @@ describe("formatRouteError", () => {
     const output = formatRouteError({
       code: "ROUTING_TABLE_NOT_FOUND",
       message: "路由表不存在",
-      suggestion: "请先执行 jarvis_distill",
+      suggestion: "请先执行 edith_distill",
     });
 
     assert.ok(output.includes("ROUTING_TABLE_NOT_FOUND"));
     assert.ok(output.includes("路由表不存在"));
-    assert.ok(output.includes("jarvis_distill"));
+    assert.ok(output.includes("edith_distill"));
   });
 });
 

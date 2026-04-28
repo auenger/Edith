@@ -1,4 +1,4 @@
-# [Company / Product] JARVIS
+# [Company / Product] EDITH
 
 [Company / Product] knowledge routing and synthesis layer for agents.
 
@@ -11,7 +11,7 @@ This repository helps agents:
 ## What this repository is for
 
 State in 2-4 sentences:
-- what this JARVIS covers,
+- what this EDITH covers,
 - who uses it,
 - what the current rollout scope is,
 - and what business loop it is helping unlock first.
@@ -22,12 +22,12 @@ State in 2-4 sentences:
 - source-specific question → `sources/<source>/README.md`
 - cross-domain question → `cross-cutting/*.md`
 - reusable helper or manual → `tools/*`
-- maintain the JARVIS itself → root `MAINTENANCE.md`
+- maintain the EDITH itself → root `MAINTENANCE.md`
 
 ## Repository shape
 
 ```text
-<company>-jarvis/
+<company>-edith/
 ├── README.md
 ├── MAINTENANCE.md
 ├── modules/
@@ -45,7 +45,7 @@ State in 2-4 sentences:
 - included workflows: `<list>`
 - explicitly out of scope: `<list>`
 
-## How to work with this JARVIS
+## How to work with this EDITH
 
 ### START
 Read the most relevant stable entrypoint first.

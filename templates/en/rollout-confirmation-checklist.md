@@ -1,6 +1,6 @@
 # Rollout Confirmation Checklist
 
-Use this checklist before calling a generated JARVIS pilot-ready.
+Use this checklist before calling a generated EDITH pilot-ready.
 
 ## Human-confirmed truths
 

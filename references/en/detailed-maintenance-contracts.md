@@ -1,6 +1,6 @@
 # Detailed Maintenance Contracts
 
-Use this file when the generic write contracts are too abstract and you need file-by-file guidance for a company JARVIS instance.
+Use this file when the generic write contracts are too abstract and you need file-by-file guidance for a company EDITH instance.
 
 ## `overview.md`
 
@@ -126,10 +126,10 @@ Point agents toward version-level change understanding.
 ### Should not contain
 - bloated release-note copies if a better source already exists
 
-## `skills/<company-jarvis>/SKILL.md`
+## `skills/<company-edith>/SKILL.md`
 
 ### Purpose
-Act as the main agent entrypoint into the JARVIS instance.
+Act as the main agent entrypoint into the EDITH instance.
 
 ### Should contain
 - where to look first

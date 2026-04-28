@@ -8,7 +8,7 @@
 - [x] 确认 pi SDK TUI 输出是否支持 ANSI escape sequence 直通
 
 ### 2. Arc Reactor LOGO 设计
-- [x] 设计 Arc Reactor 风格的 ASCII art LOGO（同心圆弧 + JARVIS 文字 + 发光核心） — Scenario 1, 3
+- [x] 设计 Arc Reactor 风格的 ASCII art LOGO（同心圆弧 + EDITH 文字 + 发光核心） — Scenario 1, 3
 - [x] 定义 3 层色带：外环 #003355、中环 #0066aa、核心 #00d4ff/#00ffff — Scenario 6
 - [x] 为 LOGO 的每个字符分配渐变色值，生成 LOGO 色值映射表
 - [x] 创建纯字符密度版本（░▒█）用于无颜色终端降级 — Scenario 3
@@ -29,9 +29,9 @@
 
 ### 4. TUI 主题集成
 - [x] 注册自定义 banner：启动时输出 Arc Reactor LOGO + "AI Knowledge Infrastructure" — Scenario 1
-- [x] 自定义提示符为 `JARVIS>`（cyan 高亮）— Scenario 4
+- [x] 自定义提示符为 `EDITH>`（cyan 高亮）— Scenario 4
 - [x] 实现底部状态栏：workspace 路径 │ 服务数 │ artifact 数 — Scenario 5
-- [x] 状态栏数据源对接：读取 jarvis.yaml workspace 配置 + 扫描 knowledge 目录统计
+- [x] 状态栏数据源对接：读取 edith.yaml workspace 配置 + 扫描 knowledge 目录统计
 
 ### 5. 降级与兼容性
 - [x] 在 true-color 终端（iTerm2, Windows Terminal, Kitty）测试渐变效果 — Scenario 1, 6
@@ -41,7 +41,7 @@
 - [x] 验证无乱码：所有 escape sequence 正确闭合（`\033[0m`）
 
 ### 6. 配置支持（可选）
-- [x] 在 jarvis.yaml 中添加 theme 配置段（style / color_scheme / show_reactor）
+- [x] 在 edith.yaml 中添加 theme 配置段（style / color_scheme / show_reactor）
 - [x] 读取 theme 配置，支持切换 LOGO 风格（arc-reactor / minimal / classic）
 
 ## Progress Log

@@ -1,5 +1,5 @@
 /**
- * Unit tests for jarvis_query tool (query.ts)
+ * Unit tests for edith_query tool (query.ts)
  *
  * Tests all 8 scenarios from the spec:
  *   Scenario 1: Simple query
@@ -26,7 +26,7 @@ import {
   type QueryParams,
   type QueryResult,
 } from "../query.js";
-import type { JarvisConfig } from "../config.js";
+import type { EdithConfig } from "../config.js";
 
 // ── Test Fixtures ─────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ function createTestWorkspace(services: Array<{
   quickRef?: string;
   distillates?: Array<{ name: string; content: string }>;
 }>): string {
-  const ws = mkdtempSync(join(tmpdir(), "jarvis-test-"));
+  const ws = mkdtempSync(join(tmpdir(), "edith-test-"));
 
   // Create routing table
   const routingTableLines: string[] = [
@@ -98,14 +98,14 @@ function createTestWorkspace(services: Array<{
   routingTableLines.push("- Layer 2: on-demand");
 
   // Write routing table to standard location
-  const companyJarvisDir = join(ws, "skills", "company-jarvis");
-  mkdirSync(companyJarvisDir, { recursive: true });
-  writeFileSync(join(companyJarvisDir, "routing-table.md"), routingTableLines.join("\n"), "utf-8");
+  const companyEdithDir = join(ws, "skills", "company-edith");
+  mkdirSync(companyEdithDir, { recursive: true });
+  writeFileSync(join(companyEdithDir, "routing-table.md"), routingTableLines.join("\n"), "utf-8");
 
   return ws;
 }
 
-function makeConfig(workspaceRoot: string): JarvisConfig {
+function makeConfig(workspaceRoot: string): EdithConfig {
   return {
     llm: { provider: "test", model: "test-model" },
     workspace: { root: workspaceRoot, language: "zh" },
@@ -244,7 +244,7 @@ describe("validateQueryParams", () => {
 
 describe("executeQuery — Scenario 1: Simple query", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     ws = createTestWorkspace(STANDARD_SERVICES);
@@ -313,7 +313,7 @@ describe("executeQuery — Scenario 1: Simple query", () => {
 
 describe("executeQuery — Scenario 2: Cross-service query", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     ws = createTestWorkspace(STANDARD_SERVICES);
@@ -348,11 +348,11 @@ describe("executeQuery — Scenario 2: Cross-service query", () => {
 
 describe("executeQuery — Scenario 3: Empty knowledge base", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     // Create workspace with no routing table
-    ws = mkdtempSync(join(tmpdir(), "jarvis-test-empty-"));
+    ws = mkdtempSync(join(tmpdir(), "edith-test-empty-"));
     config = makeConfig(ws);
   });
 
@@ -373,9 +373,9 @@ describe("executeQuery — Scenario 3: Empty knowledge base", () => {
   });
 
   it("should return KNOWLEDGE_BASE_EMPTY when routing table is empty", () => {
-    const companyJarvisDir = join(ws, "skills", "company-jarvis");
-    mkdirSync(companyJarvisDir, { recursive: true });
-    writeFileSync(join(companyJarvisDir, "routing-table.md"), "", "utf-8");
+    const companyEdithDir = join(ws, "skills", "company-edith");
+    mkdirSync(companyEdithDir, { recursive: true });
+    writeFileSync(join(companyEdithDir, "routing-table.md"), "", "utf-8");
 
     const result = executeQuery(
       { question: "任何问题" },
@@ -389,7 +389,7 @@ describe("executeQuery — Scenario 3: Empty knowledge base", () => {
 
 describe("executeQuery — Scenario 4: Missing Layer 1", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     ws = createTestWorkspace([
@@ -429,7 +429,7 @@ describe("executeQuery — Scenario 4: Missing Layer 1", () => {
 
 describe("executeQuery — Scenario 5: Missing Layer 2", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     ws = createTestWorkspace([
@@ -467,7 +467,7 @@ describe("executeQuery — Scenario 5: Missing Layer 2", () => {
 
 describe("executeQuery — Scenario 6: Corrupted Markdown file", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     ws = createTestWorkspace([
@@ -545,7 +545,7 @@ describe("executeQuery — Scenario 7: Large knowledge base", () => {
 
 describe("executeQuery — Scenario 8: Service not found", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     ws = createTestWorkspace(STANDARD_SERVICES);
@@ -596,7 +596,7 @@ describe("executeQuery — Parameter validation via executeQuery", () => {
 
 describe("executeQuery — Explicit services parameter", () => {
   let ws: string;
-  let config: JarvisConfig;
+  let config: EdithConfig;
 
   before(() => {
     ws = createTestWorkspace(STANDARD_SERVICES);

@@ -1,5 +1,5 @@
 ---
-type: jarvis-quick-ref
+type: edith-quick-ref
 layer: 1
 target_service: "<service-name>"
 sources:
@@ -61,4 +61,4 @@ token_budget: 2000
 - This card covers ~80% of daily development tasks
 - For detailed schemas, design decisions, or rejected alternatives, load the relevant Deep Dive fragment
 - This file must stay under 2000 tokens
-- Regenerate with: `distillator --quick-ref --jarvis-mode=repo-skill <source-docs>`
+- Regenerate with: `distillator --quick-ref --edith-mode=repo-skill <source-docs>`

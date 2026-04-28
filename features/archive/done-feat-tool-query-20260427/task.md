@@ -52,12 +52,12 @@
 - [x] 编写性能测试：50 服务知识库中仅加载目标服务相关文件
 
 ### 8. Tool Registration (feat-extension-core integration)
-- [x] 在 pi SDK Extension 中注册 jarvis_query 工具
+- [x] 在 pi SDK Extension 中注册 edith_query 工具
 - [x] 定义工具 schema：parameters + return type
-- [x] 端到端测试：Agent 对话 → jarvis_query → 带引用的回答
+- [x] 端到端测试：Agent 对话 → edith_query → 带引用的回答
 
 ## Progress Log
 | Date | Progress | Notes |
 |------|----------|-------|
 | 2026-04-27 | Spec enriched | Added OUT scope, 5 error scenarios, performance scenario, citation structure |
-| 2026-04-27 | All 8 tasks implemented | query.ts (new): full three-layer query engine. extension.ts (modified): jarvis_query tool wired with real implementation. Updated QueryParams schema to spec (services[], max_depth). |
+| 2026-04-27 | All 8 tasks implemented | query.ts (new): full three-layer query engine. extension.ts (modified): edith_query tool wired with real implementation. Updated QueryParams schema to spec (services[], max_depth). |

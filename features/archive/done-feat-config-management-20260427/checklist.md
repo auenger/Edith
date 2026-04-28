@@ -1,15 +1,15 @@
 # Checklist: feat-config-management
 
 ## TypeScript Interface
-- [x] JarvisConfig 接口定义完整（llm + workspace + repos + agent）
+- [x] EdithConfig 接口定义完整（llm + workspace + repos + agent）
 - [x] 所有子接口独立导出（LLMConfig / WorkspaceConfig / RepoConfig / AgentConfig / TokenBudget）
 - [x] language 字段为联合类型 "zh" | "en"
 - [x] api_key 和 stack 标记为可选字段
 
 ## YAML Parsing
-- [x] 使用 js-yaml 解析 jarvis.yaml
+- [x] 使用 js-yaml 解析 edith.yaml
 - [x] YAMLException 捕获并显示错误详情 + 行号 — Scenario 4
-- [x] 文件不存在时明确提示 "运行 jarvis-init" — Scenario 5
+- [x] 文件不存在时明确提示 "运行 edith-init" — Scenario 5
 - [x] 向上搜索配置文件逻辑（当前目录 → 上级目录） — Scenario 11
 
 ## Environment Variable Resolution
@@ -32,16 +32,16 @@
 - [x] repos 默认空数组 — Scenario 7
 - [x] 不覆盖用户已提供的值
 
-## jarvis-init Wizard
+## edith-init Wizard
 - [x] LLM provider 选择（openai / anthropic / ollama / other） — Scenario 3
 - [x] model 名称输入（根据 provider 建议） — Scenario 3
 - [x] api_key 输入（可选，可跳过） — Scenario 3
-- [x] workspace root 路径输入（默认 ./company-jarvis） — Scenario 3
+- [x] workspace root 路径输入（默认 ./company-edith） — Scenario 3
 - [x] language 选择（zh / en） — Scenario 3
 - [x] repo 列表添加（可重复，空行结束） — Scenario 3
-- [x] 确认并生成 jarvis.yaml — Scenario 3
+- [x] 确认并生成 edith.yaml — Scenario 3
 - [x] Ctrl+C 中断不生成不完整文件 — Scenario 10
-- [x] 已有 jarvis.yaml 时覆盖确认
+- [x] 已有 edith.yaml 时覆盖确认
 
 ## Exported API
 - [x] loadConfig() 导出供外部调用
@@ -55,8 +55,8 @@
 - [x] 不引入不必要的依赖（仅 js-yaml + CLI prompts 库）
 - [x] 无硬编码路径或 magic number
 
-## JARVIS Discipline
-- [x] 配置优于代码（用户通过 jarvis.yaml 定制，不改代码）
+## EDITH Discipline
+- [x] 配置优于代码（用户通过 edith.yaml 定制，不改代码）
 - [x] 不编造不存在的配置项
 - [x] 产出物无 proprietary format
 

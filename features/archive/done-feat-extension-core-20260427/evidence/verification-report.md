@@ -1,8 +1,8 @@
 # Verification Report: feat-extension-core
 
-**Feature**: jarvis.ts Extension Core Routing Layer  
+**Feature**: edith.ts Extension Core Routing Layer  
 **Date**: 2026-04-27  
-**Worktree**: ../JARVIS-feat-extension-core  
+**Worktree**: ../EDITH-feat-extension-core  
 **Verification Mode**: Code Analysis (non-UI backend feature)
 
 ## Task Completion Summary
@@ -38,7 +38,7 @@
 ### Scenario 1: Four tools registered — PASS
 
 **Given** Agent has started  
-**Then** jarvis_scan/distill/route/query are registered and discoverable
+**Then** edith_scan/distill/route/query are registered and discoverable
 
 **Evidence**:
 - Lines 98-199: Four tools defined with name, label, description, parameters
@@ -50,16 +50,16 @@
 
 **Given** Agent is running  
 **When** User inputs "scan user-service"  
-**Then** jarvis_scan is triggered (via System Prompt routing)
+**Then** edith_scan is triggered (via System Prompt routing)
 
 **Evidence**:
-- Lines 106-129: jarvis_scan handler accepts `target` and `mode` params
+- Lines 106-129: edith_scan handler accepts `target` and `mode` params
 - Tool descriptions guide LLM to route natural language to correct tool
 - Note: Actual LLM routing depends on System Prompt (feat-system-prompt)
 
 ### Scenario 3: Skill hidden loading — PASS
 
-**Given** jarvis_scan tool is triggered  
+**Given** edith_scan tool is triggered  
 **When** loadSkill("document-project") is called  
 **Then** Skill is loaded and user doesn't see internal names
 
@@ -114,7 +114,7 @@
 **Evidence**:
 - Lines 201-217: Registration wrapped in try/catch
 - Line 214: Failed tool pushed to `toolRegistry` with `registered: false` and error message
-- Lines 257-263: `jarvis-status` displays unavailable tools with error details
+- Lines 257-263: `edith-status` displays unavailable tools with error details
 - Registration loop continues after failure (no re-throw)
 
 ### Scenario 8: Unknown command handling (sad-path) — PASS
@@ -143,35 +143,35 @@
 
 ### Scenario 10: Event hook audit logging — PASS
 
-**Given** jarvis_scan tool registered and event hook registered  
-**When** jarvis_scan is called  
+**Given** edith_scan tool registered and event hook registered  
+**When** edith_scan is called  
 **Then** Event hook logs tool name, timestamp, param summary (no Skill names)
 
 **Evidence**:
 - Lines 221-228: `pi.on("tool_execution_start")` handler
-- Line 222: Filters `jarvis_*` tools only
-- Lines 223-226: Logs `[JARVIS AUDIT] tool=<name> time=<ISO> params=<summary>`
+- Line 222: Filters `edith_*` tools only
+- Lines 223-226: Logs `[EDITH AUDIT] tool=<name> time=<ISO> params=<summary>`
 - No Skill internal names in audit output
 
-### Scenario 11: jarvis-init stub — PASS
+### Scenario 11: edith-init stub — PASS
 
 **Given** Agent is running  
-**When** User inputs "jarvis-init"  
+**When** User inputs "edith-init"  
 **Then** Shows "not implemented yet"
 
 **Evidence**:
-- Lines 234-244: `jarvis-init` command registered
-- Line 237: Handler logs "JARVIS initialization wizard (not implemented yet)"
+- Lines 234-244: `edith-init` command registered
+- Line 237: Handler logs "EDITH initialization wizard (not implemented yet)"
 - Registration wrapped in try/catch
 
-### Scenario 12: jarvis-status shows full status — PASS
+### Scenario 12: edith-status shows full status — PASS
 
 **Given** Agent is running with config loaded  
-**When** User inputs "jarvis-status"  
+**When** User inputs "edith-status"  
 **Then** Shows registered tools count, workspace path, config status
 
 **Evidence**:
-- Lines 248-298: `jarvis-status` command registered
+- Lines 248-298: `edith-status` command registered
 - Lines 256-263: Tool count and per-tool status (available/unavailable)
 - Line 267: Workspace path from `ctx.cwd`
 - Lines 270-276: Config load status via `ctx.getSystemPrompt()`
@@ -193,7 +193,7 @@
 All 12 Gherkin scenarios are structurally satisfied by code analysis. The implementation correctly:
 - Registers 4 tools with TypeBox schemas and stub handlers
 - Implements loadSkill() with hidden Skill name mapping
-- Registers 6 commands (jarvis-init, jarvis-status, /new, /clear, /compact, unknown handler)
+- Registers 6 commands (edith-init, edith-status, /new, /clear, /compact, unknown handler)
 - Implements graceful degradation for tool registration failures
 - Filters audit logs to exclude Skill internal names
 - Uses confirmation prompts for destructive operations

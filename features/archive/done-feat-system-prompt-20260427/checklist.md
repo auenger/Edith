@@ -30,7 +30,7 @@
 - [x] 漏触发案例已收集并修复
 - [x] 全部 8 个 Scenario 回归测试通过
 
-### JARVIS Discipline
+### EDITH Discipline
 - [x] System Prompt 不暴露 Skill 名称给用户
 - [x] System Prompt 约束 Agent 不编造代码中不存在的事实
 - [x] 引用格式指向真实文件路径，不编造路径

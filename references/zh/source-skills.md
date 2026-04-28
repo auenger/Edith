@@ -30,7 +30,7 @@ Source skills 帮助 agents 访问并解释公司的数字资产。
 - 如何高效搜索它，
 - 如何解释它的结构或 taxonomy，
 - 它最适合处理哪些任务，
-- 如果这个 source 参与 JARVIS loop，应写回到哪里。
+- 如果这个 source 参与 EDITH loop，应写回到哪里。
 
 ## source skill 不应该做什么
 

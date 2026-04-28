@@ -24,7 +24,7 @@ Prove that agents can help complete a recurring cross-repo loop with less redisc
 
 ## Example outputs
 
-- `jarvis-build-brief.md`
+- `edith-build-brief.md`
 - `source-inventory.md`
 - `repo-inventory.md`
 - `workflow-inventory.md`
@@ -40,7 +40,7 @@ Prove that agents can help complete a recurring cross-repo loop with less redisc
 - agents can find the right historical context faster
 - agents can route into the right repos more reliably
 - agents can follow a real closed loop rather than stopping at a local answer
-- humans can continue the JARVIS rollout instead of treating it as a one-off artifact
+- humans can continue the EDITH rollout instead of treating it as a one-off artifact
 
 ## What this pilot does not need to prove
 

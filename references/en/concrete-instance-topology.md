@@ -1,11 +1,11 @@
 # Concrete Instance Topology
 
-A mature company-specific JARVIS instance usually needs more than a root README and a maintenance file.
+A mature company-specific EDITH instance usually needs more than a root README and a maintenance file.
 
 ## Recommended topology
 
 ```text
-<company>-jarvis/
+<company>-edith/
 ├── README.md
 ├── MAINTENANCE.md
 ├── modules/
@@ -24,7 +24,7 @@ A mature company-specific JARVIS instance usually needs more than a root README 
 ├── tools/
 │   └── <tooling-docs-or-scripts>
 ├── skills/
-│   └── <company-jarvis>/
+│   └── <company-edith>/
 │       └── SKILL.md
 └── _raw/ or _exports/
     └── <optional snapshots or exports>
@@ -60,21 +60,21 @@ Typical cross-cutting topics:
 - and system-wide constraints.
 
 ### `tools/`
-Use when the JARVIS instance needs reusable scripts or operating manuals.
+Use when the EDITH instance needs reusable scripts or operating manuals.
 
 Keep only high-signal tools here.
 Do not turn this into a generic utility bucket.
 
 ### `skills/`
-Use for the JARVIS entry skill and, where needed, additional company-specific skills that help agents route into the knowledge base.
+Use for the EDITH entry skill and, where needed, additional company-specific skills that help agents route into the knowledge base.
 
 ### `_raw/` or `_exports/`
 Optional. Use only when raw snapshots or exports must be preserved for traceability or offline use.
-Do not confuse this with the main JARVIS knowledge layer.
+Do not confuse this with the main EDITH knowledge layer.
 
 ## Topology principle
 
-A mature JARVIS instance is usually a combination of:
+A mature EDITH instance is usually a combination of:
 - central routing,
 - durable business memory,
 - source routing,

@@ -1,6 +1,6 @@
 # Verification Report: feat-tui-branding
 
-**Feature**: TUI Theme Customization (JARVIS Branding)
+**Feature**: TUI Theme Customization (EDITH Branding)
 **Date**: 2026-04-27
 **Status**: PASS
 
@@ -50,7 +50,7 @@
 | 1 | Arc Reactor LOGO (true-color) | Code analysis + test | PASS |
 | 2 | Brand interface (16-color degraded) | Code analysis + test | PASS |
 | 3 | No-color terminal (plain ASCII) | Code analysis + test | PASS |
-| 4 | Branded prompt (JARVIS>) | Code analysis + test | PASS |
+| 4 | Branded prompt (EDITH>) | Code analysis + test | PASS |
 | 5 | Status bar with workspace stats | Code analysis + test | PASS |
 | 6 | Gradient color correctness | Code analysis + test | PASS |
 | 7 | Narrow terminal edge case | Code analysis (no crash) | PASS |
@@ -58,13 +58,13 @@
 
 ### Scenario Verification Details
 
-**Scenario 1 (true-color)**: Banner contains JARVIS text, "AI Knowledge Infrastructure" subtitle, true-color ANSI escape sequences (\x1b[38;2;...), cyan core color (0;255;255), deep blue outer (0;51;85).
+**Scenario 1 (true-color)**: Banner contains EDITH text, "AI Knowledge Infrastructure" subtitle, true-color ANSI escape sequences (\x1b[38;2;...), cyan core color (0;255;255), deep blue outer (0;51;85).
 
 **Scenario 2 (16-color)**: Banner uses basic ANSI 16-color codes, all escape sequences properly closed with \x1b[0m.
 
 **Scenario 3 (no-color)**: No ANSI escape sequences in output. Uses character density (block characters) for visual depth.
 
-**Scenario 4 (prompt)**: JARVIS> prompt generated with cyan highlighting. Plain text "JARVIS> " for no-color mode.
+**Scenario 4 (prompt)**: EDITH> prompt generated with cyan highlighting. Plain text "EDITH> " for no-color mode.
 
 **Scenario 5 (status bar)**: Status bar includes workspace path, service count, and artifact count with proper formatting.
 
@@ -81,11 +81,11 @@
 | agent/src/theme/color-engine.ts | NEW | ANSI color detection and rendering engine |
 | agent/src/theme/banner.ts | NEW | Arc Reactor LOGO, prompt, status bar generation |
 | agent/src/theme/index.ts | NEW | Theme module unified interface |
-| agent/src/theme/theme-config.ts | NEW | Theme configuration parsing from jarvis.yaml |
+| agent/src/theme/theme-config.ts | NEW | Theme configuration parsing from edith.yaml |
 | agent/src/theme/workspace-stats.ts | NEW | Workspace service/artifact counting |
 | agent/src/__tests__/theme.test.ts | NEW | 38 unit tests covering all modules |
 | agent/src/index.ts | MODIFIED | Integrated theme banner, prompt, status bar |
-| agent/jarvis.yaml | MODIFIED | Added theme configuration comments |
+| agent/edith.yaml | MODIFIED | Added theme configuration comments |
 
 ## Issues
 

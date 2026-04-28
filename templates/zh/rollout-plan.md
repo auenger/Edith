@@ -1,7 +1,7 @@
 # Rollout 计划
 
 ## Stage 0 — Clarify
-- Goal: 定义 JARVIS 为什么存在，以及首先要解锁哪条闭环。
+- Goal: 定义 EDITH 为什么存在，以及首先要解锁哪条闭环。
 - Exit criteria:
   - [ ] business intent 已明确
   - [ ] 第一条有价值闭环已选定

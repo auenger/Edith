@@ -6,7 +6,7 @@ Repo skills help agents operate inside specific repositories.
 
 Repo-local truth should usually live with the repo.
 
-JARVIS can index, summarize, and route to repo skills, but it should not absorb all repo-local operating detail by default.
+EDITH can index, summarize, and route to repo skills, but it should not absorb all repo-local operating detail by default.
 
 ## When a repo skill is needed
 
@@ -20,9 +20,9 @@ Create or propose a repo skill when agents need repeated help with:
 - common bugfix patterns
 - safe writeback locations
 
-## What JARVIS should keep centrally
+## What EDITH should keep centrally
 
-JARVIS should usually keep:
+EDITH should usually keep:
 - the map of which repos exist,
 - what role each repo plays,
 - which repo skill to use,
@@ -42,7 +42,7 @@ Repo-local skills should usually own:
 
 If a task becomes repo-specific, route to the repo skill.
 
-Do not keep expanding central JARVIS docs with increasingly detailed repo instructions when that guidance belongs inside the repo.
+Do not keep expanding central EDITH docs with increasingly detailed repo instructions when that guidance belongs inside the repo.
 
 ## Quality bar
 

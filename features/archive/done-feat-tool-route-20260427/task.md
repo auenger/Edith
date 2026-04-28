@@ -55,9 +55,9 @@
 - [x] 编写单元测试：高置信度、低置信度、歧义场景
 
 ### 8. Tool Registration (feat-extension-core integration)
-- [x] 在 pi SDK Extension 中注册 jarvis_route 工具
+- [x] 在 pi SDK Extension 中注册 edith_route 工具
 - [x] 定义工具 schema：parameters + return type
-- [x] 端到端测试：Agent 对话 → jarvis_route → 路由决策建议
+- [x] 端到端测试：Agent 对话 → edith_route → 路由决策建议
 
 ## Progress Log
 | Date | Progress | Notes |

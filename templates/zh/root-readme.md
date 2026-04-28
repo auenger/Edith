@@ -1,4 +1,4 @@
-# [Company / Product] JARVIS
+# [Company / Product] EDITH
 
 面向 agents 的 [Company / Product] 知识路由与综合层。
 
@@ -11,7 +11,7 @@
 ## 这个仓库的用途
 
 用 2-4 句话说明：
-- 这个 JARVIS 覆盖什么，
+- 这个 EDITH 覆盖什么，
 - 谁在使用它，
 - 当前 rollout 范围 是什么，
 - 它正帮助优先解锁哪条业务闭环。
@@ -22,12 +22,12 @@
 - source-specific question → `sources/<source>/README.md`
 - cross-domain question → `cross-cutting/*.md`
 - reusable helper or manual → `tools/*`
-- 维护 JARVIS 本身 → 根目录 `MAINTENANCE.md`
+- 维护 EDITH 本身 → 根目录 `MAINTENANCE.md`
 
 ## 仓库结构
 
 ```text
-<company>-jarvis/
+<company>-edith/
 ├── README.md
 ├── MAINTENANCE.md
 ├── modules/
@@ -45,7 +45,7 @@
 - included workflows: `<list>`
 - explicitly out of scope: `<list>`
 
-## 如何使用这个 JARVIS
+## 如何使用这个 EDITH
 
 ### START
 先阅读最相关的稳定入口。

@@ -1,0 +1,25 @@
+llm:
+  provider: deepseek
+  model: deepseek-v4-pro
+
+workspace:
+  root: ./company-edith
+  language: zh
+
+repos:
+  - name: edith-repo
+    path: /Users/ryan/mycode/EDITH-e2e-pilot
+
+agent:
+  token_budget:
+    routing_table: 500
+    quick_ref: 2000
+    distillate_fragment: 4000
+  auto_refresh: true
+  refresh_interval: 24h
+
+# Optional theme configuration (defaults shown)
+# theme:
+#   style: "arc-reactor"        # arc-reactor (default) | minimal | classic
+#   color_scheme: "iron-man"    # iron-man (default) | warm | monochrome
+#   show_reactor: true           # show Arc Reactor LOGO on startup

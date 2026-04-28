@@ -1,6 +1,6 @@
 # Verification Report: feat-tool-scan
 
-**Feature**: jarvis_scan tool (document-project Skill integration)
+**Feature**: edith_scan tool (document-project Skill integration)
 **Date**: 2026-04-27
 **Status**: PASSED (with test items deferred)
 
@@ -58,7 +58,7 @@ All implementation tasks complete. Remaining items are test tasks deferred due t
 | File | Action | Lines |
 |------|--------|-------|
 | `agent/src/tools/scan.ts` | NEW | ~840 |
-| `agent/src/extension.ts` | MODIFIED | Updated imports, ScanParams enum, jarvis_scan execute handler |
+| `agent/src/extension.ts` | MODIFIED | Updated imports, ScanParams enum, edith_scan execute handler |
 
 ## Issues
 

@@ -1,8 +1,8 @@
-# Feature: feat-tool-route jarvis_route 工具
+# Feature: feat-tool-route edith_route 工具
 
 ## Basic Information
 - **ID**: feat-tool-route
-- **Name**: jarvis_route 工具（对接 requirement-router Skill）
+- **Name**: edith_route 工具（对接 requirement-router Skill）
 - **Priority**: 85
 - **Size**: S
 - **Dependencies**: [feat-extension-core]
@@ -20,7 +20,7 @@
 
 ## Description
 
-实现 jarvis_route 工具：需求路由分析，判断用户需求是否需要加载额外上下文，以及加载策略（direct / quick-ref / deep-dive）。
+实现 edith_route 工具：需求路由分析，判断用户需求是否需要加载额外上下文，以及加载策略（direct / quick-ref / deep-dive）。
 
 ## User Value Points
 
@@ -30,10 +30,10 @@
 ## Context Analysis
 
 ### Reference Code
-- `jarvis-skills/requirement-router/SKILL.md` — requirement-router Skill 定义
+- `edith-skills/requirement-router/SKILL.md` — requirement-router Skill 定义
 
 ### Related Documents
-- `JARVIS-PRODUCT-DESIGN.md` § 2.2 问答模式中的路由示例
+- `EDITH-PRODUCT-DESIGN.md` § 2.2 问答模式中的路由示例
 - `templates/en/routing-table.md` — 路由表消费规则
 
 ## Technical Solution
@@ -157,7 +157,7 @@ Given 知识库中不存在 routing-table.md
 When 用户说 "修改订单创建接口"
 Then 返回错误 "路由表不存在，请先蒸馏至少一个服务以生成 routing-table.md"
 And 错误类型为 ROUTING_TABLE_NOT_FOUND
-And 建议执行 jarvis_distill
+And 建议执行 edith_distill
 ```
 
 **Scenario 6: 需求描述不清晰**

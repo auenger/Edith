@@ -1,5 +1,5 @@
 /**
- * JARVIS ANSI Color Engine
+ * EDITH ANSI Color Engine
  *
  * Terminal color capability detection and ANSI escape sequence rendering.
  * Supports four levels of color support with graceful degradation:

@@ -1,9 +1,9 @@
 /**
- * JARVIS TUI Theme Module
+ * EDITH TUI Theme Module
  *
- * Provides a unified interface for JARVIS terminal branding:
+ * Provides a unified interface for EDITH terminal branding:
  *   - Arc Reactor ASCII art banner with ANSI gradient
- *   - JARVIS> branded prompt
+ *   - EDITH> branded prompt
  *   - Status bar with workspace statistics
  *   - Terminal color detection and graceful degradation
  *
@@ -25,14 +25,14 @@ import {
 
 // ── Theme Interface ──────────────────────────────────────────────
 
-export interface JarvisTheme {
+export interface EdithTheme {
   /** Detected color support level */
   colorSupport: ColorSupport;
 
   /** Pre-rendered Arc Reactor banner string */
   banner: string;
 
-  /** Pre-rendered JARVIS> prompt string */
+  /** Pre-rendered EDITH> prompt string */
   prompt: string;
 
   /** Pre-rendered separator line */
@@ -60,14 +60,14 @@ export interface JarvisTheme {
 // ── Theme Factory ────────────────────────────────────────────────
 
 /**
- * Create a JARVIS TUI theme instance.
+ * Create a EDITH TUI theme instance.
  *
  * Detects terminal color capabilities once at creation time,
  * then pre-renders the banner and prompt for fast display.
  *
  * @param overrideSupport - Override auto-detected color support (for testing)
  */
-export function createTheme(overrideSupport?: ColorSupport): JarvisTheme {
+export function createTheme(overrideSupport?: ColorSupport): EdithTheme {
   const colorSupport = overrideSupport ?? detectColorSupport();
 
   return {

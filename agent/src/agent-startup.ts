@@ -1,7 +1,7 @@
 /**
- * JARVIS Agent Startup Module
+ * EDITH Agent Startup Module
  *
- * Extracted from index.ts to allow the CLI entry point (bin/jarvis.ts)
+ * Extracted from index.ts to allow the CLI entry point (bin/edith.ts)
  * to reuse the agent initialization logic without code duplication.
  *
  * Flow: load config -> display banner -> create pi SDK session -> send system prompt
@@ -19,8 +19,8 @@ import {
   SessionManager,
 } from "@mariozechner/pi-coding-agent";
 
-import { loadConfig, ConfigError, type JarvisConfig } from "./config.js";
-import jarvisExtension from "./extension.js";
+import { loadConfig, ConfigError, type EdithConfig } from "./config.js";
+import edithExtension from "./extension.js";
 import { createTheme } from "./theme/index.js";
 import { countWorkspaceStats } from "./theme/workspace-stats.js";
 import { buildSystemPrompt } from "./system-prompt.js";
@@ -29,12 +29,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 /**
- * Start the JARVIS agent.
+ * Start the EDITH agent.
  *
  * Loads configuration, initializes the pi SDK agent session,
  * displays branding, and enters the interactive agent loop.
  *
- * @param configPath - Optional explicit path to jarvis.yaml.
+ * @param configPath - Optional explicit path to edith.yaml.
  *                      If omitted, searches upward from cwd.
  */
 export async function startAgent(configPath?: string): Promise<void> {
@@ -45,12 +45,12 @@ export async function startAgent(configPath?: string): Promise<void> {
   console.log();
   console.log(theme.banner);
   console.log();
-  console.log("[JARVIS] Starting agent initialization...\n");
+  console.log("[EDITH] Starting agent initialization...\n");
 
   // Step 1: Load configuration
-  const resolvedConfigPath = configPath ?? process.env.JARVIS_CONFIG ?? undefined;
+  const resolvedConfigPath = configPath ?? process.env.EDITH_CONFIG ?? undefined;
 
-  let config: JarvisConfig;
+  let config: EdithConfig;
   try {
     config = loadConfig(resolvedConfigPath);
   } catch (err) {
@@ -61,15 +61,15 @@ export async function startAgent(configPath?: string): Promise<void> {
     throw err;
   }
 
-  console.log(`[JARVIS] Configuration loaded successfully.`);
-  console.log(`[JARVIS]   LLM Provider:    ${config.llm.provider}`);
-  console.log(`[JARVIS]   Model:           ${config.llm.model}`);
-  console.log(`[JARVIS]   Workspace:       ${config.workspace.root}`);
-  console.log(`[JARVIS]   Language:        ${config.workspace.language}`);
-  console.log(`[JARVIS]   Repositories:    ${config.repos.length}`);
-  console.log(`[JARVIS]   Token Budget:    routing_table=${config.agent.token_budget.routing_table}, quick_ref=${config.agent.token_budget.quick_ref}, distillate_fragment=${config.agent.token_budget.distillate_fragment}`);
-  console.log(`[JARVIS]   Auto Refresh:    ${config.agent.auto_refresh}`);
-  console.log(`[JARVIS]   Theme:           ${theme.colorSupport} color support`);
+  console.log(`[EDITH] Configuration loaded successfully.`);
+  console.log(`[EDITH]   LLM Provider:    ${config.llm.provider}`);
+  console.log(`[EDITH]   Model:           ${config.llm.model}`);
+  console.log(`[EDITH]   Workspace:       ${config.workspace.root}`);
+  console.log(`[EDITH]   Language:        ${config.workspace.language}`);
+  console.log(`[EDITH]   Repositories:    ${config.repos.length}`);
+  console.log(`[EDITH]   Token Budget:    routing_table=${config.agent.token_budget.routing_table}, quick_ref=${config.agent.token_budget.quick_ref}, distillate_fragment=${config.agent.token_budget.distillate_fragment}`);
+  console.log(`[EDITH]   Auto Refresh:    ${config.agent.auto_refresh}`);
+  console.log(`[EDITH]   Theme:           ${theme.colorSupport} color support`);
   console.log();
 
   // Step 2: Initialize pi SDK
@@ -79,16 +79,16 @@ export async function startAgent(configPath?: string): Promise<void> {
     const modelRegistry = ModelRegistry.create(authStorage);
     const sessionManager = SessionManager.inMemory();
 
-    console.log("[JARVIS] Initializing pi SDK agent session...");
+    console.log("[EDITH] Initializing pi SDK agent session...");
 
     const resourceLoader = new DefaultResourceLoader({
       cwd,
       agentDir: cwd,
-      extensionFactories: [jarvisExtension],
+      extensionFactories: [edithExtension],
     });
     await resourceLoader.reload();
 
-    // Resolve model from jarvis.yaml config
+    // Resolve model from edith.yaml config
     const model = modelRegistry.find(config.llm.provider, config.llm.model);
     if (!model) {
       throw new Error(
@@ -105,7 +105,7 @@ export async function startAgent(configPath?: string): Promise<void> {
       model,
     });
 
-    console.log("[JARVIS] Agent session created successfully.\n");
+    console.log("[EDITH] Agent session created successfully.\n");
 
     // Display status bar with workspace statistics
     const stats = countWorkspaceStats(config.workspace.root);
@@ -144,7 +144,7 @@ export async function startAgent(configPath?: string): Promise<void> {
           return;
         }
         if (trimmed.toLowerCase() === "exit" || trimmed.toLowerCase() === "quit") {
-          console.log("\n  JARVIS shutting down. Goodbye.\n");
+          console.log("\n  EDITH shutting down. Goodbye.\n");
           rl.close();
           process.exit(0);
         }

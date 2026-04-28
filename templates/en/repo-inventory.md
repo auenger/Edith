@@ -8,4 +8,4 @@
 
 - Record the repo’s role, not just its name.
 - If the real source of truth lives in the repo, route toward a repo-local skill.
-- Keep low-level repo details out of central JARVIS unless there is a strong reason.
+- Keep low-level repo details out of central EDITH unless there is a strong reason.

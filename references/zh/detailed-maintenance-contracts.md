@@ -1,6 +1,6 @@
 # 详细维护契约
 
-当通用的 write contracts 过于抽象，而你又需要针对 company JARVIS instance 的逐文件指导时，请使用本文件。
+当通用的 write contracts 过于抽象，而你又需要针对 company EDITH instance 的逐文件指导时，请使用本文件。
 
 ## `overview.md`
 
@@ -126,10 +126,10 @@
 ### Should not contain
 - 如果已有更好 source，却仍复制臃肿的 release notes
 
-## `skills/<company-jarvis>/SKILL.md`
+## `skills/<company-edith>/SKILL.md`
 
 ### Purpose
-作为进入 JARVIS instance 的主 agent 入口。
+作为进入 EDITH instance 的主 agent 入口。
 
 ### Should contain
 - 应该先看哪里

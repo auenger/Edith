@@ -1,5 +1,5 @@
 /**
- * Tests for JARVIS TUI Theme module
+ * Tests for EDITH TUI Theme module
  *
  * Verifies:
  *  - Color detection logic
@@ -207,25 +207,25 @@ describe("Banner: generateBanner", () => {
     const banner = generateBanner("true-color");
     assert.ok(banner.length > 0);
     const plain = stripAnsi(banner);
-    assert.ok(plain.includes("JARVIS"), "Banner should contain JARVIS text");
+    assert.ok(plain.includes("EDITH"), "Banner should contain EDITH text");
     assert.ok(plain.includes("AI Knowledge Infrastructure"), "Banner should contain subtitle");
   });
 
   it("generates banner for 256-color without crashing", () => {
     const banner = generateBanner("256-color");
     const plain = stripAnsi(banner);
-    assert.ok(plain.includes("JARVIS"));
+    assert.ok(plain.includes("EDITH"));
   });
 
   it("generates banner for 16-color without crashing", () => {
     const banner = generateBanner("16-color");
     const plain = stripAnsi(banner);
-    assert.ok(plain.includes("JARVIS"));
+    assert.ok(plain.includes("EDITH"));
   });
 
   it("generates plain text banner for none", () => {
     const banner = generateBanner("none");
-    assert.ok(banner.includes("JARVIS"));
+    assert.ok(banner.includes("EDITH"));
     assert.ok(banner.includes("AI Knowledge Infrastructure"));
     // No ANSI escape sequences
     assert.ok(!banner.includes("\x1b["));
@@ -250,16 +250,16 @@ describe("Banner: generateBanner", () => {
 });
 
 describe("Banner: generatePrompt", () => {
-  it("generates JARVIS> prompt with color", () => {
+  it("generates EDITH> prompt with color", () => {
     const prompt = generatePrompt("true-color");
-    assert.ok(prompt.includes("JARVIS"));
+    assert.ok(prompt.includes("EDITH"));
     assert.ok(prompt.includes(">"));
     assert.ok(prompt.includes("\x1b["));
   });
 
   it("generates plain prompt for none", () => {
     const prompt = generatePrompt("none");
-    assert.equal(prompt, "JARVIS> ");
+    assert.equal(prompt, "EDITH> ");
   });
 });
 
@@ -300,7 +300,7 @@ describe("Theme: createTheme", () => {
     const theme = createTheme("none");
     assert.equal(theme.colorSupport, "none");
     assert.ok(!theme.banner.includes("\x1b["));
-    assert.equal(theme.prompt, "JARVIS> ");
+    assert.equal(theme.prompt, "EDITH> ");
   });
 
   it("statusBar generates content", () => {
@@ -313,7 +313,7 @@ describe("Theme: createTheme", () => {
   it("refreshBanner returns a new banner", () => {
     const theme = createTheme("true-color");
     const banner = theme.refreshBanner();
-    assert.ok(banner.includes("JARVIS"));
+    assert.ok(banner.includes("EDITH"));
   });
 });
 

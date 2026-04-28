@@ -1,10 +1,10 @@
 /**
- * JARVIS Agent Entry Point
+ * EDITH Agent Entry Point
  *
  * When invoked directly (e.g., via `npm start` or `tsx src/index.ts`),
  * delegates to the shared agent startup module.
  *
- * The CLI entry point (bin/jarvis.ts) also uses the same startup module,
+ * The CLI entry point (bin/edith.ts) also uses the same startup module,
  * but adds --version, --init, and config-detection logic first.
  *
  * Flow: startAgent() → load config → display banner → create session → enter loop

@@ -1,5 +1,5 @@
 /**
- * Unit tests for JARVIS System Prompt (system-prompt.ts)
+ * Unit tests for EDITH System Prompt (system-prompt.ts)
  *
  * Tests all 8 scenarios from the spec:
  *   Scenario 1: Keyword trigger accuracy — scan intent
@@ -348,11 +348,11 @@ describe("Prompt section completeness", () => {
     assert.ok(en.length > 500, "English prompt too short");
   });
 
-  it("Role definition identifies as JARVIS", () => {
+  it("Role definition identifies as EDITH", () => {
     const zh = buildSystemPrompt("zh");
     const en = buildSystemPrompt("en");
-    assert.ok(zh.includes("JARVIS"), "Chinese prompt missing JARVIS identity");
-    assert.ok(en.includes("JARVIS"), "English prompt missing JARVIS identity");
+    assert.ok(zh.includes("EDITH"), "Chinese prompt missing EDITH identity");
+    assert.ok(en.includes("EDITH"), "English prompt missing EDITH identity");
   });
 
   it("Core responsibilities list 4 capabilities", () => {

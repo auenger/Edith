@@ -1,7 +1,7 @@
 /**
- * JARVIS Query Engine — Three-Layer Progressive Loading
+ * EDITH Query Engine — Three-Layer Progressive Loading
  *
- * Implements the jarvis_query tool logic:
+ * Implements the edith_query tool logic:
  *   Layer 0: routing-table.md (always loaded, <500 token)
  *   Layer 1: quick-ref.md (per service, on-demand, <2000 token)
  *   Layer 2: distillates/*.md (precise fragments, on-demand, <4000 token total)
@@ -16,7 +16,7 @@
 
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { resolve, join, basename } from "node:path";
-import type { JarvisConfig } from "./config.js";
+import type { EdithConfig } from "./config.js";
 
 // ── Error Codes ───────────────────────────────────────────────────
 
@@ -278,14 +278,14 @@ function loadLayer0(workspaceRoot: string): { table: RoutingTable; result?: Quer
 /**
  * Find routing-table.md in the workspace.
  * Searches common locations:
- *   - {workspaceRoot}/skills/{company-jarvis}/routing-table.md
+ *   - {workspaceRoot}/skills/{company-edith}/routing-table.md
  *   - {workspaceRoot}/routing-table.md
  */
 function findRoutingTable(workspaceRoot: string): string | null {
   const candidates = [
-    // Standard: inside skills/<company-jarvis>/
-    join(workspaceRoot, "skills", "company-jarvis", "routing-table.md"),
-    join(workspaceRoot, "skills", "jarvis", "routing-table.md"),
+    // Standard: inside skills/<company-edith>/
+    join(workspaceRoot, "skills", "company-edith", "routing-table.md"),
+    join(workspaceRoot, "skills", "edith", "routing-table.md"),
     // Fallback: root level
     join(workspaceRoot, "routing-table.md"),
   ];
@@ -780,13 +780,13 @@ function assembleAnswer(
 // ── Main Query Function ───────────────────────────────────────────
 
 /**
- * Execute a JARVIS knowledge base query with three-layer progressive loading.
+ * Execute a EDITH knowledge base query with three-layer progressive loading.
  *
  * @param params - Query parameters (question, services, max_depth)
- * @param config - JARVIS configuration for workspace paths and token budgets
+ * @param config - EDITH configuration for workspace paths and token budgets
  * @returns QueryResult with answer, sources, and metadata
  */
-export function executeQuery(params: QueryParams, config: JarvisConfig): QueryResult {
+export function executeQuery(params: QueryParams, config: EdithConfig): QueryResult {
   const { question, services, max_depth = 2 } = params;
   const workspaceRoot = resolve(config.workspace.root);
   const warnings: QueryWarning[] = [];

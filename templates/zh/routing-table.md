@@ -1,5 +1,5 @@
 ---
-name: <company-jarvis-routing-table>
+name: <company-edith-routing-table>
 description: Layer 0 路由表。常驻上下文，映射服务到一句话描述和关键约束。必须控制在 500 token 以内。
 layer: 0
 token_budget: 500

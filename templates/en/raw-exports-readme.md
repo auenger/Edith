@@ -13,8 +13,8 @@ Use `_raw/` or `_exports/` only when raw snapshots or exports are needed for:
 ## Boundary rules
 
 - treat this as storage, not the main knowledge layer
-- do not confuse raw exports with JARVIS summaries or routing docs
-- keep the main JARVIS files lightweight and synthesis-oriented
+- do not confuse raw exports with EDITH summaries or routing docs
+- keep the main EDITH files lightweight and synthesis-oriented
 - store provenance when possible: source, date, method, owner
 
 ## Minimal metadata to capture

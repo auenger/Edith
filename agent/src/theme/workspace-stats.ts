@@ -1,5 +1,5 @@
 /**
- * JARVIS Workspace Statistics
+ * EDITH Workspace Statistics
  *
  * Scans the workspace directory to count services and artifacts
  * for the TUI status bar display.
@@ -20,7 +20,7 @@ export interface WorkspaceStats {
 }
 
 /**
- * Count services and artifacts in the JARVIS workspace.
+ * Count services and artifacts in the EDITH workspace.
  *
  * A "service" is a subdirectory in the workspace root that contains
  * at least one markdown file (quick-ref.md, routing-table.md, or distillates/).

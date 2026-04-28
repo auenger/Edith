@@ -1,7 +1,7 @@
 # 实例骨架示例
 
 ```text
-<company>-jarvis/
+<company>-edith/
 ├── README.md
 ├── MAINTENANCE.md
 ├── modules/
@@ -25,7 +25,7 @@
 │   ├── README.md
 │   └── <scripts or manuals>
 ├── skills/
-│   ├── <company-jarvis>/
+│   ├── <company-edith>/
 │   │   ├── SKILL.md              # 入口技能（工作流）
 │   │   └── routing-table.md      # Layer 0 路由表（<500 token，常驻）
 │   ├── <repo-a>/

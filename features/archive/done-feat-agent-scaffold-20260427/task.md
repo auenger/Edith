@@ -4,7 +4,7 @@
 
 ### 1. 项目初始化
 - [x] 创建 `agent/` 目录 — 基础目录结构
-- [x] 创建 `package.json` — name: "jarvis-agent", dependencies 含 `@mariozechner/pi-coding-agent`, scripts 含 `"start": "tsx src/index.ts"` — Scenario 6
+- [x] 创建 `package.json` — name: "edith-agent", dependencies 含 `@mariozechner/pi-coding-agent`, scripts 含 `"start": "tsx src/index.ts"` — Scenario 6
 - [x] 创建 `tsconfig.json` — strict: true, target: ES2022, module: NodeNext, outDir: ./dist — Scenario 1
 - [x] 执行 `npm install` 验证依赖安装成功 — Scenario 6
 
@@ -15,14 +15,14 @@
 - [x] 记录 pi SDK API 签名到 Progress Log，供后续 feature 参考
 
 ### 3. 配置解析
-- [x] 创建 `src/config.ts` — 定义 `JarvisConfig` 接口（llm / workspace / repos）— Scenario 2
-- [x] 实现 `loadConfig(configPath: string): JarvisConfig` 函数 — 使用 js-yaml 解析 — Scenario 2
+- [x] 创建 `src/config.ts` — 定义 `EdithConfig` 接口（llm / workspace / repos）— Scenario 2
+- [x] 实现 `loadConfig(configPath: string): EdithConfig` 函数 — 使用 js-yaml 解析 — Scenario 2
 - [x] 实现 `validateConfigExists(configPath: string)` — 文件不存在时抛出友好错误 — Scenario 4
 - [x] 处理 YAML 解析异常 — 捕获并格式化错误信息（含行号）— Scenario 5
 
 ### 4. Extension 骨架
 - [x] 创建 `src/extension.ts` — 导出默认函数，接受 `pi: ExtensionAPI` 参数 — Scenario 3
-- [x] 函数体内仅打印 "JARVIS Extension loaded" 日志，不注册任何工具 — Scenario 3
+- [x] 函数体内仅打印 "EDITH Extension loaded" 日志，不注册任何工具 — Scenario 3
 - [x] 确认 pi SDK 能正确加载 Extension（无报错）— Scenario 3
 
 ### 5. 入口文件
@@ -31,7 +31,7 @@
 - [x] 错误处理：配置缺失或格式错误时的友好退出 — Scenario 4, 5
 
 ### 6. 示例配置与文档
-- [x] 创建 `agent/jarvis.yaml` — 最小可运行配置（llm + workspace + 空 repos）— Scenario 2
+- [x] 创建 `agent/edith.yaml` — 最小可运行配置（llm + workspace + 空 repos）— Scenario 2
 - [x] 创建 `agent/README.md` — 安装步骤、配置说明、运行命令 — Scenario 1
 - [x] 验证完整流程：`cd agent && npm install && npm start` 成功启动 — Scenario 1, 6
 

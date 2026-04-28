@@ -3,11 +3,11 @@
 ## Completion Checklist
 
 ### Development
-- [x] Arc Reactor ASCII art LOGO 已设计（同心圆弧 + JARVIS 文字 + 发光核心）
+- [x] Arc Reactor ASCII art LOGO 已设计（同心圆弧 + EDITH 文字 + 发光核心）
 - [x] ANSI 渐变色引擎实现（true-color / 256-color / 16-color / none 四级降级）
 - [x] 终端颜色能力检测函数完成
 - [x] 自定义 banner 注册到 pi SDK TUI
-- [x] JARVIS> 提示符品牌化
+- [x] EDITH> 提示符品牌化
 - [x] 底部状态栏实现
 - [x] Code self-tested
 
@@ -40,7 +40,7 @@
 - [x] spec.md Technical Solution section filled
 - [x] task.md Progress Log updated
 
-### JARVIS Discipline
+### EDITH Discipline
 - [x] Skills not exposed to user
 - [x] No code facts fabricated
 - [x] LOGO 实现不依赖外部资源（纯终端输出，无需图片文件）

@@ -1,7 +1,7 @@
 # Rollout Plan
 
 ## Stage 0 — Clarify
-- Goal: define why JARVIS exists and what loop to unlock first.
+- Goal: define why EDITH exists and what loop to unlock first.
 - Exit criteria:
   - [ ] business intent is explicit
   - [ ] first valuable loop is chosen

@@ -1,8 +1,8 @@
 # Positioning
 
-## What JARVIS is
+## What EDITH is
 
-JARVIS is an **agent-first organizational capability layer**.
+EDITH is an **agent-first organizational capability layer**.
 
 It helps agents:
 - understand company digital assets,
@@ -10,7 +10,7 @@ It helps agents:
 - follow real workflows,
 - and preserve what they learn so the organization compounds capability over time.
 
-A JARVIS rollout usually includes:
+A EDITH rollout usually includes:
 - memory and routing,
 - source-facing skills,
 - repo-local skills,
@@ -18,9 +18,9 @@ A JARVIS rollout usually includes:
 - rollout ownership,
 - and update discipline.
 
-## What JARVIS is not
+## What EDITH is not
 
-JARVIS is not:
+EDITH is not:
 - a raw document mirror,
 - an issue dump,
 - a one-shot repo generator,
@@ -41,9 +41,9 @@ If the rollout cannot unlock such a loop, it is still scaffolding.
 
 ## Why this matters
 
-Without JARVIS, agents stay session-local and amnesiac.
+Without EDITH, agents stay session-local and amnesiac.
 
-With JARVIS, organizations can start to:
+With EDITH, organizations can start to:
 - reduce cross-team waiting cost,
 - preserve engineering judgment,
 - help more roles participate in broader delivery loops,
@@ -51,7 +51,7 @@ With JARVIS, organizations can start to:
 
 ## Working stance
 
-Treat JARVIS construction as:
+Treat EDITH construction as:
 - organizational design,
 - knowledge architecture,
 - and workflow enablement.

@@ -24,7 +24,7 @@ State:
 1. **Start** — `<what happens first>`
 2. **Work** — `<main execution>`
 3. **Verify** — `<evidence or checks>`
-4. **Writeback** — `<how JARVIS and/or source systems are updated>`
+4. **Writeback** — `<how EDITH and/or source systems are updated>`
 
 ## Handoffs
 

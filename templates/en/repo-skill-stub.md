@@ -34,7 +34,7 @@ This repo skill should own:
 - `<repo-local truth>`
 - `<repo-local truth>`
 
-This repo skill should defer back to JARVIS for:
+This repo skill should defer back to EDITH for:
 - company-wide routing
 - cross-repo workflow coordination
 - organization-level rollout and ownership

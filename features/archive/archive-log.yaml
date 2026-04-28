@@ -12,7 +12,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-e2e-pilot
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-e2e-pilot
+    worktree_path: ../EDITH-feat-e2e-pilot
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -42,7 +42,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-packaging
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-packaging
+    worktree_path: ../EDITH-feat-packaging
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -75,7 +75,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-system-prompt
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-system-prompt
+    worktree_path: ../EDITH-feat-system-prompt
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -92,7 +92,7 @@ archived:
       files_changed: 5
 
   - id: feat-tui-branding
-    name: "TUI 主题定制（JARVIS 品牌化）"
+    name: "TUI 主题定制（EDITH 品牌化）"
     priority: 80
     size: S
     dependencies: [feat-agent-scaffold]
@@ -104,7 +104,7 @@ archived:
     branch_deleted: true
     branch_name: feature/tui-branding
     worktree_deleted: true
-    worktree_path: ../JARVIS-tui-branding
+    worktree_path: ../EDITH-tui-branding
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -121,7 +121,7 @@ archived:
       files_changed: 14
 
   - id: feat-tool-route
-    name: "jarvis_route 工具（对接 requirement-router Skill）"
+    name: "edith_route 工具（对接 requirement-router Skill）"
     priority: 85
     size: S
     dependencies: [feat-extension-core]
@@ -133,7 +133,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-tool-route
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-tool-route
+    worktree_path: ../EDITH-feat-tool-route
     conflicts:
       had_conflict: true
       conflict_files: [agent/src/extension.ts]
@@ -150,7 +150,7 @@ archived:
       files_changed: 4
 
   - id: feat-tool-distill
-    name: "jarvis_distill 工具（对接 distillator Skill）"
+    name: "edith_distill 工具（对接 distillator Skill）"
     priority: 90
     size: M
     dependencies: [feat-extension-core, feat-tool-scan]
@@ -162,7 +162,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-tool-distill
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-tool-distill
+    worktree_path: ../EDITH-feat-tool-distill
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -177,7 +177,7 @@ archived:
       files_changed: 3
 
   - id: feat-tool-query
-    name: "jarvis_query 工具（三层加载查询）"
+    name: "edith_query 工具（三层加载查询）"
     priority: 90
     size: M
     dependencies: [feat-extension-core]
@@ -189,7 +189,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-tool-query
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-tool-query
+    worktree_path: ../EDITH-feat-tool-query
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -204,7 +204,7 @@ archived:
       files_changed: 10
 
   - id: feat-tool-scan
-    name: "jarvis_scan 工具（对接 document-project Skill）"
+    name: "edith_scan 工具（对接 document-project Skill）"
     priority: 95
     size: M
     dependencies: [feat-extension-core]
@@ -216,7 +216,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-tool-scan
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-tool-scan
+    worktree_path: ../EDITH-feat-tool-scan
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -243,7 +243,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-agent-scaffold
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-agent-scaffold
+    worktree_path: ../EDITH-feat-agent-scaffold
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -258,7 +258,7 @@ archived:
       files_changed: 8
 
   - id: feat-config-management
-    name: "jarvis.yaml 配置管理"
+    name: "edith.yaml 配置管理"
     priority: 90
     size: S
     dependencies: [feat-agent-scaffold]
@@ -270,7 +270,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-config-management
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-config-management
+    worktree_path: ../EDITH-feat-config-management
     conflicts:
       had_conflict: false
       conflict_files: []
@@ -285,7 +285,7 @@ archived:
       files_changed: 3
 
   - id: feat-extension-core
-    name: "jarvis.ts Extension 核心路由层"
+    name: "edith.ts Extension 核心路由层"
     priority: 95
     size: M
     dependencies: [feat-agent-scaffold]
@@ -297,7 +297,7 @@ archived:
     branch_deleted: true
     branch_name: feature/feat-extension-core
     worktree_deleted: true
-    worktree_path: ../JARVIS-feat-extension-core
+    worktree_path: ../EDITH-feat-extension-core
     conflicts:
       had_conflict: false
       conflict_files: []

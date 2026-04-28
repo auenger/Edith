@@ -1,7 +1,7 @@
 /**
- * JARVIS Theme Configuration
+ * EDITH Theme Configuration
  *
- * Reads optional theme settings from jarvis.yaml.
+ * Reads optional theme settings from edith.yaml.
  * If no theme section is present, defaults to the Arc Reactor Iron Man style.
  */
 
@@ -30,10 +30,10 @@ export const DEFAULT_THEME: ThemeConfig = {
 };
 
 /**
- * Parse theme configuration from a raw jarvis.yaml object.
+ * Parse theme configuration from a raw edith.yaml object.
  * Returns defaults for any missing fields.
  *
- * @param rawConfig - The parsed jarvis.yaml root object (may contain a `theme` key)
+ * @param rawConfig - The parsed edith.yaml root object (may contain a `theme` key)
  */
 export function parseThemeConfig(rawConfig: unknown): ThemeConfig {
   if (!rawConfig || typeof rawConfig !== "object") {

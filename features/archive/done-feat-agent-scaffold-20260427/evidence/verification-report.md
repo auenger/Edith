@@ -19,10 +19,10 @@
 All 6 task groups (16 sub-tasks) completed:
 1. Project initialization - package.json, tsconfig.json, npm install verified
 2. pi SDK availability - package installed, API signatures documented in task.md
-3. Config parsing - JarvisConfig interface, loadConfig, validateConfigExists, YAML error handling
+3. Config parsing - EdithConfig interface, loadConfig, validateConfigExists, YAML error handling
 4. Extension skeleton - default export function accepting ExtensionAPI
 5. Entry file - config loading, pi SDK session creation, banner display, error handling
-6. Example config & docs - jarvis.yaml, README.md
+6. Example config & docs - edith.yaml, README.md
 
 ## Code Quality Checks
 
@@ -39,16 +39,16 @@ All 6 task groups (16 sub-tasks) completed:
 - **Then**:
   - [x] Entry point loads config and creates pi SDK session (index.ts lines 48-104)
   - [x] ASCII art banner displayed (BANNER constant in index.ts)
-  - [x] Welcome message printed: "JARVIS Agent is ready"
+  - [x] Welcome message printed: "EDITH Agent is ready"
   - [x] `session.prompt()` call enters agent interaction
 - **Note**: Full `npm start` test requires LLM API credentials; code structure verified correct
 
-### Scenario 2: jarvis.yaml 配置加载 - PASS
-- **Given**: jarvis.yaml exists with llm.provider and workspace.root
+### Scenario 2: edith.yaml 配置加载 - PASS
+- **Given**: edith.yaml exists with llm.provider and workspace.root
 - **When**: Agent starts and calls `loadConfig()`
 - **Then**:
-  - [x] Config parsed as TypeScript object (loadConfig returns `JarvisConfig`)
-  - [x] workspace.root correctly resolved as "./company-jarvis"
+  - [x] Config parsed as TypeScript object (loadConfig returns `EdithConfig`)
+  - [x] workspace.root correctly resolved as "./company-edith"
   - [x] repos correctly resolved as empty array
 - **Verified**: Smoke test ran 8 assertions, all passed
 
@@ -57,22 +57,22 @@ All 6 task groups (16 sub-tasks) completed:
 - **When**: Agent starts
 - **Then**:
   - [x] `createAgentSession` function imported and called (index.ts)
-  - [x] Extension loaded via `DefaultResourceLoader({ extensionFactories: [jarvisExtension] })`
+  - [x] Extension loaded via `DefaultResourceLoader({ extensionFactories: [edithExtension] })`
   - [x] No tool registration errors (extension.ts only logs)
 - **Verified**: TypeScript compilation confirms import correctness
 
-### Scenario 4: jarvis.yaml 不存在时的处理 - PASS
-- **Given**: jarvis.yaml does not exist
+### Scenario 4: edith.yaml 不存在时的处理 - PASS
+- **Given**: edith.yaml does not exist
 - **When**: `npm start` executes
 - **Then**:
   - [x] `validateConfigExists()` throws `ConfigNotFoundError` (config.ts)
-  - [x] Error message: "未找到 jarvis.yaml 配置文件，请先创建配置"
+  - [x] Error message: "未找到 edith.yaml 配置文件，请先创建配置"
   - [x] Main function catches `ConfigError`, prints friendly message, exits with code 1
   - [x] No uncaught exception
 - **Verified**: Smoke test confirmed ConfigNotFoundError thrown with correct message
 
-### Scenario 5: jarvis.yaml 格式错误时的处理 - PASS
-- **Given**: jarvis.yaml contains invalid YAML syntax
+### Scenario 5: edith.yaml 格式错误时的处理 - PASS
+- **Given**: edith.yaml contains invalid YAML syntax
 - **When**: `npm start` executes
 - **Then**:
   - [x] `loadYaml()` throws YAMLException, caught and wrapped as `ConfigParseError`
@@ -94,7 +94,7 @@ All 6 task groups (16 sub-tasks) completed:
 |------|---------|-------|
 | agent/package.json | Project config + pi SDK dependency | 27 |
 | agent/tsconfig.json | TypeScript strict config | 19 |
-| agent/jarvis.yaml | Example minimal config | 7 |
+| agent/edith.yaml | Example minimal config | 7 |
 | agent/src/config.ts | Config parsing + error classes | 168 |
 | agent/src/extension.ts | Extension skeleton | 16 |
 | agent/src/index.ts | Entry point with banner | 127 |

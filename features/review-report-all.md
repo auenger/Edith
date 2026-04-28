@@ -1,4 +1,4 @@
-# JARVIS Feature Queue — 全量 Review 报告
+# EDITH Feature Queue — 全量 Review 报告
 
 > 日期: 2026-04-27 | 审查范围: 11 pending + 1 completed + 6 未创建目录
 
@@ -10,11 +10,11 @@
 |---|-----------|------|---|------|-------|------|
 | 1 | feat-agent-scaffold | Agent 项目骨架 | 100 | M | 68 | ⚠️ CAUTION |
 | 2 | feat-extension-core | Extension 核心路由层 | 95 | M | 72 | ⚠️ CAUTION |
-| 3 | feat-tool-scan | jarvis_scan 工具 | 95 | M | 68 | ⚠️ CAUTION |
-| 4 | feat-config-management | jarvis.yaml 配置管理 | 90 | S | 62 | ⚠️ CAUTION |
-| 5 | feat-tool-distill | jarvis_distill 工具 | 90 | M | 72 | ⚠️ CAUTION |
-| 6 | feat-tool-query | jarvis_query 工具 | 90 | M | 70 | ⚠️ CAUTION |
-| 7 | feat-tool-route | jarvis_route 工具 | 85 | S | 62 | ⚠️ CAUTION |
+| 3 | feat-tool-scan | edith_scan 工具 | 95 | M | 68 | ⚠️ CAUTION |
+| 4 | feat-config-management | edith.yaml 配置管理 | 90 | S | 62 | ⚠️ CAUTION |
+| 5 | feat-tool-distill | edith_distill 工具 | 90 | M | 72 | ⚠️ CAUTION |
+| 6 | feat-tool-query | edith_query 工具 | 90 | M | 70 | ⚠️ CAUTION |
+| 7 | feat-tool-route | edith_route 工具 | 85 | S | 62 | ⚠️ CAUTION |
 | 8 | feat-tui-branding | TUI 主题定制 | 80 | S | **84** | ✅ PASS |
 | 9 | feat-system-prompt | System Prompt 调优 | 80 | S | 62 | ⚠️ CAUTION |
 | 10 | feat-e2e-pilot | 端到端试点验证 | 85 | L | 70 | ⚠️ CAUTION |
@@ -70,7 +70,7 @@
 | 维度 | 得分 | 关键问题 |
 |------|------|---------|
 | D1 Clarity | 14/20 | 无 OUT scope |
-| D2 Completeness | 12/20 | 无错误路径场景（pi SDK 安装失败？jarvis.yaml 格式错误？） |
+| D2 Completeness | 12/20 | 无错误路径场景（pi SDK 安装失败？edith.yaml 格式错误？） |
 | D3 Consistency | 12/20 | task.md/checklist.md 为模板骨架 |
 | D4 Feasibility | 16/20 | 参考文件均存在 |
 | D5 Gherkin | 14/20 | 3 个场景均为 happy path，无 sad-path |
@@ -115,7 +115,7 @@
 | D2 Completeness | 12/20 | 缺少 YAML 语法错误、配置迁移、热加载失败等场景 |
 | D3 Consistency | 10/20 | task.md 模板 |
 | D4 Feasibility | 16/20 | TypeScript interface 定义清晰 |
-| D5 Gherkin | 12/20 | Scenario 3 (jarvis-init) Then 步骤不够具体 |
+| D5 Gherkin | 12/20 | Scenario 3 (edith-init) Then 步骤不够具体 |
 
 **关注点**: "热加载" 在 Description 中提到但 Gherkin 未覆盖。这是一个复杂特性，建议拆分或在 spec 中明确 Phase 1 不做热加载。
 

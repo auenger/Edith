@@ -1,9 +1,9 @@
 /**
- * JARVIS Extension — Core Routing Layer
+ * EDITH Extension — Core Routing Layer
  *
- * Registers four JARVIS tools (jarvis_scan, jarvis_distill, jarvis_route,
- * jarvis_query) and context-management commands (/new, /clear, /compact)
- * plus status commands (jarvis-init, jarvis-status).
+ * Registers four EDITH tools (edith_scan, edith_distill, edith_route,
+ * edith_query) and context-management commands (/new, /clear, /compact)
+ * plus status commands (edith-init, edith-status).
  *
  * Tool handlers are stubs — actual business logic comes from feat-tool-* features.
  */
@@ -15,7 +15,7 @@ import type {
 } from "@mariozechner/pi-coding-agent";
 import { Type, Static } from "@sinclair/typebox";
 import { executeQuery, validateQueryParams } from "./query.js";
-import { ConfigError, type JarvisConfig } from "./config.js";
+import { ConfigError, type EdithConfig } from "./config.js";
 import { loadConfig } from "./config.js";
 
 import { executeScan, formatScanSummary, formatScanError } from "./tools/scan.js";
@@ -32,7 +32,7 @@ const ScanParams = Type.Object({
 });
 
 const DistillParams = Type.Object({
-  target: Type.String({ description: "服务名（对应 jarvis.yaml repos 中的 key）" }),
+  target: Type.String({ description: "服务名（对应 edith.yaml repos 中的 key）" }),
   token_budget: Type.Optional(
     Type.Object({
       routing_table: Type.Optional(Type.Number({ description: "Layer 0 token 预算" })),
@@ -79,7 +79,7 @@ function loadSkill(toolName: string): { loaded: boolean; skillDir: string; error
 
   // Phase 1 stub: Skill directory existence check would go here.
   // Actual Skill code execution is implemented by feat-tool-* features.
-  console.log(`[JARVIS] Loading skill for "${toolName}"...`);
+  console.log(`[EDITH] Loading skill for "${toolName}"...`);
   return { loaded: true, skillDir };
 }
 
@@ -96,16 +96,16 @@ const toolRegistry: ToolStatus[] = [];
 // ── Friendly User Messages (no internal names leaked) ──────────────
 
 const FRIENDLY_ACTION: Record<string, string> = {
-  jarvis_scan: "正在执行知识扫描...",
-  jarvis_distill: "正在蒸馏知识产物...",
-  jarvis_route: "正在进行需求路由分析...",
-  jarvis_query: "正在查询知识库...",
+  edith_scan: "正在执行知识扫描...",
+  edith_distill: "正在蒸馏知识产物...",
+  edith_route: "正在进行需求路由分析...",
+  edith_query: "正在查询知识库...",
 };
 
 // ── Extension Entry Point ──────────────────────────────────────────
 
-export default function jarvisExtension(pi: ExtensionAPI): void {
-  console.log("[JARVIS] Extension core routing layer initializing...");
+export default function edithExtension(pi: ExtensionAPI): void {
+  console.log("[EDITH] Extension core routing layer initializing...");
 
   // ═══ Tool Registration (with graceful degradation) ═════════════
 
@@ -117,15 +117,15 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
     execute: (toolCallId: string, params: any, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) => Promise<any>;
   }> = [
     {
-      name: "jarvis_scan",
-      label: "JARVIS Scan",
+      name: "edith_scan",
+      label: "EDITH Scan",
       description: "扫描项目代码，逆向生成项目文档。支持全局扫描和模块深入两种模式。",
       parameters: ScanParams,
       execute: async (_toolCallId, params: ScanInput, _signal, _onUpdate, ctx: ExtensionContext) => {
-        console.log(FRIENDLY_ACTION["jarvis_scan"]);
+        console.log(FRIENDLY_ACTION["edith_scan"]);
         const skill = loadSkill("scan");
         if (!skill.loaded) {
-          return { content: [{ type: "text" as const, text: `[JARVIS] 知识扫描暂不可用: ${skill.error}` }], isError: true };
+          return { content: [{ type: "text" as const, text: `[EDITH] 知识扫描暂不可用: ${skill.error}` }], isError: true };
         }
 
         try {
@@ -140,13 +140,13 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
 
           if (outcome.ok) {
             const summary = formatScanSummary(outcome.result);
-            console.log(`[JARVIS] Scan completed: ${outcome.result.service} → ${outcome.result.outputDir}`);
+            console.log(`[EDITH] Scan completed: ${outcome.result.service} → ${outcome.result.outputDir}`);
             return {
               content: [{ type: "text" as const, text: summary }],
             };
           } else {
             const errorMsg = formatScanError(outcome.error);
-            console.warn(`[JARVIS] Scan failed: ${outcome.error.code} - ${outcome.error.message}`);
+            console.warn(`[EDITH] Scan failed: ${outcome.error.code} - ${outcome.error.message}`);
             return {
               content: [{ type: "text" as const, text: errorMsg }],
               isError: true,
@@ -154,24 +154,24 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
           }
         } catch (err) {
           const message = (err as Error).message ?? String(err);
-          console.error(`[JARVIS] Scan error: ${message}`);
+          console.error(`[EDITH] Scan error: ${message}`);
           return {
-            content: [{ type: "text" as const, text: `[JARVIS] 扫描执行失败: ${message}` }],
+            content: [{ type: "text" as const, text: `[EDITH] 扫描执行失败: ${message}` }],
             isError: true,
           };
         }
       },
     },
     {
-      name: "jarvis_distill",
-      label: "JARVIS Distill",
+      name: "edith_distill",
+      label: "EDITH Distill",
       description: "蒸馏文档，生成三层知识产物（routing-table / quick-ref / distillates）。",
       parameters: DistillParams,
       execute: async (_toolCallId, params: DistillInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
-        console.log(FRIENDLY_ACTION["jarvis_distill"]);
+        console.log(FRIENDLY_ACTION["edith_distill"]);
         const skill = loadSkill("distill");
         if (!skill.loaded) {
-          return { content: [{ type: "text" as const, text: `[JARVIS] 知识蒸馏暂不可用: ${skill.error}` }], isError: true };
+          return { content: [{ type: "text" as const, text: `[EDITH] 知识蒸馏暂不可用: ${skill.error}` }], isError: true };
         }
 
         try {
@@ -185,13 +185,13 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
 
           if (outcome.ok) {
             const summary = formatDistillSummary(outcome.result);
-            console.log(`[JARVIS] Distill completed: ${outcome.result.service} → ${outcome.result.layers.layer0.file}`);
+            console.log(`[EDITH] Distill completed: ${outcome.result.service} → ${outcome.result.layers.layer0.file}`);
             return {
               content: [{ type: "text" as const, text: summary }],
             };
           } else {
             const errorMsg = formatDistillError(outcome.error);
-            console.warn(`[JARVIS] Distill failed: ${outcome.error.code} - ${outcome.error.message}`);
+            console.warn(`[EDITH] Distill failed: ${outcome.error.code} - ${outcome.error.message}`);
             return {
               content: [{ type: "text" as const, text: errorMsg }],
               isError: true,
@@ -199,24 +199,24 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
           }
         } catch (err) {
           const message = (err as Error).message ?? String(err);
-          console.error(`[JARVIS] Distill error: ${message}`);
+          console.error(`[EDITH] Distill error: ${message}`);
           return {
-            content: [{ type: "text" as const, text: `[JARVIS] 蒸馏执行失败: ${message}` }],
+            content: [{ type: "text" as const, text: `[EDITH] 蒸馏执行失败: ${message}` }],
             isError: true,
           };
         }
       },
     },
     {
-      name: "jarvis_route",
-      label: "JARVIS Route",
+      name: "edith_route",
+      label: "EDITH Route",
       description: "需求路由分析，判断是否需要加载上下文及加载策略。",
       parameters: RouteParams,
       execute: async (_toolCallId, params: RouteInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
-        console.log(FRIENDLY_ACTION["jarvis_route"]);
+        console.log(FRIENDLY_ACTION["edith_route"]);
         const skill = loadSkill("route");
         if (!skill.loaded) {
-          return { content: [{ type: "text" as const, text: `[JARVIS] 需求路由暂不可用: ${skill.error}` }], isError: true };
+          return { content: [{ type: "text" as const, text: `[EDITH] 需求路由暂不可用: ${skill.error}` }], isError: true };
         }
 
         try {
@@ -232,13 +232,13 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
 
           if (outcome.ok) {
             const summary = formatRouteSummary(outcome.result);
-            console.log(`[JARVIS] Route decision: ${outcome.result.decision} for services: ${outcome.result.services.join(", ")}`);
+            console.log(`[EDITH] Route decision: ${outcome.result.decision} for services: ${outcome.result.services.join(", ")}`);
             return {
               content: [{ type: "text" as const, text: summary }],
             };
           } else {
             const errorMsg = formatRouteError(outcome.error);
-            console.warn(`[JARVIS] Route failed: ${outcome.error.code} - ${outcome.error.message}`);
+            console.warn(`[EDITH] Route failed: ${outcome.error.code} - ${outcome.error.message}`);
             return {
               content: [{ type: "text" as const, text: errorMsg }],
               isError: true,
@@ -246,41 +246,41 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
           }
         } catch (err) {
           const message = (err as Error).message ?? String(err);
-          console.error(`[JARVIS] Route error: ${message}`);
+          console.error(`[EDITH] Route error: ${message}`);
           return {
-            content: [{ type: "text" as const, text: `[JARVIS] 路由分析失败: ${message}` }],
+            content: [{ type: "text" as const, text: `[EDITH] 路由分析失败: ${message}` }],
             isError: true,
           };
         }
       },
     },
     {
-      name: "jarvis_query",
-      label: "JARVIS Query",
+      name: "edith_query",
+      label: "EDITH Query",
       description:
-        "查询 JARVIS 知识库，实现三层渐进加载策略。" +
+        "查询 EDITH 知识库，实现三层渐进加载策略。" +
         " Layer 0 routing-table 常驻，Layer 1 quick-ref 按需，Layer 2 distillates 精准定位。",
       parameters: QueryParams,
       execute: async (_toolCallId, params: QueryInput, _signal, _onUpdate, ctx: ExtensionContext) => {
-        console.log(FRIENDLY_ACTION["jarvis_query"]);
+        console.log(FRIENDLY_ACTION["edith_query"]);
 
         // Validate parameters
         const validationError = validateQueryParams(params);
         if (validationError) {
           return {
-            content: [{ type: "text" as const, text: `[JARVIS] 参数错误: ${validationError}` }],
+            content: [{ type: "text" as const, text: `[EDITH] 参数错误: ${validationError}` }],
             isError: true,
           };
         }
 
         // Load config to get workspace root and token budgets
-        let config: JarvisConfig;
+        let config: EdithConfig;
         try {
           config = loadConfig();
         } catch (err) {
           const msg = err instanceof ConfigError ? err.message : (err as Error).message;
           return {
-            content: [{ type: "text" as const, text: `[JARVIS] 配置加载失败: ${msg}` }],
+            content: [{ type: "text" as const, text: `[EDITH] 配置加载失败: ${msg}` }],
             isError: true,
           };
         }
@@ -332,7 +332,7 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
             content: [
               {
                 type: "text" as const,
-                text: `[JARVIS] 查询执行失败: ${(err as Error).message}`,
+                text: `[EDITH] 查询执行失败: ${(err as Error).message}`,
               },
             ],
             isError: true,
@@ -352,49 +352,49 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
         execute: tool.execute,
       });
       toolRegistry.push({ name: tool.name, registered: true });
-      console.log(`[JARVIS] Tool registered: ${tool.name}`);
+      console.log(`[EDITH] Tool registered: ${tool.name}`);
     } catch (err) {
       const errorMsg = (err as Error).message ?? String(err);
       toolRegistry.push({ name: tool.name, registered: false, error: errorMsg });
-      console.error(`[JARVIS] Failed to register tool "${tool.name}": ${errorMsg}`);
+      console.error(`[EDITH] Failed to register tool "${tool.name}": ${errorMsg}`);
     }
   }
 
   // ═══ Event Hooks — Audit Logging ═══════════════════════════════
 
   pi.on("tool_execution_start", (event, _ctx) => {
-    if (event.toolName.startsWith("jarvis_")) {
+    if (event.toolName.startsWith("edith_")) {
       const timestamp = new Date().toISOString();
       const paramSummary = JSON.stringify(event.args).slice(0, 200);
       // Audit log — never expose Skill internal names
-      console.log(`[JARVIS AUDIT] tool=${event.toolName} time=${timestamp} params=${paramSummary}`);
+      console.log(`[EDITH AUDIT] tool=${event.toolName} time=${timestamp} params=${paramSummary}`);
     }
   });
 
   // ═══ Command Registration ═══════════════════════════════════════
 
-  // --- jarvis-init (stub) ---
+  // --- edith-init (stub) ---
   try {
-    pi.registerCommand("jarvis-init", {
-      description: "初始化 JARVIS 工作区",
+    pi.registerCommand("edith-init", {
+      description: "初始化 EDITH 工作区",
       handler: async (_args: string, _ctx: ExtensionCommandContext) => {
-        console.log("JARVIS initialization wizard (not implemented yet)");
+        console.log("EDITH initialization wizard (not implemented yet)");
         // Return stub message
       },
     });
-    console.log("[JARVIS] Command registered: jarvis-init");
+    console.log("[EDITH] Command registered: edith-init");
   } catch (err) {
-    console.error(`[JARVIS] Failed to register command "jarvis-init": ${(err as Error).message}`);
+    console.error(`[EDITH] Failed to register command "edith-init": ${(err as Error).message}`);
   }
 
-  // --- jarvis-status ---
+  // --- edith-status ---
   try {
-    pi.registerCommand("jarvis-status", {
+    pi.registerCommand("edith-status", {
       description: "知识库状态总览",
       handler: async (_args: string, ctx: ExtensionCommandContext) => {
         const lines: string[] = [];
 
-        lines.push("═══ JARVIS Status ═══");
+        lines.push("═══ EDITH Status ═══");
         lines.push("");
 
         // Tool status
@@ -436,9 +436,9 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
         console.log(lines.join("\n"));
       },
     });
-    console.log("[JARVIS] Command registered: jarvis-status");
+    console.log("[EDITH] Command registered: edith-status");
   } catch (err) {
-    console.error(`[JARVIS] Failed to register command "jarvis-status": ${(err as Error).message}`);
+    console.error(`[EDITH] Failed to register command "edith-status": ${(err as Error).message}`);
   }
 
   // --- /new — New Session ---
@@ -455,25 +455,25 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
           : true;
 
         if (!confirmed) {
-          console.log("[JARVIS] /new cancelled.");
+          console.log("[EDITH] /new cancelled.");
           return;
         }
 
         try {
           const result = await ctx.newSession();
           if (result.cancelled) {
-            console.log("[JARVIS] New session was cancelled.");
+            console.log("[EDITH] New session was cancelled.");
           } else {
-            console.log("[JARVIS] New session created. Old session preserved.");
+            console.log("[EDITH] New session created. Old session preserved.");
           }
         } catch (err) {
-          console.error(`[JARVIS] Failed to create new session: ${(err as Error).message}`);
+          console.error(`[EDITH] Failed to create new session: ${(err as Error).message}`);
         }
       },
     });
-    console.log("[JARVIS] Command registered: /new");
+    console.log("[EDITH] Command registered: /new");
   } catch (err) {
-    console.error(`[JARVIS] Failed to register command "new": ${(err as Error).message}`);
+    console.error(`[EDITH] Failed to register command "new": ${(err as Error).message}`);
   }
 
   // --- /clear — Clear Context ---
@@ -490,7 +490,7 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
           : true;
 
         if (!confirmed) {
-          console.log("[JARVIS] /clear cancelled.");
+          console.log("[EDITH] /clear cancelled.");
           return;
         }
 
@@ -507,15 +507,15 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
               });
             },
           });
-          console.log("[JARVIS] Context cleared.");
+          console.log("[EDITH] Context cleared.");
         } catch (err) {
-          console.error(`[JARVIS] Failed to clear context: ${(err as Error).message}`);
+          console.error(`[EDITH] Failed to clear context: ${(err as Error).message}`);
         }
       },
     });
-    console.log("[JARVIS] Command registered: /clear");
+    console.log("[EDITH] Command registered: /clear");
   } catch (err) {
-    console.error(`[JARVIS] Failed to register command "clear": ${(err as Error).message}`);
+    console.error(`[EDITH] Failed to register command "clear": ${(err as Error).message}`);
   }
 
   // --- /compact — Compact Context ---
@@ -535,22 +535,22 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
               const tokensAfter = usageAfter?.tokens;
 
               console.log(
-                `[JARVIS] Compacted: ${result.tokensBefore} → ${tokensAfter ?? "?"} tokens. ` +
+                `[EDITH] Compacted: ${result.tokensBefore} → ${tokensAfter ?? "?"} tokens. ` +
                 `Summary generated for messages before ${result.firstKeptEntryId}.`
               );
             },
             onError: (error) => {
-              console.error(`[JARVIS] Compaction failed: ${error.message}`);
+              console.error(`[EDITH] Compaction failed: ${error.message}`);
             },
           });
         } catch (err) {
-          console.error(`[JARVIS] Failed to compact context: ${(err as Error).message}`);
+          console.error(`[EDITH] Failed to compact context: ${(err as Error).message}`);
         }
       },
     });
-    console.log("[JARVIS] Command registered: /compact");
+    console.log("[EDITH] Command registered: /compact");
   } catch (err) {
-    console.error(`[JARVIS] Failed to register command "compact": ${(err as Error).message}`);
+    console.error(`[EDITH] Failed to register command "compact": ${(err as Error).message}`);
   }
 
   // ═══ Input Event — Unknown Command Friendly Prompt ═════════════
@@ -563,8 +563,8 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
       const knownCommands = ["/new", "/clear", "/compact", "/help", "/reload"];
       if (!knownCommands.includes(cmd)) {
         console.log(
-          `[JARVIS] Unknown command: ${cmd}\n` +
-          `  Available JARVIS commands: /new, /clear, /compact\n` +
+          `[EDITH] Unknown command: ${cmd}\n` +
+          `  Available EDITH commands: /new, /clear, /compact\n` +
           `  Use /help to see all commands.`
         );
         // Return "handled" to prevent further processing
@@ -579,7 +579,7 @@ export default function jarvisExtension(pi: ExtensionAPI): void {
   const registeredCount = toolRegistry.filter((t) => t.registered).length;
   const totalCount = toolRegistry.length;
   console.log(
-    `[JARVIS] Extension core routing layer loaded: ` +
+    `[EDITH] Extension core routing layer loaded: ` +
     `${registeredCount}/${totalCount} tools, 6 commands.`
   );
 }

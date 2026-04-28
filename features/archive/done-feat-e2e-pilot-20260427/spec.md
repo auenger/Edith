@@ -12,7 +12,7 @@
 
 ## Description
 
-使用真实项目进行 JARVIS Agent MVP 的端到端验证：完整走通 扫描→蒸馏→三层加载查询→需求路由 流程。输出 pilot-ready 声明和试点报告。
+使用真实项目进行 EDITH Agent MVP 的端到端验证：完整走通 扫描→蒸馏→三层加载查询→需求路由 流程。输出 pilot-ready 声明和试点报告。
 
 ## OUT Scope
 
@@ -25,7 +25,7 @@
 
 ## User Value Points
 
-1. **真实项目验证** — 用实际代码库验证 JARVIS 全流程，不是 demo
+1. **真实项目验证** — 用实际代码库验证 EDITH 全流程，不是 demo
 2. **Pilot-ready 声明** — 验证通过后声明试点就绪，团队可以开始试用
 3. **试点报告** — 记录验证过程中发现的问题和改进方向，为后续迭代提供依据
 4. **零适配消费验证** — 确认其他 Agent 可以零成本消费产出物
@@ -36,7 +36,7 @@
 - `SKILL.md` § 8 阶段中的 CONFIRM 和 PILOT-READY 阶段
 
 ### Related Documents
-- `JARVIS-PRODUCT-DESIGN.md` § 7 开发路线图 Phase 1 Week 3
+- `EDITH-PRODUCT-DESIGN.md` § 7 开发路线图 Phase 1 Week 3
 - `references/en/instance-readiness.md` — 实例就绪标准
 - `references/en/example-pilot-shape.md` — 试点形态示例
 
@@ -46,31 +46,31 @@
 
 ```text
 Phase A: 环境准备
-  1. 从 jarvis.yaml 中选择一个真实项目作为试点目标
-  2. 确认 jarvis.yaml 配置正确（LLM provider、workspace、repos）
+  1. 从 edith.yaml 中选择一个真实项目作为试点目标
+  2. 确认 edith.yaml 配置正确（LLM provider、workspace、repos）
   3. 确认所有依赖 Feature 的工具已实现且可用
 
-Phase B: 扫描验证 (jarvis_scan)
-  4. 执行 jarvis_scan <project>
+Phase B: 扫描验证 (edith_scan)
+  4. 执行 edith_scan <project>
   5. 验证产出：技术栈识别、API 端点列表、数据模型、业务流程
 
-Phase C: 蒸馏验证 (jarvis_distill)
-  6. 执行 jarvis_distill <project>
+Phase C: 蒸馏验证 (edith_distill)
+  6. 执行 edith_distill <project>
   7. 验证三层产物：
      - Layer 0: routing-table.md < 500 tokens
      - Layer 1: quick-ref.md ~5% 原文量
      - Layer 2: distillates/*.md 语义拆分
 
-Phase D: 查询验证 (jarvis_query)
+Phase D: 查询验证 (edith_query)
   8. 执行知识查询（至少 5 个代表性问题）
   9. 验证三层加载策略 + 来源引用
 
-Phase E: 路由验证 (jarvis_route)
+Phase E: 路由验证 (edith_route)
   10. 执行需求路由（至少 3 个代表性需求）
   11. 验证路由决策准确性
 
 Phase F: 零适配验证
-  12. 用另一个 Agent（非 JARVIS）读取 routing-table.md
+  12. 用另一个 Agent（非 EDITH）读取 routing-table.md
   13. 验证该 Agent 能获得路由能力
 
 Phase G: 报告与声明
@@ -81,12 +81,12 @@ Phase G: 报告与声明
 ### pilot-report.md 结构
 
 ```markdown
-# JARVIS Pilot Report
+# EDITH Pilot Report
 
 ## 基本信息
 - 试点项目: {project-name}
 - 试点日期: {date}
-- JARVIS 版本: {version}
+- EDITH 版本: {version}
 
 ## 覆盖率指标
 | 维度         | 指标                    | 结果  |
@@ -135,9 +135,9 @@ Status: READY / NOT-READY
 
 **Scenario 1: 完整 E2E 流程 — 正常路径**
 ```gherkin
-Given JARVIS Agent 已部署且所有依赖工具（scan/distill/query/route）已实现
-And jarvis.yaml 已配置一个真实项目
-When 依次执行 jarvis scan → jarvis distill → jarvis query → jarvis route
+Given EDITH Agent 已部署且所有依赖工具（scan/distill/query/route）已实现
+And edith.yaml 已配置一个真实项目
+When 依次执行 edith scan → edith distill → edith query → edith route
 Then 每一步都有产出且格式正确
 And 产出的 Markdown 文件可被其他 Agent 直接消费（纯 Markdown，无特殊格式）
 ```
@@ -155,16 +155,16 @@ And 已知问题中每个问题都有归属 Feature 标记
 **Scenario 3: 产出物零适配消费验证**
 ```gherkin
 Given 三层知识产物已生成（routing-table.md、quick-ref.md、distillates/）
-When 另一个 AI Agent（非 JARVIS，无 JARVIS 专用插件）读取 routing-table.md
+When 另一个 AI Agent（非 EDITH，无 EDITH 专用插件）读取 routing-table.md
 Then 该 Agent 能根据 routing-table.md 中的消费规则正确判断加载策略
 And 该 Agent 能理解 routing-table.md 中的服务路由信息
-And 不需要安装任何 JARVIS 特定的运行时或库
+And 不需要安装任何 EDITH 特定的运行时或库
 ```
 
 **Scenario 4: 扫描中途失败 — 错误处理与恢复**
 ```gherkin
-Given JARVIS Agent 已启动且 jarvis.yaml 配置正确
-When 执行 jarvis scan 时目标项目代码有语法错误或权限不足
+Given EDITH Agent 已启动且 edith.yaml 配置正确
+When 执行 edith scan 时目标项目代码有语法错误或权限不足
 Then Agent 报告具体的失败原因（"扫描失败：{具体原因}"）
 And 建议用户修复后重试
 And 不生成不完整的扫描产物
@@ -173,8 +173,8 @@ And pilot-report.md 记录此次失败事件
 
 **Scenario 5: 蒸馏产出质量不达标**
 ```gherkin
-Given jarvis scan 已成功完成
-When 执行 jarvis distill 后发现 routing-table.md 超过 500 tokens
+Given edith scan 已成功完成
+When 执行 edith distill 后发现 routing-table.md 超过 500 tokens
 Then pilot-report.md 中记录 "routing-table.md 超出 token 预算"
 And 标记此为已知问题，归属 feat-tool-distill
 And 不阻止后续验证步骤（query/route 可继续使用已有产物）
@@ -184,7 +184,7 @@ And 不阻止后续验证步骤（query/route 可继续使用已有产物）
 ```gherkin
 Given 三层知识产物已生成
 When 用户执行知识查询 "XX服务的支付接口有哪些"
-And jarvis_query 返回的结果与实际代码不一致（如遗漏接口、编造接口）
+And edith_query 返回的结果与实际代码不一致（如遗漏接口、编造接口）
 Then pilot-report.md 中记录此查询准确性问题
 And 标记为已知问题，归属 feat-tool-query 或 feat-tool-distill
 And 查询准确率低于 80% 时，pilot-ready 状态为 NOT-READY

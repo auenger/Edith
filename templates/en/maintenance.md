@@ -1,6 +1,6 @@
-# [Company / Product] JARVIS Maintenance Guide
+# [Company / Product] EDITH Maintenance Guide
 
-> JARVIS is the routing, indexing, and synthesis layer for [Company / Product].
+> EDITH is the routing, indexing, and synthesis layer for [Company / Product].
 > It is not a raw content mirror. It is the operating substrate that helps agents understand the company, enter the right repos and work surfaces, and preserve what they learn.
 
 ---
@@ -10,7 +10,7 @@
 ### Mission
 
 State in 2-4 sentences:
-- why this JARVIS exists,
+- why this EDITH exists,
 - who it serves,
 - what the first high-value closed loop is,
 - and what kind of organizational capability it should unlock.
@@ -83,7 +83,7 @@ List the skills that help agents complete cross-repo or cross-role loops.
 | `rejected-features.md` | ideas declined, rationale, decision context | active proposals still under discussion |
 | `overview.md` | role, boundaries, key paths, mental model | full implementation detail |
 | source skill docs | how to reach and interpret a source | a mirror of the source content |
-| repo skill docs | repo-local execution guidance | company-wide policy that belongs in JARVIS |
+| repo skill docs | repo-local execution guidance | company-wide policy that belongs in EDITH |
 | workflow skill docs | handoffs, artifacts, evidence, writeback | repo-local low-level detail better kept with repos |
 
 ---
@@ -96,7 +96,7 @@ List the skills that help agents complete cross-repo or cross-role loops.
 | a durable product or engineering decision is made | update `decisions.md` |
 | a proposal is explicitly rejected | update `rejected-features.md` |
 | a workflow changes materially | update the workflow inventory or workflow skill |
-| a repo changes its operating guidance | update the repo-local skill and refresh JARVIS routing |
+| a repo changes its operating guidance | update the repo-local skill and refresh EDITH routing |
 | a new data source becomes strategically important | add or revise a source skill |
 | rollout ownership changes | update ownership map and rollout plan |
 
@@ -111,14 +111,14 @@ List the skills that help agents complete cross-repo or cross-role loops.
 | workflow layer | `<owner>` | `<owners>` | |
 | maintenance / governance | `<owner>` | `<owners>` | |
 
-A healthy JARVIS should be continue-able by another owner without full rediscovery.
+A healthy EDITH should be continue-able by another owner without full rediscovery.
 
 ---
 
 ## 7. The Closed Loop: START → WORK → END
 
 ### START
-- read the relevant JARVIS routing and history first
+- read the relevant EDITH routing and history first
 - identify the best source skills, repo skills, and workflow skills for the task
 - check whether a similar failure, decision, or rejected path already exists
 

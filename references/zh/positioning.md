@@ -1,8 +1,8 @@
 # 定位
 
-## JARVIS 是什么
+## EDITH 是什么
 
-JARVIS 是一个**agent-first 的组织能力层**。
+EDITH 是一个**agent-first 的组织能力层**。
 
 它帮助 agents：
 - 理解公司的数字资产，
@@ -10,7 +10,7 @@ JARVIS 是一个**agent-first 的组织能力层**。
 - 跟随真实 workflows，
 - 并保留它们学到的东西，使组织能力随着时间推移产生复利。
 
-一次 JARVIS rollout 通常包括：
+一次 EDITH rollout 通常包括：
 - memory 与 routing，
 - 面向 source 的 skills，
 - repo-local skills，
@@ -18,9 +18,9 @@ JARVIS 是一个**agent-first 的组织能力层**。
 - rollout ownership，
 - 以及更新纪律。
 
-## JARVIS 不是什么
+## EDITH 不是什么
 
-JARVIS 不是：
+EDITH 不是：
 - 原始文档镜像，
 - issue 倾倒仓，
 - 一次性 repo generator，
@@ -41,9 +41,9 @@ JARVIS 不是：
 
 ## 为什么这很重要
 
-没有 JARVIS，agents 只能停留在会话局部，并且失忆。
+没有 EDITH，agents 只能停留在会话局部，并且失忆。
 
-有了 JARVIS，组织就可以开始：
+有了 EDITH，组织就可以开始：
 - 降低跨团队等待成本，
 - 保留工程判断，
 - 让更多角色参与更完整的交付闭环，
@@ -51,7 +51,7 @@ JARVIS 不是：
 
 ## 工作姿态
 
-把 JARVIS 建设视为：
+把 EDITH 建设视为：
 - 组织设计，
 - 知识架构，
 - workflow enablement。

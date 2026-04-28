@@ -1,5 +1,5 @@
 ---
-type: jarvis-quick-ref
+type: edith-quick-ref
 layer: 1
 target_service: "<service-name>"
 sources:
@@ -61,4 +61,4 @@ token_budget: 2000
 - 本卡覆盖日常开发 ~80% 的场景
 - 需要详细 Schema、设计决策、被拒方案时，加载对应的深入查询片段
 - 本文件必须控制在 2000 token 以内
-- 重新生成: `distillator --quick-ref --jarvis-mode=repo-skill <源文档>`
+- 重新生成: `distillator --quick-ref --edith-mode=repo-skill <源文档>`

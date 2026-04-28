@@ -3,7 +3,7 @@
 ## Completion Checklist
 
 ### 项目结构
-- [x] `agent/` 目录存在且包含 package.json / tsconfig.json / jarvis.yaml
+- [x] `agent/` 目录存在且包含 package.json / tsconfig.json / edith.yaml
 - [x] `agent/src/` 包含 index.ts / extension.ts / config.ts
 - [x] TypeScript strict 模式编译无错误
 
@@ -14,7 +14,7 @@
 - [x] pi SDK API 签名已记录（registerTool / registerCommand / on）
 
 ### 配置解析
-- [x] jarvis.yaml 正确解析为 JarvisConfig TypeScript 对象
+- [x] edith.yaml 正确解析为 EdithConfig TypeScript 对象
 - [x] 配置文件缺失时显示友好错误（非 crash）
 - [x] YAML 语法错误时显示含行号的错误信息
 
@@ -25,7 +25,7 @@
 - [ ] Agent 进入交互式等待状态 — 需要 LLM API credentials
 
 ### 错误处理
-- [x] 无 jarvis.yaml 时友好退出（非 uncaught exception）
+- [x] 无 edith.yaml 时友好退出（非 uncaught exception）
 - [x] 无效 YAML 时友好退出（含行号信息）
 - [x] pi SDK 加载失败时明确报错
 
@@ -34,7 +34,7 @@
 - [x] 无 TODO/FIXME
 - [x] 无多余依赖
 
-### JARVIS Discipline
+### EDITH Discipline
 - [x] pi SDK 不 fork，仅作为 npm 依赖
 - [x] 不暴露 Skill 名称给用户
 - [x] 不编造不存在的代码事实

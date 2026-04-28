@@ -1,11 +1,11 @@
 {
-  "name": "@jarvis/agent",
+  "name": "@edith/agent",
   "version": "0.1.0",
-  "description": "JARVIS Agent - AI Knowledge Infrastructure Terminal Agent",
+  "description": "EDITH Agent - AI Knowledge Infrastructure Terminal Agent",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "jarvis": "./dist/bin/jarvis.js"
+    "edith": "./dist/bin/edith.js"
   },
   "scripts": {
     "start": "tsx src/index.ts",

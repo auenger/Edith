@@ -1,5 +1,5 @@
 /**
- * JARVIS Distill Tool — jarvis_distill implementation
+ * EDITH Distill Tool — edith_distill implementation
  *
  * Distills source documents into three-layer knowledge artifacts:
  *   Layer 0: routing-table.md (<500 tokens, global routing table)
@@ -27,11 +27,11 @@ import {
 } from "node:fs";
 import { resolve, join, basename, extname } from "node:path";
 
-import type { JarvisConfig, TokenBudget, RepoConfig } from "../config.js";
+import type { EdithConfig, TokenBudget, RepoConfig } from "../config.js";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
-/** Input parameters for jarvis_distill */
+/** Input parameters for edith_distill */
 export interface DistillParams {
   target: string;
   token_budget?: Partial<TokenBudget>;
@@ -113,8 +113,8 @@ function sourceNotFoundError(service: string): DistillError {
   return {
     code: "SOURCE_NOT_FOUND",
     severity: "error",
-    message: `${service} 尚未扫描，请先执行 jarvis scan ${service}`,
-    suggestion: `使用 jarvis scan ${service} 扫描该项目后，再执行蒸馏。`,
+    message: `${service} 尚未扫描，请先执行 edith scan ${service}`,
+    suggestion: `使用 edith scan ${service} 扫描该项目后，再执行蒸馏。`,
   };
 }
 
@@ -216,7 +216,7 @@ export function loadSourceDocuments(
  * Resolve token budget from config with optional parameter overrides.
  */
 export function resolveTokenBudget(
-  config: JarvisConfig,
+  config: EdithConfig,
   overrides?: Partial<TokenBudget>,
 ): ResolvedTokenBudget {
   const cfg = config.agent.token_budget;
@@ -363,7 +363,7 @@ function buildRoutingTableContent(
   const lines: string[] = [];
 
   lines.push("---");
-  lines.push("name: company-jarvis-routing-table");
+  lines.push("name: company-edith-routing-table");
   lines.push("description: Layer 0 routing table. Always loaded. Maps services to one-line descriptions and key constraints.");
   lines.push("layer: 0");
   lines.push(`token_budget: ${budget}`);
@@ -466,7 +466,7 @@ export function generateLayer1(
 
   // Frontmatter
   lines.push("---");
-  lines.push("type: jarvis-quick-ref");
+  lines.push("type: edith-quick-ref");
   lines.push("layer: 1");
   lines.push(`target_service: "${service}"`);
   lines.push("sources:");
@@ -846,7 +846,7 @@ function buildDistillateFragment(
 
   // Frontmatter
   lines.push("---");
-  lines.push("type: jarvis-distillate");
+  lines.push("type: edith-distillate");
   lines.push(`target_service: "${service}"`);
   lines.push("sources:");
   for (const source of topic.sources) {
@@ -1057,18 +1057,18 @@ export function persistDistillResult(
 // ── Main Distill Function ────────────────────────────────────────
 
 /**
- * Execute a JARVIS distill operation.
+ * Execute a EDITH distill operation.
  *
  * This is the main entry point called by the extension tool handler.
  *
  * @param params - Distill parameters (target, optional token_budget overrides)
- * @param config - JARVIS configuration for workspace paths and token budgets
- * @param repos - Repository configuration from jarvis.yaml
+ * @param config - EDITH configuration for workspace paths and token budgets
+ * @param repos - Repository configuration from edith.yaml
  * @returns Distill outcome — either a successful DistillResult or a DistillError
  */
 export function executeDistill(
   params: DistillParams,
-  config: JarvisConfig,
+  config: EdithConfig,
   repos: RepoConfig[],
 ): DistillOutcome {
   const warnings: string[] = [];
@@ -1082,7 +1082,7 @@ export function executeDistill(
         code: "SOURCE_NOT_FOUND",
         severity: "error",
         message: "缺少必需参数: target",
-        suggestion: "jarvis_distill 需要 target 参数，指定要蒸馏的服务名。",
+        suggestion: "edith_distill 需要 target 参数，指定要蒸馏的服务名。",
       },
     };
   }
@@ -1157,7 +1157,7 @@ export function executeDistill(
  */
 export function formatDistillSummary(result: DistillResult): string {
   const lines: string[] = [
-    "JARVIS 知识蒸馏完成",
+    "EDITH 知识蒸馏完成",
     "",
     "  服务: " + result.service,
     "",
@@ -1200,7 +1200,7 @@ export function formatDistillSummary(result: DistillResult): string {
  */
 export function formatDistillError(error: DistillError): string {
   const lines: string[] = [
-    "JARVIS 知识蒸馏失败",
+    "EDITH 知识蒸馏失败",
     "",
     "  错误: " + error.message,
     "  代码: " + error.code,

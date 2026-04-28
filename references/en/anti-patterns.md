@@ -1,19 +1,19 @@
 # Anti-Patterns
 
 ## 1. The pretty shell
-Generating a polished JARVIS repo without clarifying the business intent, first loop, or next owners.
+Generating a polished EDITH repo without clarifying the business intent, first loop, or next owners.
 
 **Better:** define the first valuable loop, then generate only what supports it.
 
 ## 2. The content dump
-Copying source documents, issue bodies, or meeting notes into JARVIS.
+Copying source documents, issue bodies, or meeting notes into EDITH.
 
 **Better:** extract patterns, routing clues, and durable summaries.
 
 ## 3. Centralizing everything
-Stuffing repo-local truth into the central JARVIS repo.
+Stuffing repo-local truth into the central EDITH repo.
 
-**Better:** keep repo-local execution guidance with the repo and let JARVIS route to it.
+**Better:** keep repo-local execution guidance with the repo and let EDITH route to it.
 
 ## 4. Placeholder theater
 Leaving placeholders that look like validated company truth.
@@ -26,11 +26,11 @@ Trying to map every source, repo, and workflow before proving the first useful l
 **Better:** start with the smallest scope that can demonstrate compounding value.
 
 ## 6. Single-hero design
-Assuming one person or one agent can build and maintain JARVIS alone.
+Assuming one person or one agent can build and maintain EDITH alone.
 
 **Better:** define ownership and handoff early.
 
 ## 7. Static mindset
-Treating the first scaffold as a finished JARVIS.
+Treating the first scaffold as a finished EDITH.
 
 **Better:** ship the first pass as a rollout stage with backlog and next steps.

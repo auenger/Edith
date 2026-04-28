@@ -1,6 +1,6 @@
-# JARVIS Agent
+# EDITH Agent
 
-JARVIS Agent 是 JARVIS 知识基础设施的终端 Agent，基于 [pi SDK](https://github.com/badlogic/pi-mono) 构建。
+EDITH Agent 是 EDITH 知识基础设施的终端 Agent，基于 [pi SDK](https://github.com/badlogic/pi-mono) 构建。
 
 ## 快速开始
 
@@ -16,11 +16,11 @@ npm install
 复制示例配置并根据需要修改：
 
 ```bash
-cp jarvis.yaml jarvis.yaml.local
-# 编辑 jarvis.yaml.local 设置你的 LLM provider 和 workspace
+cp edith.yaml edith.yaml.local
+# 编辑 edith.yaml.local 设置你的 LLM provider 和 workspace
 ```
 
-最小配置示例（`jarvis.yaml`）：
+最小配置示例（`edith.yaml`）：
 
 ```yaml
 llm:
@@ -28,7 +28,7 @@ llm:
   model: claude-sonnet-4-6
 
 workspace:
-  root: ./company-jarvis
+  root: ./company-edith
   language: zh
 
 repos: []
@@ -40,13 +40,13 @@ repos: []
 npm start
 ```
 
-Agent 启动后会显示 JARVIS 欢迎横幅并进入交互式会话。
+Agent 启动后会显示 EDITH 欢迎横幅并进入交互式会话。
 
 ## 环境变量
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `JARVIS_CONFIG` | jarvis.yaml 配置文件路径 | `./jarvis.yaml` |
+| `EDITH_CONFIG` | edith.yaml 配置文件路径 | `./edith.yaml` |
 
 ## 项目结构
 
@@ -54,11 +54,11 @@ Agent 启动后会显示 JARVIS 欢迎横幅并进入交互式会话。
 agent/
 ├── package.json        # TypeScript + pi SDK 依赖
 ├── tsconfig.json       # TypeScript 配置 (strict: true)
-├── jarvis.yaml         # 最小可运行配置
+├── edith.yaml         # 最小可运行配置
 ├── src/
 │   ├── index.ts        # 入口：启动 pi Agent + 加载 Extension
 │   ├── extension.ts    # Extension 骨架（空工具注册）
-│   └── config.ts       # jarvis.yaml 解析（YAML → TypeScript 接口）
+│   └── config.ts       # edith.yaml 解析（YAML → TypeScript 接口）
 └── README.md           # 本文件
 ```
 

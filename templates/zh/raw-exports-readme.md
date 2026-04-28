@@ -13,8 +13,8 @@
 ## Boundary rules
 
 - 把这里视为存储层，而不是主知识层
-- 不要把原始导出物与 JARVIS summaries 或 routing docs 混淆
-- 保持主 JARVIS 文件轻量且偏综合
+- 不要把原始导出物与 EDITH summaries 或 routing docs 混淆
+- 保持主 EDITH 文件轻量且偏综合
 - 在可能时记录 provenance：source、日期、方法、owner
 
 ## 需要捕获的最小元数据

@@ -1,16 +1,16 @@
 /**
- * JARVIS Configuration Module
+ * EDITH Configuration Module
  *
- * Parses and validates jarvis.yaml configuration files.
- * Provides typed access to all JARVIS settings.
+ * Parses and validates edith.yaml configuration files.
+ * Provides typed access to all EDITH settings.
  *
  * Features:
  * - YAML parsing with js-yaml
  * - Environment variable resolution (${VAR_NAME} syntax)
- * - Upward directory search for jarvis.yaml
+ * - Upward directory search for edith.yaml
  * - Required field validation with clear error messages
  * - Default value filling for optional fields
- * - Interactive jarvis-init wizard
+ * - Interactive edith-init wizard
  */
 
 import { readFileSync, existsSync, writeFileSync } from "node:fs";
@@ -50,7 +50,7 @@ export interface AgentConfig {
   refresh_interval: string;
 }
 
-export interface JarvisConfig {
+export interface EdithConfig {
   llm: LlmConfig;
   workspace: WorkspaceConfig;
   repos: RepoConfig[];
@@ -71,7 +71,7 @@ const DEFAULT_AGENT: Omit<AgentConfig, never> = {
   refresh_interval: "24h",
 };
 
-const CONFIG_FILENAME = "jarvis.yaml";
+const CONFIG_FILENAME = "edith.yaml";
 
 // ── Error Classes ─────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ export class ConfigNotFoundError extends ConfigError {
 
   constructor(configPath: string) {
     super(
-      `未找到 jarvis.yaml，运行 jarvis-init 生成配置文件。\n` +
+      `未找到 edith.yaml，运行 edith-init 生成配置文件。\n` +
         `  搜索路径: ${configPath}`
     );
     this.name = "ConfigNotFoundError";
@@ -173,7 +173,7 @@ function resolveEnvVarsDeep(obj: unknown): unknown {
 // ── Config File Search ────────────────────────────────────────────
 
 /**
- * Search for jarvis.yaml starting from startDir and moving upward.
+ * Search for edith.yaml starting from startDir and moving upward.
  * Returns the resolved path to the config file, or null if not found.
  */
 export function findConfigFile(startDir?: string): string | null {
@@ -308,14 +308,14 @@ export function validateConfig(raw: unknown): void {
  * Apply default values for optional fields.
  * Only fills in fields that are not provided — never overwrites existing values.
  */
-export function applyDefaults(config: Partial<JarvisConfig>): JarvisConfig {
+export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
   const llm = config.llm ?? {
     provider: "",
     model: "",
   };
 
   const workspace = config.workspace ?? {
-    root: "./company-jarvis",
+    root: "./company-edith",
     language: "zh" as const,
   };
 
@@ -355,18 +355,18 @@ export function applyDefaults(config: Partial<JarvisConfig>): JarvisConfig {
 // ── Config Loader ─────────────────────────────────────────────────
 
 /**
- * Load and parse a jarvis.yaml file.
+ * Load and parse a edith.yaml file.
  *
  * If filePath is provided, loads that specific file.
- * If filePath is omitted, searches upward from cwd for jarvis.yaml.
+ * If filePath is omitted, searches upward from cwd for edith.yaml.
  *
  * @param filePath - Optional explicit path to the config file
- * @returns Fully resolved and validated JarvisConfig object
+ * @returns Fully resolved and validated EdithConfig object
  * @throws ConfigNotFoundError if file does not exist
  * @throws ConfigParseError if YAML syntax is invalid
  * @throws ConfigValidationError if required fields are missing or invalid
  */
-export function loadConfig(filePath?: string): JarvisConfig {
+export function loadConfig(filePath?: string): EdithConfig {
   // Determine config file path
   let configPath: string | null;
   if (filePath) {
@@ -404,10 +404,10 @@ export function loadConfig(filePath?: string): JarvisConfig {
   validateConfig(resolved);
 
   // Apply defaults and return typed config
-  return applyDefaults(resolved as Partial<JarvisConfig>);
+  return applyDefaults(resolved as Partial<EdithConfig>);
 }
 
-// ── jarvis-init Interactive Wizard ────────────────────────────────
+// ── edith-init Interactive Wizard ────────────────────────────────
 
 const PROVIDER_MODEL_HINTS: Record<string, string[]> = {
   openai: ["gpt-4", "gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
@@ -440,7 +440,7 @@ function questionWithDefault(rl: readline.ReadLine, prompt: string, defaultValue
 }
 
 /**
- * Interactive configuration wizard that generates a jarvis.yaml file.
+ * Interactive configuration wizard that generates a edith.yaml file.
  *
  * Steps:
  * 1. Select LLM provider
@@ -452,7 +452,7 @@ function questionWithDefault(rl: readline.ReadLine, prompt: string, defaultValue
  * 7. Confirm and generate file
  *
  * Ctrl+C at any step cancels without generating files.
- * If jarvis.yaml already exists, asks for overwrite confirmation.
+ * If edith.yaml already exists, asks for overwrite confirmation.
  */
 export async function initConfigWizard(outputPath?: string): Promise<void> {
   const targetPath = resolve(outputPath ?? join(process.cwd(), CONFIG_FILENAME));
@@ -461,7 +461,7 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
   if (existsSync(targetPath)) {
     const rl = createReadlineInterface();
     try {
-      const overwrite = await question(rl, `\njarvis.yaml already exists at ${targetPath}\nOverwrite? (y/N): `);
+      const overwrite = await question(rl, `\nedith.yaml already exists at ${targetPath}\nOverwrite? (y/N): `);
       if (overwrite.toLowerCase() !== "y") {
         console.log("配置向导已取消。");
         return;
@@ -484,8 +484,8 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
 
   try {
     console.log("\n╔══════════════════════════════════════════╗");
-    console.log("║   JARVIS Configuration Wizard            ║");
-    console.log("║   jarvis-init                            ║");
+    console.log("║   EDITH Configuration Wizard            ║");
+    console.log("║   edith-init                            ║");
     console.log("╚══════════════════════════════════════════╝\n");
 
     // Step 1: LLM Provider
@@ -517,7 +517,7 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
 
     // Step 4: Workspace Root
     console.log("\nStep 4: Workspace");
-    const workspaceRoot = await questionWithDefault(rl, "  Workspace root path", "./company-jarvis");
+    const workspaceRoot = await questionWithDefault(rl, "  Workspace root path", "./company-edith");
 
     // Step 5: Language
     console.log("\nStep 5: Language");
@@ -574,7 +574,7 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
     // Write the file
     writeFileSync(targetPath, yamlContent, "utf-8");
     console.log(`\nConfiguration written to: ${targetPath}`);
-    console.log("You can now start JARVIS with: npm start");
+    console.log("You can now start EDITH with: npm start");
   } finally {
     rl.close();
   }
@@ -584,7 +584,7 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
  * Generate YAML content string from a partial config.
  * Uses manual YAML generation to avoid extra dependencies.
  */
-function generateConfigYaml(config: Partial<JarvisConfig>): string {
+function generateConfigYaml(config: Partial<EdithConfig>): string {
   const lines: string[] = [];
 
   // LLM section
@@ -601,7 +601,7 @@ function generateConfigYaml(config: Partial<JarvisConfig>): string {
   // Workspace section
   lines.push("");
   lines.push("workspace:");
-  lines.push(`  root: ${config.workspace?.root ?? "./company-jarvis"}`);
+  lines.push(`  root: ${config.workspace?.root ?? "./company-edith"}`);
   lines.push(`  language: ${config.workspace?.language ?? "zh"}`);
 
   // Repos section

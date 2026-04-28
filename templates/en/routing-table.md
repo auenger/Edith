@@ -1,5 +1,5 @@
 ---
-name: <company-jarvis-routing-table>
+name: <company-edith-routing-table>
 description: Layer 0 routing table. Always loaded. Maps services to one-line descriptions and key constraints. Must stay under 500 tokens.
 layer: 0
 token_budget: 500

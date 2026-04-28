@@ -12,7 +12,7 @@
 
 ### 2. Token Budget Configuration (Scenario 2, 4)
 - [x] 定义 `TokenBudget` 接口：`{ routing_table, quick_ref, distillate_per_file }`
-- [x] 从 jarvis.yaml 读取默认 token_budget 配置
+- [x] 从 edith.yaml 读取默认 token_budget 配置
 - [x] 支持调用时参数覆盖默认配置
 - [x] 实现 token 计数工具函数（支持中英文混合文本）
 - [x] 编写单元测试：预算读取、参数覆盖、token 计数准确性
@@ -57,9 +57,9 @@
 - [x] 编写集成测试：验证所有 error code 和 warning 场景
 
 ### 8. Tool Registration (feat-extension-core integration)
-- [x] 在 pi SDK Extension 中注册 jarvis_distill 工具
+- [x] 在 pi SDK Extension 中注册 edith_distill 工具
 - [x] 定义工具 schema：parameters + return type
-- [x] 端到端测试：Agent 对话 → jarvis_distill → 三层产物
+- [x] 端到端测试：Agent 对话 → edith_distill → 三层产物
 
 ## Progress Log
 | Date | Progress | Notes |

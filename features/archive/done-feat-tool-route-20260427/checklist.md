@@ -44,7 +44,7 @@
 - [ ] reason 说明清晰可读
 - [ ] filesToLoad 路径正确且可操作
 
-### JARVIS Discipline
+### EDITH Discipline
 - [ ] 输出为纯 Markdown（无专有格式）
 - [ ] Skills 不暴露给用户
 - [ ] 只做建议，不执行加载
@@ -55,7 +55,7 @@
 - [ ] Scenario 1-7 全部覆盖
 - [ ] 路由决策表每种条件有独立测试
 - [ ] 歧义场景有独立测试
-- [ ] 端到端测试：Agent → jarvis_route → 决策建议
+- [ ] 端到端测试：Agent → edith_route → 决策建议
 
 ### Documentation
 - [ ] spec.md 包含完整路由决策表和伪代码

@@ -1,12 +1,12 @@
 # Checklist: feat-extension-core
 
 ## Tool Registration（工具注册）
-- [x] jarvis_scan 工具注册到 pi SDK（name + description + TypeBox schema + stub handler）
-- [x] jarvis_distill 工具注册到 pi SDK
-- [x] jarvis_route 工具注册到 pi SDK
-- [x] jarvis_query 工具注册到 pi SDK
+- [x] edith_scan 工具注册到 pi SDK（name + description + TypeBox schema + stub handler）
+- [x] edith_distill 工具注册到 pi SDK
+- [x] edith_route 工具注册到 pi SDK
+- [x] edith_query 工具注册到 pi SDK
 - [x] 每个工具注册包裹 try/catch，失败不中断 Agent 启动
-- [x] 未成功注册的工具在 jarvis-status 中标记为 unavailable
+- [x] 未成功注册的工具在 edith-status 中标记为 unavailable
 
 ## loadSkill() 隐藏加载
 - [x] loadSkill() 函数实现，路由映射 scan→document-project / distill→distillator / route→requirement-router
@@ -15,13 +15,13 @@
 
 ## Event Hooks（事件钩子）
 - [x] `pi.on("tool_execution_start")` 事件钩子已注册
-- [x] 仅过滤 jarvis_* 工具调用
+- [x] 仅过滤 edith_* 工具调用
 - [x] 审计日志包含：工具名、时间戳、参数摘要
 - [x] 日志不包含 Skill 内部名称（document-project 等）
 
-## Commands — jarvis-init & jarvis-status
-- [x] jarvis-init 命令注册，返回 stub 提示
-- [x] jarvis-status 命令注册，显示工具状态 + workspace + 配置状态
+## Commands — edith-init & edith-status
+- [x] edith-init 命令注册，返回 stub 提示
+- [x] edith-status 命令注册，显示工具状态 + workspace + 配置状态
 
 ## Commands — /new（新会话）
 - [x] /new 命令注册到 pi SDK
@@ -54,7 +54,7 @@
 - [x] 遵循项目命名约定（工具名 snake_case，文件名 kebab-case）
 - [x] 不引入不必要的抽象层
 
-## JARVIS Discipline
+## EDITH Discipline
 - [x] Skills 不暴露给用户（用户只感知对话接口）
 - [x] 审计日志不暴露 Skill 内部名称
 - [x] 不编造代码中不存在的事实

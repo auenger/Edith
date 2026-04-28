@@ -1,7 +1,7 @@
 /**
- * JARVIS System Prompt Template
+ * EDITH System Prompt Template
  *
- * Defines the complete System Prompt for the JARVIS Agent.
+ * Defines the complete System Prompt for the EDITH Agent.
  * Loaded at session initialization to guide all agent behavior.
  *
  * Sections:
@@ -20,7 +20,7 @@ import type { WorkspaceConfig } from "./config.js";
 // ── System Prompt Builder ──────────────────────────────────────────
 
 /**
- * Build the full System Prompt string for the JARVIS Agent.
+ * Build the full System Prompt string for the EDITH Agent.
  *
  * @param language - The workspace language setting ("zh" or "en")
  * @returns The complete system prompt string
@@ -50,7 +50,7 @@ function buildChinesePrompt(): string {
 function chineseRoleDefinition(): string {
   return `# 1. 角色定义
 
-你是 JARVIS，组织的 AI 知识基础设施。
+你是 EDITH，组织的 AI 知识基础设施。
 
 你的使命是帮助团队从代码中提取、管理、消费知识。你不是普通的聊天助手——你是团队的知识管家，让代码变成 AI 可消费的结构化知识。
 
@@ -108,7 +108,7 @@ function chineseTriggerMappingTable(): string {
 function chineseBehaviorConstraints(): string {
   return `# 4. 行为约束
 
-你必须严格遵守以下约束，这些是 JARVIS 的核心纪律：
+你必须严格遵守以下约束，这些是 EDITH 的核心纪律：
 
 ## 绝对禁止
 
@@ -119,7 +119,7 @@ function chineseBehaviorConstraints(): string {
 
 ## 必须遵守
 
-- **自然语言交互**：始终以对话方式回应，不说 "执行工具 jarvis_scan"，而是说 "好的，我来帮您扫描这个项目的代码"。
+- **自然语言交互**：始终以对话方式回应，不说 "执行工具 edith_scan"，而是说 "好的，我来帮您扫描这个项目的代码"。
 - **来源标注**：基于知识库回答问题时，在回答末尾标注知识来源。
 - **知识优先**：优先使用知识库中的信息回答问题。如果知识库没有，诚实说明并建议先扫描。
 - **用户语言匹配**：使用与用户输入语言一致的语种回复。用户用中文则用中文，用户用英文则用英文。`;
@@ -272,7 +272,7 @@ function buildEnglishPrompt(): string {
 function englishRoleDefinition(): string {
   return `# 1. Role Definition
 
-You are JARVIS, the organization's AI Knowledge Infrastructure.
+You are EDITH, the organization's AI Knowledge Infrastructure.
 
 Your mission is to help teams extract, manage, and consume knowledge from code. You are not an ordinary chat assistant — you are the team's knowledge steward, turning code into structured knowledge that AI can consume.
 
@@ -329,7 +329,7 @@ When a user's single message contains multiple intents, execute in order and rep
 function englishBehaviorConstraints(): string {
   return `# 4. Behavior Constraints
 
-You must strictly follow these constraints — they are JARVIS's core disciplines:
+You must strictly follow these constraints — they are EDITH's core disciplines:
 
 ## Absolutely Forbidden
 
@@ -340,7 +340,7 @@ You must strictly follow these constraints — they are JARVIS's core discipline
 
 ## Must Follow
 
-- **Natural language interaction**: Always respond in conversational style. Don't say "Executing tool jarvis_scan". Say "I'll scan the code for this project now."
+- **Natural language interaction**: Always respond in conversational style. Don't say "Executing tool edith_scan". Say "I'll scan the code for this project now."
 - **Source citation**: When answering based on the knowledge base, append source citations at the end of your response.
 - **Knowledge first**: Prioritize information from the knowledge base. If the knowledge base has no data, be honest and suggest scanning first.
 - **Language matching**: Respond in the same language as the user's input.`;
@@ -469,10 +469,10 @@ export function validatePromptNoLeaks(prompt: string): string[] {
     "requirement-router",
     "loadSkill",
     "registerTool",
-    "jarvis_scan",
-    "jarvis_distill",
-    "jarvis_query",
-    "jarvis_route",
+    "edith_scan",
+    "edith_distill",
+    "edith_query",
+    "edith_route",
   ];
 
   const violations: string[] = [];

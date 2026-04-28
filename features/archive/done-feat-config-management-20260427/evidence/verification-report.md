@@ -1,6 +1,6 @@
 # Verification Report: feat-config-management
 
-**Feature**: jarvis.yaml 配置管理
+**Feature**: edith.yaml 配置管理
 **Date**: 2026-04-27
 **Status**: PASSED
 
@@ -14,7 +14,7 @@
 | 4. Environment Variables | 4 | 4 | Done |
 | 5. Validation | 6 | 6 | Done |
 | 6. Default Values | 5 | 5 | Done |
-| 7. jarvis-init Wizard | 10 | 10 | Done |
+| 7. edith-init Wizard | 10 | 10 | Done |
 | 8. Export Public API | 4 | 4 | Done |
 | 9. Verification | 11 | 11 | Done |
 | **Total** | **56** | **56** | **100%** |
@@ -30,9 +30,9 @@
 
 | Scenario | Description | Result |
 |----------|-------------|--------|
-| S1 | Correct YAML parsing to JarvisConfig | PASS |
+| S1 | Correct YAML parsing to EdithConfig | PASS |
 | S2 | Missing llm.provider reports error | PASS |
-| S3 | jarvis-init wizard exported | PASS |
+| S3 | edith-init wizard exported | PASS |
 | S4 | Invalid YAML syntax with line number | PASS |
 | S5 | Config file not found with hint | PASS |
 | S6 | Invalid language enum ("fr") | PASS |
@@ -50,17 +50,17 @@
 |------|--------|
 | agent/src/config.ts | Full rewrite (types, parsing, validation, defaults, wizard) |
 | agent/src/index.ts | Updated imports for new config API |
-| agent/jarvis.yaml | Updated with full agent section |
+| agent/edith.yaml | Updated with full agent section |
 
 ## Exported API
 
-- `loadConfig(filePath?: string): JarvisConfig`
+- `loadConfig(filePath?: string): EdithConfig`
 - `validateConfig(raw: unknown): void`
-- `applyDefaults(config: Partial<JarvisConfig>): JarvisConfig`
+- `applyDefaults(config: Partial<EdithConfig>): EdithConfig`
 - `resolveEnvVars(value: string): string | undefined`
 - `findConfigFile(startDir?: string): string | null`
 - `initConfigWizard(outputPath?: string): Promise<void>`
-- Types: `JarvisConfig`, `LlmConfig`, `WorkspaceConfig`, `RepoConfig`, `TokenBudget`, `AgentConfig`
+- Types: `EdithConfig`, `LlmConfig`, `WorkspaceConfig`, `RepoConfig`, `TokenBudget`, `AgentConfig`
 - Errors: `ConfigError`, `ConfigNotFoundError`, `ConfigParseError`, `ConfigValidationError`
 
 ## Issues

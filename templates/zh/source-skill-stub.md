@@ -1,6 +1,6 @@
 ---
 name: <source-skill-name>
-description: 帮助 agents 为 <company/product> 访问并解释 <source-name>。当任务需要把这个 source 作为 JARVIS workflow 的一部分来检索、搜索、路由或写回时使用。
+description: 帮助 agents 为 <company/product> 访问并解释 <source-name>。当任务需要把这个 source 作为 EDITH workflow 的一部分来检索、搜索、路由或写回时使用。
 ---
 
 # <Source Skill Title>

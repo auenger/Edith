@@ -4,12 +4,12 @@
 
 ### Phase 1: Foundation (Scenario 1, 2, 3 — 核心行为)
 
-- [x] T1.1 撰写 System Prompt 角色定义段落（你是 JARVIS...）
+- [x] T1.1 撰写 System Prompt 角色定义段落（你是 EDITH...）
 - [x] T1.2 撰写核心职责清单（知识提取/管理/查询/路由）
-- [x] T1.3 构建触发映射表：关键词 → jarvis_scan / jarvis_distill / jarvis_query / jarvis_route
+- [x] T1.3 构建触发映射表：关键词 → edith_scan / edith_distill / edith_query / edith_route
 - [x] T1.4 撰写行为约束规则（不暴露内部名称、自然语言回应）
 - [x] T1.5 撰写引用格式模板 `(来源: {path}, 片段: {section})`
-- [x] T1.6 测试 Scenario 1：输入 "分析一下订单服务的代码"，验证 jarvis_scan 被触发且工具名不暴露
+- [x] T1.6 测试 Scenario 1：输入 "分析一下订单服务的代码"，验证 edith_scan 被触发且工具名不暴露
 - [x] T1.7 测试 Scenario 2：准备模拟查询结果，验证来源标注格式正确
 - [x] T1.8 测试 Scenario 3：多轮对话验证无内部名称泄露
 

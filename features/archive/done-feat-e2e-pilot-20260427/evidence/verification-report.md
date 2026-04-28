@@ -35,7 +35,7 @@
 
 | Step | Result | Details |
 |------|--------|---------|
-| Config Load | PASS | jarvis.yaml loaded with jarvis-repo target |
+| Config Load | PASS | edith.yaml loaded with edith-repo target |
 | Scan | PASS | 3 files generated (overview.md, api-endpoints.md, data-models.md) |
 | Distill | PASS | 3 layers generated. L0: 293/500 tokens, L1: 293/2000, L2: 4 fragments |
 | Query (5 tests) | PARTIAL | 2/5 correct (40%). Failures due to documentation-heavy test project |
@@ -47,7 +47,7 @@
 ### Scenario 1: Complete E2E Flow -- Normal Path
 - **Status**: PASS
 - **Evidence**: Scan, distill, query, route all executed sequentially. Each produced output.
-- **Artifacts**: company-jarvis/routing-table.md, company-jarvis/jarvis-repo/quick-ref.md, company-jarvis/jarvis-repo/distillates/
+- **Artifacts**: company-edith/routing-table.md, company-edith/edith-repo/quick-ref.md, company-edith/edith-repo/distillates/
 
 ### Scenario 2: Pilot Report Generation
 - **Status**: PASS
@@ -56,7 +56,7 @@
 
 ### Scenario 3: Zero-Adapt Consumption Verification
 - **Status**: PASS
-- **Evidence**: routing-table.md is pure Markdown, contains Services table, Quick-Ref Paths, Loading Rules. No JARVIS runtime required to consume.
+- **Evidence**: routing-table.md is pure Markdown, contains Services table, Quick-Ref Paths, Loading Rules. No EDITH runtime required to consume.
 
 ### Scenario 4: Scan Failure -- Error Handling
 - **Status**: PASS (code analysis)
@@ -69,7 +69,7 @@
 ### Scenario 6: Query Returns Incorrect Results
 - **Status**: PASS (scenario correctly handled)
 - **Evidence**: Query accuracy is 40% (below 80%). pilot-report.md records this. pilot-ready status is NOT-READY. Issue attributed to feat-tool-query.
-- **Note**: Low accuracy is expected because the test project (JARVIS repo) is documentation-heavy with no standard code structure (no routes/, models/ directories). The scan correctly identified 0 endpoints, 0 models. The query tool returns what exists in the knowledge base.
+- **Note**: Low accuracy is expected because the test project (EDITH repo) is documentation-heavy with no standard code structure (no routes/, models/ directories). The scan correctly identified 0 endpoints, 0 models. The query tool returns what exists in the knowledge base.
 
 ### Scenario 7: Multi-Round Query Verification
 - **Status**: PASS (5 queries executed)
@@ -85,7 +85,7 @@
 |---|-------------|----------|--------|-------------|
 | 1 | Query accuracy 40% (below 80% target) | P2 | Recorded | feat-tool-query |
 
-**Root cause analysis for Issue 1**: The JARVIS repo is a documentation-centric project. The scan tool correctly detects no standard code directories (routes/, models/, services/) in the root. The resulting knowledge base is sparse, so queries about tech stack, business flows, and config management return empty/minimal results. This is a known limitation for documentation-heavy projects, not a bug.
+**Root cause analysis for Issue 1**: The EDITH repo is a documentation-centric project. The scan tool correctly detects no standard code directories (routes/, models/, services/) in the root. The resulting knowledge base is sparse, so queries about tech stack, business flows, and config management return empty/minimal results. This is a known limitation for documentation-heavy projects, not a bug.
 
 ## Warnings
 
@@ -94,7 +94,7 @@
 ## Evidence Files
 
 - `pilot-report.md` -- Full pilot report with metrics, accuracy, and declaration
-- `../agent/company-jarvis/routing-table.md` -- Generated Layer 0 artifact (in worktree)
-- `../agent/company-jarvis/jarvis-repo/quick-ref.md` -- Generated Layer 1 artifact (in worktree)
-- `../agent/company-jarvis/jarvis-repo/distillates/` -- Generated Layer 2 artifacts (in worktree)
+- `../agent/company-edith/routing-table.md` -- Generated Layer 0 artifact (in worktree)
+- `../agent/company-edith/edith-repo/quick-ref.md` -- Generated Layer 1 artifact (in worktree)
+- `../agent/company-edith/edith-repo/distillates/` -- Generated Layer 2 artifacts (in worktree)
 - `../agent/src/e2e-pilot.ts` -- E2E pilot test script (in worktree)

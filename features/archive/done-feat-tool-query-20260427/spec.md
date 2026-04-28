@@ -1,8 +1,8 @@
-# Feature: feat-tool-query jarvis_query 工具
+# Feature: feat-tool-query edith_query 工具
 
 ## Basic Information
 - **ID**: feat-tool-query
-- **Name**: jarvis_query 工具（三层加载查询）
+- **Name**: edith_query 工具（三层加载查询）
 - **Priority**: 90
 - **Size**: M
 - **Dependencies**: [feat-extension-core]
@@ -23,7 +23,7 @@
 
 ## Description
 
-实现 jarvis_query 工具：三层渐进加载策略查询知识库。Layer 0 routing-table.md 常驻（<500 token），Layer 1 quick-ref.md 按需加载，Layer 2 distillates/*.md 精准定位。
+实现 edith_query 工具：三层渐进加载策略查询知识库。Layer 0 routing-table.md 常驻（<500 token），Layer 1 quick-ref.md 按需加载，Layer 2 distillates/*.md 精准定位。
 
 ## User Value Points
 
@@ -36,7 +36,7 @@
 - `SCALABILITY-ANALYSIS.md` — 三层加载策略的理论基础
 
 ### Related Documents
-- `JARVIS-PRODUCT-DESIGN.md` § 4.2 消费方式—零适配、§ 4.3 产出物自说明性
+- `EDITH-PRODUCT-DESIGN.md` § 4.2 消费方式—零适配、§ 4.3 产出物自说明性
 - `templates/en/routing-table.md` — 路由表头部包含消费规则
 
 ## Technical Solution
@@ -154,7 +154,7 @@ And layersLoaded 为 [0, 1]
 ```gherkin
 Given 知识库中有 order-service 的三层产物
 And order-service/quick-ref.md 包含无效 YAML frontmatter 或损坏的 Markdown
-When jarvis_query 尝试加载该文件
+When edith_query 尝试加载该文件
 Then 跳过该文件，仅使用 Layer 0 信息
 And 返回 warning: "order-service/quick-ref.md 格式异常，已跳过"
 And 降级到仅 Layer 0 回答

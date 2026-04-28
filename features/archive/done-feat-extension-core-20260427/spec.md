@@ -1,8 +1,8 @@
-# Feature: feat-extension-core jarvis.ts Extension 核心路由层
+# Feature: feat-extension-core edith.ts Extension 核心路由层
 
 ## Basic Information
 - **ID**: feat-extension-core
-- **Name**: jarvis.ts Extension 核心路由层
+- **Name**: edith.ts Extension 核心路由层
 - **Priority**: 95
 - **Size**: M
 - **Dependencies**: [feat-agent-scaffold]
@@ -12,11 +12,11 @@
 
 ## Description
 
-实现 JARVIS Agent 的 Extension 核心路由层：消息拦截 + Skill 自动加载 + 工具注册 + 事件钩子。注册四个核心工具（jarvis_scan / jarvis_distill / jarvis_route / jarvis_query），每个工具通过隐藏式加载对应 Skill 来实现。
+实现 EDITH Agent 的 Extension 核心路由层：消息拦截 + Skill 自动加载 + 工具注册 + 事件钩子。注册四个核心工具（edith_scan / edith_distill / edith_route / edith_query），每个工具通过隐藏式加载对应 Skill 来实现。
 
 ## OUT Scope（本 feature 不做）
 
-- **Skill 内部实现** — jarvis_scan/distill/route/query 的实际业务逻辑由后续 feature（feat-tool-*）填充，本 feature 仅提供 stub handler（返回 "Not implemented yet"）
+- **Skill 内部实现** — edith_scan/distill/route/query 的实际业务逻辑由后续 feature（feat-tool-*）填充，本 feature 仅提供 stub handler（返回 "Not implemented yet"）
 - **loadSkill() 的 Skill 代码执行** — 仅实现加载路由框架，不实现 Skill 代码的实际解析和运行
 - **Agent Loop 深度集成** — /compact 的 Phase 2（conversation summarization API 对接）不属于本 feature
 - **用户认证 / 权限管理** — 不涉及多用户或权限控制
@@ -26,7 +26,7 @@
 
 ## User Value Points
 
-1. **统一工具注册** — 四个 jarvis_* 工具全部注册到 pi SDK，Agent 可通过自然语言触发
+1. **统一工具注册** — 四个 edith_* 工具全部注册到 pi SDK，Agent 可通过自然语言触发
 2. **Skill 隐藏加载** — 用户不感知 document-project / distillator / requirement-router 的存在
 3. **事件钩子** — 工具调用事件可被记录，用于知识生产审计
 4. **上下文管理** — /new /clear /compact 命令让用户控制对话上下文，防止历史膨胀
@@ -34,13 +34,13 @@
 ## Context Analysis
 
 ### Reference Code
-- `JARVIS-PRODUCT-DESIGN.md` § 2.3 Extension 核心设计（含完整伪代码）
+- `EDITH-PRODUCT-DESIGN.md` § 2.3 Extension 核心设计（含完整伪代码）
 
 ### Related Documents
-- `jarvis-skills/INTEGRATION.md` — Skill 与 JARVIS 融合方案
-- `jarvis-skills/document-project/SKILL.md`
-- `jarvis-skills/distillator/SKILL.md`
-- `jarvis-skills/requirement-router/SKILL.md`
+- `edith-skills/INTEGRATION.md` — Skill 与 EDITH 融合方案
+- `edith-skills/document-project/SKILL.md`
+- `edith-skills/distillator/SKILL.md`
+- `edith-skills/requirement-router/SKILL.md`
 
 ### Related Features
 - feat-agent-scaffold（前置）
@@ -51,12 +51,12 @@
 Extension 入口 `src/extension.ts`：
 - `pi.registerTool()` 注册四个工具（handler 先用 stub/placeholder）
 - `pi.registerCommand()` 注册以下命令：
-  - `jarvis-init` — 初始化 JARVIS 实例
-  - `jarvis-status` — 查看当前状态
+  - `edith-init` — 初始化 EDITH 实例
+  - `edith-status` — 查看当前状态
   - `/new` — 新会话（TUI 层：fork 为空白 session，重启 Agent 进程）
   - `/clear` — 清除上下文（TUI 层：删除当前 session 文件并重新加载）
   - `/compact` — 压缩上下文（Phase 1: TUI 提示 + 计划摘要；Phase 2: 深入 Agent Loop 做 conversation summarization）
-- `pi.on("tool_call")` 注册事件钩子，记录 jarvis_* 工具调用
+- `pi.on("tool_call")` 注册事件钩子，记录 edith_* 工具调用
 - `loadSkill()` 隐藏加载函数，内部路由到对应 Skill 目录
 
 ### Extension API 使用方式
@@ -83,29 +83,29 @@ export default function (pi: ExtensionAPI) {
 ## Acceptance Criteria (Gherkin)
 
 ### User Story
-作为 JARVIS Agent，我需要在 Extension 层注册所有 jarvis_* 工具，以便用户通过自然语言对话触发知识生产和查询。
+作为 EDITH Agent，我需要在 Extension 层注册所有 edith_* 工具，以便用户通过自然语言对话触发知识生产和查询。
 
 ### Scenarios
 
 **Scenario 1: 四个工具注册成功**
 ```gherkin
 Given Agent 已启动
-Then jarvis_scan 工具已注册且可被发现
-And jarvis_distill 工具已注册且可被发现
-And jarvis_route 工具已注册且可被发现
-And jarvis_query 工具已注册且可被发现
+Then edith_scan 工具已注册且可被发现
+And edith_distill 工具已注册且可被发现
+And edith_route 工具已注册且可被发现
+And edith_query 工具已注册且可被发现
 ```
 
 **Scenario 2: 自然语言触发工具**
 ```gherkin
 Given Agent 正在运行
 When 用户输入 "扫描 user-service"
-Then jarvis_scan 工具被触发（System Prompt 路由）
+Then edith_scan 工具被触发（System Prompt 路由）
 ```
 
 **Scenario 3: Skill 隐藏加载**
 ```gherkin
-Given jarvis_scan 工具被触发
+Given edith_scan 工具被触发
 When loadSkill("document-project") 被调用
 Then Skill 被加载并执行
 And 用户看不到 "document-project" 这个名称（只看到友好提示）
@@ -145,7 +145,7 @@ When pi.registerTool() 因参数无效抛出异常
 Then 扩展捕获异常并记录错误日志
 And Agent 启动不中断（graceful degradation）
 And 未注册的工具标记为不可用
-And jarvis-status 命令显示该工具为 "unavailable"
+And edith-status 命令显示该工具为 "unavailable"
 ```
 
 ### Scenario 8: 未知命令处理（sad-path）
@@ -153,7 +153,7 @@ And jarvis-status 命令显示该工具为 "unavailable"
 Given Agent 正在运行
 When 用户输入 "/unknown-command"
 Then 显示友好提示 "Unknown command: /unknown-command"
-And 列出可用的 JARVIS 命令（/new, /clear, /compact）
+And 列出可用的 EDITH 命令（/new, /clear, /compact）
 And 不中断当前对话
 ```
 
@@ -170,26 +170,26 @@ Then 执行对应操作（新会话或清除上下文）
 
 ### Scenario 10: 事件钩子记录审计日志
 ```gherkin
-Given jarvis_scan 工具已注册
+Given edith_scan 工具已注册
 And 事件钩子已注册
-When jarvis_scan 工具被调用
+When edith_scan 工具被调用
 Then 事件钩子记录调用信息（工具名、时间戳、参数摘要）
 And 日志不暴露 Skill 内部名称
 ```
 
-### Scenario 11: jarvis-init 命令 stub
+### Scenario 11: edith-init 命令 stub
 ```gherkin
 Given Agent 正在运行
-When 用户输入 "jarvis-init"
-Then 显示 "JARVIS initialization wizard (not implemented yet)"
+When 用户输入 "edith-init"
+Then 显示 "EDITH initialization wizard (not implemented yet)"
 And 返回成功状态（不中断 Agent）
 ```
 
-### Scenario 12: jarvis-status 命令
+### Scenario 12: edith-status 命令
 ```gherkin
 Given Agent 正在运行且配置已加载
-When 用户输入 "jarvis-status"
-Then 显示当前 JARVIS 状态概览
+When 用户输入 "edith-status"
+Then 显示当前 EDITH 状态概览
 And 包含已注册工具数量和状态
 And 包含 workspace 路径
 And 包含配置加载状态
@@ -199,8 +199,8 @@ And 包含配置加载状态
 - [ ] 四个工具全部注册到 pi SDK
 - [ ] 每个工具有完整的参数 schema（TypeBox）
 - [ ] loadSkill() 实现隐藏式 Skill 加载
-- [ ] 事件钩子记录 jarvis_* 工具调用日志
-- [ ] jarvis-init / jarvis-status 命令注册
+- [ ] 事件钩子记录 edith_* 工具调用日志
+- [ ] edith-init / edith-status 命令注册
 - [ ] /new 命令实现（TUI 层 fork 空白 session）
 - [ ] /clear 命令实现（TUI 层清空 message history）
 - [ ] /compact 命令实现（Phase 1: TUI 层摘要 + 截断）

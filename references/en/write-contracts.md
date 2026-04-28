@@ -1,6 +1,6 @@
 # Write Contracts
 
-Generated JARVIS artifacts should be opinionated about what belongs where.
+Generated EDITH artifacts should be opinionated about what belongs where.
 
 ## Global contract
 

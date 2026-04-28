@@ -1,10 +1,10 @@
 # Rollout and Ownership
 
-Treat JARVIS as a multi-owner rollout, not a one-time construction task.
+Treat EDITH as a multi-owner rollout, not a one-time construction task.
 
 ## Why ownership matters
 
-JARVIS usually spans:
+EDITH usually spans:
 - different digital assets,
 - different repos,
 - different teams,
@@ -42,7 +42,7 @@ At minimum, identify:
 - knowledge owner
 - repo owner(s)
 - workflow owner(s)
-- JARVIS maintainer / steward
+- EDITH maintainer / steward
 
 ## Good rollout output
 
@@ -51,8 +51,8 @@ A good rollout makes it easy to answer:
 - what they should build next,
 - what is blocked,
 - what is already usable,
-- and what maturity level the current JARVIS has reached.
+- and what maturity level the current EDITH has reached.
 
 ## Failure mode to avoid
 
-Do not present early-stage scaffolding as if the organization already has full JARVIS coverage.
+Do not present early-stage scaffolding as if the organization already has full EDITH coverage.

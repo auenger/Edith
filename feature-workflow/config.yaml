@@ -1,9 +1,9 @@
 # Feature Workflow 配置
-# 项目: JARVIS — AI 知识基础设施
+# 项目: EDITH — AI 知识基础设施
 
 # 项目信息
 project:
-  name: JARVIS
+  name: EDITH
   main_branch: main
   repo_path: .
 
@@ -25,7 +25,7 @@ git:
 
 # 分支策略
 branch_prefix: feature
-worktree_prefix: JARVIS
+worktree_prefix: EDITH
 worktree_base: ..
 
 # 工作流设置
@@ -75,7 +75,7 @@ completion:
 naming:
   feature_prefix: feat
   branch_prefix: feature
-  worktree_prefix: JARVIS
+  worktree_prefix: EDITH
 
 # 路径配置
 paths:

@@ -44,7 +44,7 @@
 - [x] 文件损坏 → 跳过 + warning
 - [x] 所有降级情况用户都收到说明
 
-### JARVIS Discipline
+### EDITH Discipline
 - [x] 输出为纯 Markdown（无专有格式）
 - [x] Skills 不暴露给用户
 - [x] 只引用知识库中存在的事实
@@ -55,7 +55,7 @@
 - [x] Scenario 1-8 全部覆盖
 - [x] 降级路径有独立测试
 - [x] 性能测试：50 服务知识库
-- [x] 端到端测试：Agent → jarvis_query → 带引用回答
+- [x] 端到端测试：Agent → edith_query → 带引用回答
 
 ### Documentation
 - [x] spec.md 包含 QueryResult + SourceCitation 结构

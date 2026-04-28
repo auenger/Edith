@@ -1,6 +1,6 @@
 # Adoption Guide
 
-This guide is for taking `create-jarvis-skill` into a real company and getting from abstract interest to a usable pilot.
+This guide is for taking `create-edith-skill` into a real company and getting from abstract interest to a usable pilot.
 
 ## The goal of adoption
 
@@ -70,7 +70,7 @@ Look for proof that the pilot reduced:
 ### 6. Write back the lessons
 
 After the pilot, update:
-- JARVIS materials,
+- EDITH materials,
 - the skill backlog,
 - the ownership map,
 - and the method itself if the rollout revealed a better pattern.

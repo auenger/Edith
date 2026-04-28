@@ -24,7 +24,7 @@
 
 ## 示例输出
 
-- `jarvis-build-brief.md`
+- `edith-build-brief.md`
 - `source-inventory.md`
 - `repo-inventory.md`
 - `workflow-inventory.md`
@@ -40,7 +40,7 @@
 - agents 能更快找到正确的历史上下文
 - agents 能更可靠地路由到正确的 repos
 - agents 能遵循一条真实闭环，而不是停在一个局部答案上
-- humans 能继续推进 JARVIS rollout，而不是把它当成一次性产物
+- humans 能继续推进 EDITH rollout，而不是把它当成一次性产物
 
 ## 这个 试点 不需要证明什么
 

@@ -6,7 +6,7 @@ Repo skills 帮助 agents 在特定 repositories 内开展工作。
 
 Repo-local truth 通常应当和 repo 放在一起。
 
-JARVIS 可以为 repo skills 建索引、做摘要并路由过去，但默认不应该把所有 repo-local operating detail 都吸收到中心层。
+EDITH 可以为 repo skills 建索引、做摘要并路由过去，但默认不应该把所有 repo-local operating detail 都吸收到中心层。
 
 ## 什么情况下需要 repo skill
 
@@ -20,9 +20,9 @@ JARVIS 可以为 repo skills 建索引、做摘要并路由过去，但默认不
 - common bugfix patterns
 - safe 回写 locations
 
-## JARVIS 中央层应该保留什么
+## EDITH 中央层应该保留什么
 
-JARVIS 通常应保留：
+EDITH 通常应保留：
 - 有哪些 repos 的地图，
 - 每个 repo 在业务中的角色，
 - 应该使用哪个 repo skill，
@@ -42,7 +42,7 @@ Repo-local skills 通常应负责：
 
 如果一个任务已经变成 repo-specific，就路由到 repo skill。
 
-不要继续把越来越细的 repo instructions 堆进中心 JARVIS 文档中；那类 guidance 应该属于 repo 内部。
+不要继续把越来越细的 repo instructions 堆进中心 EDITH 文档中；那类 guidance 应该属于 repo 内部。
 
 ## 质量标准
 

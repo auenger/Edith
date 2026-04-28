@@ -10,7 +10,7 @@
 
 ### Token Budget Control
 - [x] TokenBudget 接口定义完整
-- [x] jarvis.yaml 默认配置读取正确
+- [x] edith.yaml 默认配置读取正确
 - [x] 调用时参数可覆盖默认值
 - [x] token 计数函数中英文混合准确
 - [x] Layer 0 硬上限 500 token 强制执行
@@ -45,7 +45,7 @@
 - [x] 所有 warning 写入 DistillResult.warnings 数组
 - [x] 用户可从结果了解哪些内容被截断/跳过
 
-### JARVIS Discipline
+### EDITH Discipline
 - [x] 输出为纯 Markdown（无专有格式）
 - [x] Skills 不暴露给用户
 - [x] 只提取代码中存在的事实（不编造）

@@ -1,6 +1,6 @@
-# Create JARVIS Skill
+# Create EDITH Skill
 
-Build a company-specific JARVIS as an agent operating system, not as a document dump.
+Build a company-specific EDITH as an agent operating system, not as a document dump.
 
 **This&#x20;**`SKILL.md`**&#x20;is the golden path.**\
 Use `references/en/` only to support a specific step here. Use `templates/en/` only to produce the artifacts required by a step here.\
@@ -15,7 +15,7 @@ It means:
 
 * the sources, repos, and workflows for that loop are mapped,
 
-* a company-specific JARVIS skeleton exists,
+* a company-specific EDITH skeleton exists,
 
 * the right source / repo / workflow skill stubs exist,
 
@@ -46,13 +46,13 @@ Do not present scaffolding as mature knowledge.
 
 ### Goal
 
-Define why this company needs JARVIS and which first closed loop is worth proving.
+Define why this company needs EDITH and which first closed loop is worth proving.
 
 ### Output
 
 Create:
 
-* `templates/en/jarvis-build-brief.md`
+* `templates/en/edith-build-brief.md`
 
 The build brief must state:
 
@@ -68,7 +68,7 @@ The build brief must state:
 
 ### Must confirm with humans
 
-* why JARVIS is being built now
+* why EDITH is being built now
 
 * which first workflow to prove
 
@@ -190,7 +190,7 @@ Use this to decide what the generator is allowed to produce in the next phases.
 
 ### Goal
 
-Generate the minimum company-specific JARVIS structure needed to support the pilot.
+Generate the minimum company-specific EDITH structure needed to support the pilot.
 
 ### Output
 
@@ -210,7 +210,7 @@ Generate the core skeleton as needed for the pilot:
 
 * optional raw/export boundary notes
 
-* company JARVIS entry skill stub
+* company EDITH entry skill stub
 
 Typical templates:
 
@@ -230,7 +230,7 @@ Typical templates:
 
 * `templates/en/raw-exports-readme.md`
 
-* `templates/en/company-jarvis-skill-stub.md`
+* `templates/en/company-edith-skill-stub.md`
 
 * `templates/en/instance-skeleton.md`
 
@@ -276,7 +276,7 @@ Generate only the high-leverage stubs needed now:
 
 * workflow skill stubs
 
-* company JARVIS entry skill stub
+* company EDITH entry skill stub
 
 Templates:
 
@@ -286,7 +286,7 @@ Templates:
 
 * `templates/en/workflow-skill-stub.md`
 
-* `templates/en/company-jarvis-skill-stub.md`
+* `templates/en/company-edith-skill-stub.md`
 
 Also create:
 
@@ -398,7 +398,7 @@ A pilot-ready result should include:
 
 * a usable root structure
 
-* a usable company JARVIS entry skill
+* a usable company EDITH entry skill
 
 * the minimum source / repo / workflow skill stubs
 
@@ -434,7 +434,7 @@ A pilot-ready result should include:
 
 ### Goal
 
-Turn the pilot scaffold into a real JARVIS instance through actual use.
+Turn the pilot scaffold into a real EDITH instance through actual use.
 
 ### Output
 
@@ -460,7 +460,7 @@ Only now should these files begin to accumulate real value:
 
 * keep repo-local truth with the repo when appropriate
 
-* update JARVIS after real START → WORK → END loops
+* update EDITH after real START → WORK → END loops
 
 ### Must confirm with humans when needed
 
@@ -492,7 +492,7 @@ Only now should these files begin to accumulate real value:
 
 | Rationalization                                                          | Reality                                                         |
 | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| “Let’s just generate the JARVIS repo first.”                             | A repo without a confirmed first loop is just a shell.          |
+| “Let’s just generate the EDITH repo first.”                             | A repo without a confirmed first loop is just a shell.          |
 | “We should inventory the whole company now.”                             | Pilot scope beats fake completeness.                            |
 | “We can fill in the owners later.”                                       | Ownership is a truth-bearing field, not decoration.             |
 | “We already know what the workflow probably is.”                         | Probable is not confirmed. Ask.                                 |

@@ -4,13 +4,13 @@
 
 ### 1. Parameter Parsing & Validation (Scenario 1, 3, 8)
 - [x] 定义 `ScanParams` 接口：`{ target: string; mode?: "full" | "quick" }`
-- [x] 实现 target 参数解析：优先从 jarvis.yaml repos 映射查找服务名
+- [x] 实现 target 参数解析：优先从 edith.yaml repos 映射查找服务名
 - [x] 支持 target 为绝对路径时的直接使用
 - [x] 参数缺失时返回 `MISSING_PARAMETER` 错误
 - [ ] 编写单元测试：合法参数解析、缺失参数、无效 mode 值
 
 ### 2. Repo Path Resolution (Scenario 1, 3, 8)
-- [x] 读取 jarvis.yaml 中 `repos` 配置段
+- [x] 读取 edith.yaml 中 `repos` 配置段
 - [x] 实现 `resolveTarget(target: string): { name, path }` 函数
 - [x] target 名称匹配失败 → 返回 `TARGET_NOT_FOUND` 错误（Scenario 3）
 - [x] 路径磁盘不存在 → 返回 `PATH_NOT_FOUND` 错误（Scenario 8）
@@ -25,7 +25,7 @@
 ### 4. Skill Invocation & Scanning (Scenario 1, 4, 6)
 - [x] 封装 document-project Skill 的调用接口
 - [x] 将 resolved path + mode 传递给 Skill
-- [x] 实现超时控制：读取 jarvis.yaml 中 `scan_timeout` 配置（默认 300s）→ 超时返回 `SCAN_TIMEOUT`（Scenario 6）
+- [x] 实现超时控制：读取 edith.yaml 中 `scan_timeout` 配置（默认 300s）→ 超时返回 `SCAN_TIMEOUT`（Scenario 6）
 - [x] 技术栈识别失败时 → 返回 `UNSUPPORTED_TECH_STACK` + 降级输出（Scenario 4）
 - [ ] 编写集成测试：mock Skill 调用、超时中断、不支持栈
 
@@ -43,7 +43,7 @@
 - [ ] 编写错误快照测试：验证每种错误的消息模板
 
 ### 7. Tool Registration (feat-extension-core integration)
-- [x] 在 pi SDK Extension 中注册 jarvis_scan 工具
+- [x] 在 pi SDK Extension 中注册 edith_scan 工具
 - [x] 定义工具 schema：parameters + return type
 - [x] 配置工具描述（中文，供 Agent 理解用途）
 - [ ] 端到端测试：Agent 对话 → 工具调用 → 结果返回
@@ -52,4 +52,4 @@
 | Date | Progress | Notes |
 |------|----------|-------|
 | 2026-04-27 | Spec enriched | Added OUT scope, 5 error scenarios, error code table, parameter/result contract |
-| 2026-04-27 | Implementation | Created tools/scan.ts with all core logic; updated extension.ts jarvis_scan handler from stub to real implementation; Tasks 1-7 code complete (unit tests remain) |
+| 2026-04-27 | Implementation | Created tools/scan.ts with all core logic; updated extension.ts edith_scan handler from stub to real implementation; Tasks 1-7 code complete (unit tests remain) |

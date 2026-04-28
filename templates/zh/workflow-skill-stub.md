@@ -24,7 +24,7 @@ description: 帮助 agents 为 <company/product> 执行 <workflow-name> workflow
 1. **Start** — `<what happens first>`
 2. **Work** — `<main execution>`
 3. **Verify** — `<证据 or checks>`
-4. **Writeback** — `<how JARVIS and/or source systems are updated>`
+4. **Writeback** — `<how EDITH and/or source systems are updated>`
 
 ## Handoffs
 

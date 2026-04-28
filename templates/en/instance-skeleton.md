@@ -1,7 +1,7 @@
 # Instance Skeleton Example
 
 ```text
-<company>-jarvis/
+<company>-edith/
 ├── README.md
 ├── MAINTENANCE.md
 ├── modules/
@@ -25,7 +25,7 @@
 │   ├── README.md
 │   └── <scripts or manuals>
 ├── skills/
-│   ├── <company-jarvis>/
+│   ├── <company-edith>/
 │   │   ├── SKILL.md              # Entry Skill (workflow)
 │   │   └── routing-table.md      # Layer 0 (<500 tokens, always loaded)
 │   ├── <repo-a>/

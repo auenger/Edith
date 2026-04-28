@@ -38,7 +38,7 @@ This is a non-UI feature (no frontend components). Verification via code analysi
 - **Given**: System Prompt loaded via `buildSystemPrompt()` in `index.ts`
 - **When**: Trigger mapping table contains "分析" and "代码" keywords mapped to scan operation
 - **Then**: Prompt includes 20 occurrences of "扫描" and 5 of "分析" in trigger context
-- **And**: Behavior constraints explicitly forbid exposing tool name "jarvis_scan"
+- **And**: Behavior constraints explicitly forbid exposing tool name "edith_scan"
 - **Result**: PASS
 
 ### Scenario 2: 知识来源标注

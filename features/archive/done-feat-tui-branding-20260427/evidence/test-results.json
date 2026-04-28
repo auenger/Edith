@@ -1,6 +1,6 @@
 {
   "feature_id": "feat-tui-branding",
-  "feature_name": "TUI Theme Customization (JARVIS Branding)",
+  "feature_name": "TUI Theme Customization (EDITH Branding)",
   "verification_date": "2026-04-27T23:45:00+08:00",
   "status": "PASS",
   "task_summary": {
@@ -28,7 +28,7 @@
       { "id": 1, "name": "true-color Arc Reactor LOGO", "status": "PASS" },
       { "id": 2, "name": "16-color degraded terminal", "status": "PASS" },
       { "id": 3, "name": "no-color terminal", "status": "PASS" },
-      { "id": 4, "name": "branded prompt JARVIS>", "status": "PASS" },
+      { "id": 4, "name": "branded prompt EDITH>", "status": "PASS" },
       { "id": 5, "name": "status bar with workspace stats", "status": "PASS" },
       { "id": 6, "name": "gradient color correctness", "status": "PASS" },
       { "id": 7, "name": "narrow terminal edge case", "status": "PASS" },
@@ -46,7 +46,7 @@
     ],
     "modified": [
       "agent/src/index.ts",
-      "agent/jarvis.yaml"
+      "agent/edith.yaml"
     ]
   }
 }

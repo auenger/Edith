@@ -1,6 +1,6 @@
 # Verification Report: feat-tool-route
 
-**Feature**: jarvis_route tool (requirement-router Skill integration)
+**Feature**: edith_route tool (requirement-router Skill integration)
 **Date**: 2026-04-27
 **Status**: PASS
 

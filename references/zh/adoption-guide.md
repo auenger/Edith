@@ -1,6 +1,6 @@
 # 采用指南
 
-本指南用于把 `create-jarvis-skill` 带入真实公司环境，并从抽象兴趣推进到可用的 试点。
+本指南用于把 `create-edith-skill` 带入真实公司环境，并从抽象兴趣推进到可用的 试点。
 
 ## 采用的目标
 
@@ -70,7 +70,7 @@
 ### 6. 把经验写回去
 
 试点 结束后，更新：
-- JARVIS 材料，
+- EDITH 材料，
 - skill backlog，
 - ownership map，
 - 以及如果 rollout 暴露出更好模式时，对方法本身也进行更新。

@@ -28,7 +28,7 @@ A strong source skill should tell an agent:
 - how to search it efficiently,
 - how to interpret its structure or taxonomy,
 - what kinds of tasks it is best for,
-- and where to write back if the source participates in the JARVIS loop.
+- and where to write back if the source participates in the EDITH loop.
 
 ## What a source skill should not do
 

@@ -1,11 +1,11 @@
 /**
- * JARVIS Arc Reactor Banner
+ * EDITH Arc Reactor Banner
  *
  * Generates the Arc Reactor ASCII art LOGO with gradient coloring.
  * The LOGO features:
  *   - Concentric arc rings simulating Iron Man's Arc Reactor
  *   - A glowing core with bright cyan/white highlights
- *   - "JARVIS" text integrated into the design
+ *   - "EDITH" text integrated into the design
  *   - "AI Knowledge Infrastructure" subtitle
  *
  * All colors use the ANSI gradient engine with graceful degradation.
@@ -23,7 +23,7 @@ import {
 
 // ── Arc Reactor ASCII Art ────────────────────────────────────────
 //
-// Design: concentric arcs around a glowing core with JARVIS text.
+// Design: concentric arcs around a glowing core with EDITH text.
 // Each row has a "zone" (outer / middle / inner / core) that determines color.
 // The design fits within 60 columns to be safe on 80-col terminals.
 
@@ -32,22 +32,22 @@ interface BannerLine {
   zone: "outer" | "middle" | "inner" | "core" | "text" | "empty";
 }
 
-// JARVIS bold block letters with gradient
-const JARVIS_TEXT = `
+// EDITH bold block letters with gradient
+const EDITH_TEXT = `
 ·  ✦  ·               ·  ✦  ·                ·  ✦  ·
-  ████▓▒░    █████▓▒░  ██████▓▒░ ███▓▒░ ██╗ ███▓▒░ ███████▓▒░
-  ╚══██╔══╝ ██╔══██╗   ██╔══██╗  ██║    ██║ ██║    ██╔════░░
-     ██║ ·  ███████║   ██████╔╝  ██║    ██║ ██║    ███████╗ ✦
- ██╗ ██║    ██╔══██║   ██╔══██╗  ╚████╔═╝   ██║    ╚════██║
- ╚█████╔╝ ✦ ██║  ██║   ██║  ██║   ╚███╔╝    ██║    ███████║ ·
-  ╚════╝    ╚═╝  ╚═╝   ╚═╝  ╚═╝    ╚══╝     ╚═╝    ╚══════╝
-    ·  ✦  ·              ·  ✦  ·               ·  ✦  ·
+  ██████▓▒░  ██████▓▒░  ███▓▒░ ███████▓▒░ ██╗  ██▓▒░
+  ██╔════╝   ██╔══██╗    ██║   ╚══██╔══╝  ██║  ██║
+  █████▓▒░   ██║  ██║    ██║      ██║     ███████║ ✦
+  ██╔══╝     ██║  ██║    ██║      ██║     ██╔══██║
+  ███████▓▒░ ██████╔╝    ██║      ██║     ██║  ██║ ·
+  ╚══════╝   ╚═════╝     ╚═╝      ╚═╝     ╚═╝  ╚═╝
+    ·  ✦  ·              ·  ✦  ·               ·  ✦
 `;
 
 // 建议加上颜色，效果更好（需要安装 chalk）
 
 const SUBTITLE_LINE = "       AI Knowledge Infrastructure";
-const MINIMAL_BANNER = "JARVIS — AI Knowledge Infrastructure";
+const MINIMAL_BANNER = "EDITH — AI Knowledge Infrastructure";
 
 // ── Color Zone Mapping ───────────────────────────────────────────
 
@@ -70,7 +70,7 @@ const CHAR_COLOR_OVERRIDES: Record<string, RGB> = {
   "│": ARC_REACTOR_PALETTE.coreWhite,       // Vertical bars white
   "╱": ARC_REACTOR_PALETTE.coreGlow,        // Triangle slashes bright cyan
   "╲": ARC_REACTOR_PALETTE.coreGlow,
-  "█": ARC_REACTOR_PALETTE.coreWhite,       // Block chars white (JARVIS bold)
+  "█": ARC_REACTOR_PALETTE.coreWhite,       // Block chars white (EDITH bold)
   "▀": ARC_REACTOR_PALETTE.coreWhite,
   "▄": ARC_REACTOR_PALETTE.coreWhite,
   "▌": ARC_REACTOR_PALETTE.coreWhite,
@@ -135,9 +135,9 @@ export function generateBanner(support: ColorSupport): string {
   const lines: string[] = [];
   const P = ARC_REACTOR_PALETTE;
 
-  // Bold uppercase JARVIS text with gradient
-  const jarvisLines = JARVIS_TEXT.split("\n");
-  for (const line of jarvisLines) {
+  // Bold uppercase EDITH text with gradient
+  const edithLines = EDITH_TEXT.split("\n");
+  for (const line of edithLines) {
     if (support === "none") {
       lines.push(line);
     } else {
@@ -161,7 +161,7 @@ export function generateBanner(support: ColorSupport): string {
 
 /**
  * Generate a minimal banner for narrow terminals (< 50 columns).
- * Just displays "JARVIS — AI Knowledge Infrastructure" with basic styling.
+ * Just displays "EDITH — AI Knowledge Infrastructure" with basic styling.
  */
 function generateMinimalBanner(support: ColorSupport): string {
   const P = ARC_REACTOR_PALETTE;
@@ -171,25 +171,25 @@ function generateMinimalBanner(support: ColorSupport): string {
   }
 
   const titleColor = interpolateColor(P.coreGlow, P.innerRing, 6);
-  const jarvis = renderColoredLine("JARVIS".split(""), titleColor, support);
+  const edith = renderColoredLine("EDITH".split(""), titleColor, support);
   const dash = renderColored(" — ", P.middleRing, support);
   const sub = renderColored("AI Knowledge Infrastructure", P.outerRing, support);
 
-  return `${jarvis}${dash}${sub}`;
+  return `${edith}${dash}${sub}`;
 }
 
 /**
- * Generate the JARVIS> prompt string.
- * Uses cyan highlight for "JARVIS" and dim for ">".
+ * Generate the EDITH> prompt string.
+ * Uses cyan highlight for "EDITH" and dim for ">".
  */
 export function generatePrompt(support: ColorSupport): string {
   const P = ARC_REACTOR_PALETTE;
 
   if (support === "none") {
-    return "JARVIS> ";
+    return "EDITH> ";
   }
 
-  const name = renderColored("JARVIS", P.coreGlow, support);
+  const name = renderColored("EDITH", P.coreGlow, support);
   const arrow = renderColored(">", P.innerRing, support);
 
   return `${name}${arrow} `;

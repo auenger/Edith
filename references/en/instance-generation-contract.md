@@ -1,6 +1,6 @@
 # Instance Generation Contract
 
-Use this contract to decide what a JARVIS-building agent may generate directly, what must be confirmed by humans, and what can only become real through continued use and writeback.
+Use this contract to decide what a EDITH-building agent may generate directly, what must be confirmed by humans, and what can only become real through continued use and writeback.
 
 ## The core principle
 
@@ -17,7 +17,7 @@ Every generated artifact should fall into one of three classes:
 
 These artifacts are usually safe to generate as first-pass structure:
 
-- JARVIS root README skeleton
+- EDITH root README skeleton
 - MAINTENANCE guide skeleton
 - source inventory skeleton
 - repo inventory skeleton
@@ -25,7 +25,7 @@ These artifacts are usually safe to generate as first-pass structure:
 - skill backlog
 - ownership map structure
 - rollout plan skeleton
-- company JARVIS entry skill stub
+- company EDITH entry skill stub
 - source skill stubs
 - repo skill stubs
 - workflow skill stubs
@@ -43,7 +43,7 @@ These are structure and method artifacts. They should be generated with visible 
 
 These items should not be treated as settled truth until a human owner confirms them:
 
-- the business intent for JARVIS
+- the business intent for EDITH
 - the first valuable workflow to prove
 - module boundaries
 - source names and source owners
@@ -120,7 +120,7 @@ Promote repeated truths, not one-off chatter.
 
 ## 6. Acceptance criteria for a responsible generator
 
-A responsible JARVIS generator:
+A responsible EDITH generator:
 - [ ] separates structure from truth
 - [ ] labels placeholders clearly
 - [ ] requests confirmation for truth-bearing fields

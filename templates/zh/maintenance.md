@@ -1,6 +1,6 @@
-# [Company / Product] JARVIS 维护指南
+# [Company / Product] EDITH 维护指南
 
-> JARVIS 是 [Company / Product] 的路由、索引与综合层。
+> EDITH 是 [Company / Product] 的路由、索引与综合层。
 > 它不是原始内容镜像，而是帮助 agents 理解公司、进入正确 repos 与工作面，并保留其学习结果的运行基座。
 
 ---
@@ -10,7 +10,7 @@
 ### Mission
 
 用 2-4 句话说明：
-- 为什么这个 JARVIS 存在，
+- 为什么这个 EDITH 存在，
 - 它服务谁，
 - 第一条高价值闭环是什么，
 - 它应解锁什么样的组织能力。
@@ -83,7 +83,7 @@
 | `rejected-features.md` | 被拒绝的想法、原因、决策上下文 | 仍在讨论中的活跃提案 |
 | `overview.md` | 角色、边界、关键路径、心智模型 | 完整实现细节 |
 | source skill docs | 如何到达并解释某个 source | source 内容镜像 |
-| repo skill docs | repo-local execution guidance | 应属于 JARVIS 的 company-wide policy |
+| repo skill docs | repo-local execution guidance | 应属于 EDITH 的 company-wide policy |
 | workflow skill docs | 交接点、产物、证据、回写 | 更适合保留在 repo 中的 repo-local 低层细节 |
 
 ---
@@ -96,7 +96,7 @@
 | 做出持久的产品或工程决策 | 更新 `decisions.md` |
 | 某个提案被明确拒绝 | 更新 `rejected-features.md` |
 | workflow 发生实质变化 | 更新 workflow inventory 或 workflow skill |
-| 某个 repo 的操作指引发生变化 | 更新 repo-local skill，并刷新 JARVIS 路由 |
+| 某个 repo 的操作指引发生变化 | 更新 repo-local skill，并刷新 EDITH 路由 |
 | 某个新 data source 变得有战略重要性 | 新增或修订 source skill |
 | rollout ownership 发生变化 | 更新 ownership map 与 rollout plan |
 
@@ -111,14 +111,14 @@
 | workflow layer | `<owner>` | `<owners>` | |
 | maintenance / governance | `<owner>` | `<owners>` | |
 
-一个健康的 JARVIS 应当能让另一位 owner 在无需完全重新发现的情况下继续推进。
+一个健康的 EDITH 应当能让另一位 owner 在无需完全重新发现的情况下继续推进。
 
 ---
 
 ## 7. 闭环：START → WORK → END
 
 ### START
-- 先阅读相关的 JARVIS 路由与历史
+- 先阅读相关的 EDITH 路由与历史
 - 为当前任务识别最佳 source skills、repo skills 和 workflow skills
 - 检查是否已经存在类似故障、决策或被拒绝路径
 

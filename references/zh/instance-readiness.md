@@ -1,6 +1,6 @@
 # 实例就绪度
 
-使用这份清单判断一个生成出来的 JARVIS 只是 scaffold、试点，还是一个真正可用的 instance。
+使用这份清单判断一个生成出来的 EDITH 只是 scaffold、试点，还是一个真正可用的 instance。
 
 ## Level 0 — Scaffold
 
@@ -30,7 +30,7 @@ scaffold **还不能算可运行**。
 - workflow 闭环 已明确，
 - 并且 START → WORK → END 回写 在实践中真实发生。
 
-在这一层级，JARVIS 已经能降低日常工作中的重新发现成本与交接成本。
+在这一层级，EDITH 已经能降低日常工作中的重新发现成本与交接成本。
 
 ## Level 3 — Mature instance
 
@@ -42,7 +42,7 @@ scaffold **还不能算可运行**。
 - ownership 稳定，
 - 系统能够因真实使用而持续改进。
 
-在这一层级，JARVIS 不再只是一个仓库，而是组织思考与工作的组成部分。
+在这一层级，EDITH 不再只是一个仓库，而是组织思考与工作的组成部分。
 
 ## 就绪度检查
 
@@ -50,7 +50,7 @@ scaffold **还不能算可运行**。
 - [ ] 业务 modules 里有真实的 overview / issue / decision 内容
 - [ ] sources 有真实 routing docs
 - [ ] 必要时存在 cross-cutting knowledge
-- [ ] 存在 公司专属 JARVIS skill entry
+- [ ] 存在 公司专属 EDITH skill entry
 - [ ] 主闭环所需的 repo skills 和 workflow skills 已存在
 - [ ] 回写 发生在真实工作之后，而不只是在 setup 期间
 - [ ] 另一位 owner 或 agent 无需重新发现基础信息即可继续

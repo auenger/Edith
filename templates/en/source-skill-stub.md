@@ -1,6 +1,6 @@
 ---
 name: <source-skill-name>
-description: Help agents access and interpret <source-name> for <company/product>. Use when the task requires retrieving, searching, routing through, or writing back to this source as part of the JARVIS workflow.
+description: Help agents access and interpret <source-name> for <company/product>. Use when the task requires retrieving, searching, routing through, or writing back to this source as part of the EDITH workflow.
 ---
 
 # <Source Skill Title>

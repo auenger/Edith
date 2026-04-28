@@ -4,9 +4,9 @@ version: 2
 features_completed: 2
 ---
 
-# Project Context: JARVIS
+# Project Context: EDITH
 
-> AI 知识基础设施——让代码变成 AI 可消费知识的自主 Agent。本仓库 `create-jarvis-skill` 是构建 JARVIS 的元技能。
+> AI 知识基础设施——让代码变成 AI 可消费知识的自主 Agent。本仓库 `create-edith-skill` 是构建 EDITH 的元技能。
 
 ---
 
@@ -16,10 +16,10 @@ features_completed: 2
 |----------|-----------|-------|
 | 核心产出物 | Markdown | 所有知识产物为纯 Markdown，Agent 无关 |
 | Agent 框架 | pi SDK (`@mariozechner/pi-coding-agent`) v0.70+ | 不 fork，跟随上游 |
-| Agent 应用 | TypeScript (`agent/`) | `@jarvis/agent` package，npm start 启动 |
+| Agent 应用 | TypeScript (`agent/`) | `@edith/agent` package，npm start 启动 |
 | Extension | TypeScript | 消息路由 + 工具注册 |
 | 技能定义 | SKILL.md (Markdown) | 知识提取逻辑，编译后分发 |
-| 配置 | jarvis.yaml (YAML) | 用户定制，不改代码 |
+| 配置 | edith.yaml (YAML) | 用户定制，不改代码 |
 | TUI | Node.js readline + ANSI true-color | Banner、渐变色、状态栏 |
 | Web 看板 | React + Next.js | Phase 2，Board 只读 |
 | 辅助脚本 | Python (`distillator/scripts/analyze_sources.py`) | 代码分析辅助 |
@@ -27,30 +27,30 @@ features_completed: 2
 ## Directory Structure
 
 ```text
-HS_jarvis/
+HS_edith/
 ├── CLAUDE.md                  ← Claude Code 项目指令
 ├── SKILL.md                   ← 黄金路径（8 阶段主流程）
-├── JARVIS-PRODUCT-DESIGN.md   ← 产品设计（Agent / Board / Artifacts）
+├── EDITH-PRODUCT-DESIGN.md   ← 产品设计（Agent / Board / Artifacts）
 ├── SCALABILITY-ANALYSIS.md    ← 微服务规模瓶颈分析
 ├── README.md / README.zh.md   ← 项目说明
 │
-├── agent/                     ← JARVIS Agent TypeScript 应用
+├── agent/                     ← EDITH Agent TypeScript 应用
 │   ├── src/
 │   │   ├── index.ts           ← npm start 入口
 │   │   ├── agent-startup.ts   ← Agent 初始化 + REPL 循环
 │   │   ├── extension.ts       ← Extension 路由层
-│   │   ├── config.ts          ← jarvis.yaml 配置加载
+│   │   ├── config.ts          ← edith.yaml 配置加载
 │   │   ├── system-prompt.ts   ← System Prompt 构建
 │   │   ├── theme/             ← TUI 品牌化
-│   │   ├── tools/             ← jarvis_scan / jarvis_distill / jarvis_route
-│   │   └── bin/jarvis.ts      ← CLI 入口
-│   ├── jarvis.yaml            ← Agent 运行配置
-│   └── package.json           ← @jarvis/agent
+│   │   ├── tools/             ← edith_scan / edith_distill / edith_route
+│   │   └── bin/edith.ts      ← CLI 入口
+│   ├── edith.yaml            ← Agent 运行配置
+│   └── package.json           ← @edith/agent
 │
-├── jarvis-skills/             ← 三个运营 Skill（用户不可见）
-│   ├── document-project/      ← jarvis_scan（代码考古→文档）
-│   ├── distillator/           ← jarvis_distill（文档→三层知识）
-│   ├── requirement-router/    ← jarvis_route（需求路由分析）
+├── edith-skills/             ← 三个运营 Skill（用户不可见）
+│   ├── document-project/      ← edith_scan（代码考古→文档）
+│   ├── distillator/           ← edith_distill（文档→三层知识）
+│   ├── requirement-router/    ← edith_route（需求路由分析）
 │   └── INTEGRATION.md         ← Skill 融合方案
 │
 ├── templates/                 ← 模板（en/ 权威 + zh/ 镜像）
@@ -79,7 +79,7 @@ HS_jarvis/
 - **SKILL.md 是黄金路径** — 唯一权威执行路径，按 8 阶段顺序执行
 - **`en/` 为权威模板** — `zh/` 是人可读镜像，不替代主路由
 - **只提取代码中存在的事实** — 不编造代码中不存在的历史
-- **配置优于代码** — 用户通过 jarvis.yaml 定制，不改代码
+- **配置优于代码** — 用户通过 edith.yaml 定制，不改代码
 - **索引不倾倒** — 路由、摘要、提取模式，不复制原文
 - **模式优先于日志** — 记录决策和约束，不是流水账
 - **不假装 Mature** — Scaffold 是骨架，Mature 必须通过真实回写生长
@@ -118,7 +118,7 @@ Agent 分层架构：
     → TUI 层 (Banner + readline REPL + 主题渲染)
     → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册)
     → Skill 执行层 (document-project / distillator / requirement-router)
-    → Tool 实现层 (jarvis_scan / jarvis_distill / jarvis_route / jarvis_query)
+    → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query)
     → pi SDK (AgentSession + 20+ LLM + Tool Calling + 流式输出)
     → 产出物 (纯 Markdown)
 ```
@@ -127,11 +127,11 @@ Agent 分层架构：
 
 | Type | Convention | Example |
 |------|-----------|---------|
-| 工具名 | snake_case, `jarvis_` 前缀 | `jarvis_scan`, `jarvis_distill` |
+| 工具名 | snake_case, `edith_` 前缀 | `edith_scan`, `edith_distill` |
 | Skill 目录 | kebab-case | `document-project/`, `requirement-router/` |
 | 模板文件 | kebab-case | `routing-table.md`, `quick-ref-card.md` |
 | 产出物 | kebab-case + 数字前缀 | `01-overview.md`, `02-api-contracts.md` |
-| 配置文件 | snake_case.yaml | `jarvis.yaml` |
+| 配置文件 | snake_case.yaml | `edith.yaml` |
 | Feature ID | `feat-` 前缀 + kebab-case | `feat-tool-scan`, `feat-board-scaffold` |
 
 ## Recent Changes
@@ -140,15 +140,15 @@ Agent 分层架构：
 |------|---------|-------|
 | 2026-04-28 | fix-agent-repl | 修复 Agent 启动后立即退出：添加 readline REPL 交互循环 |
 | 2026-04-27 | feat-packaging | Pi Package 打包与分发配置（CLI entry + post-install） |
-| 2026-04-27 | feat-tui-branding | TUI 品牌化：Banner 渐变色、JARVIS 提示符、状态栏 |
-| 2026-04-27 | feat-init-jarvis | JARVIS 知识基础设施项目初始化 |
+| 2026-04-27 | feat-tui-branding | TUI 品牌化：Banner 渐变色、EDITH 提示符、状态栏 |
+| 2026-04-27 | feat-init-edith | EDITH 知识基础设施项目初始化 |
 
 ## Product Phases
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| Phase 1 | JARVIS Agent MVP（终端 Agent） | 开发中 |
-| Phase 2 | JARVIS Board 基础版（Web 看板） | 待开发 |
+| Phase 1 | EDITH Agent MVP（终端 Agent） | 开发中 |
+| Phase 2 | EDITH Board 基础版（Web 看板） | 待开发 |
 | Phase 3 | 增值功能（增量更新、团队协作、行业模板） | 待规划 |
 
 ## Update Log

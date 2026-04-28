@@ -1,8 +1,8 @@
-# Feature: feat-tool-distill jarvis_distill 工具
+# Feature: feat-tool-distill edith_distill 工具
 
 ## Basic Information
 - **ID**: feat-tool-distill
-- **Name**: jarvis_distill 工具（对接 distillator Skill）
+- **Name**: edith_distill 工具（对接 distillator Skill）
 - **Priority**: 90
 - **Size**: M
 - **Dependencies**: [feat-extension-core, feat-tool-scan]
@@ -12,7 +12,7 @@
 
 ## Description
 
-实现 jarvis_distill 工具，对接 distillator Skill。将源文档蒸馏为三层知识产物：Layer 0 routing-table.md（<500 token 全局路由表）、Layer 1 quick-ref.md（~5% 原文速查卡）、Layer 2 distillates/*.md（语义拆分的蒸馏片段）。
+实现 edith_distill 工具，对接 distillator Skill。将源文档蒸馏为三层知识产物：Layer 0 routing-table.md（<500 token 全局路由表）、Layer 1 quick-ref.md（~5% 原文速查卡）、Layer 2 distillates/*.md（语义拆分的蒸馏片段）。
 
 ## User Value Points
 
@@ -22,12 +22,12 @@
 ## Context Analysis
 
 ### Reference Code
-- `jarvis-skills/distillator/SKILL.md` — distillator Skill 完整定义
-- `jarvis-skills/distillator/scripts/analyze_sources.py` — 唯一 Python 脚本
-- `jarvis-skills/distillator/templates/` — 蒸馏模板
+- `edith-skills/distillator/SKILL.md` — distillator Skill 完整定义
+- `edith-skills/distillator/scripts/analyze_sources.py` — 唯一 Python 脚本
+- `edith-skills/distillator/templates/` — 蒸馏模板
 
 ### Related Documents
-- `JARVIS-PRODUCT-DESIGN.md` § 4.1 产出物格式、§ 4.3 产出物自说明性
+- `EDITH-PRODUCT-DESIGN.md` § 4.1 产出物格式、§ 4.3 产出物自说明性
 - `SCALABILITY-ANALYSIS.md` — 三层加载设计的分析基础
 - `templates/en/routing-table.md` — Layer 0 模板
 - `templates/en/quick-ref-card.md` — Layer 1 模板
@@ -48,13 +48,13 @@
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `target` | string | Yes | - | 服务名（对应 jarvis.yaml repos 中的 key） |
-| `token_budget` | object | No | jarvis.yaml 配置 | 各层 token 预算覆盖 |
+| `target` | string | Yes | - | 服务名（对应 edith.yaml repos 中的 key） |
+| `token_budget` | object | No | edith.yaml 配置 | 各层 token 预算覆盖 |
 
 ### Token Budget Configuration
 
 ```yaml
-# jarvis.yaml
+# edith.yaml
 token_budget:
   routing_table: 500      # Layer 0 硬上限
   quick_ref: 2000         # Layer 1 软上限
@@ -113,7 +113,7 @@ And DistillResult.warnings 为空
 
 **Scenario 2: Token 预算控制**
 ```gherkin
-Given jarvis.yaml 中 token_budget.quick_ref = 2000
+Given edith.yaml 中 token_budget.quick_ref = 2000
 When Layer 1 生成完成
 Then quick-ref.md 的 token 数 <= 2000
 And 如超出预算，应用截断策略并设置 DistillResult.truncated = true
@@ -124,7 +124,7 @@ And warnings 中包含截断说明
 ```gherkin
 Given user-service 未扫描（docs/ 不存在）
 When 用户说 "蒸馏 user-service"
-Then 提示 "user-service 尚未扫描，请先执行 jarvis scan user-service"
+Then 提示 "user-service 尚未扫描，请先执行 edith scan user-service"
 And 错误类型为 SOURCE_NOT_FOUND
 ```
 
@@ -134,7 +134,7 @@ And 错误类型为 SOURCE_NOT_FOUND
 ```gherkin
 Given user-service 已扫描且源文档非常庞大（超过 50000 token）
 And token_budget.quick_ref = 2000
-When jarvis_distill 蒸馏 user-service
+When edith_distill 蒸馏 user-service
 Then Layer 1 生成时超出 2000 token 预算
 And 应用截断策略：保留验证命令和关键约束，裁剪 API 端点列表
 And DistillResult.truncated = true
@@ -145,7 +145,7 @@ And Layer 0 routing-table.md 不受影响（始终 <500 token）
 **Scenario 5: 部分层生成失败**
 ```gherkin
 Given user-service 已扫描但 api-endpoints.md 内容为空或损坏
-When jarvis_distill 蒸馏 user-service
+When edith_distill 蒸馏 user-service
 Then Layer 0 和 Layer 1 正常生成
 And Layer 2 中依赖 api-endpoints.md 的片段（如 02-api-contracts.md）标记为 incomplete
 And DistillResult.warnings 包含 "02-api-contracts.md 因源文档不完整而跳过"
@@ -156,7 +156,7 @@ And 整体结果标记为 partial success
 **Scenario 6: 源文档损坏**
 ```gherkin
 Given user-service 已扫描但 docs/overview.md 内容不是合法 Markdown（如二进制文件）
-When jarvis_distill 蒸馏 user-service
+When edith_distill 蒸馏 user-service
 Then 返回错误 "源文档格式异常: overview.md 不是有效的 Markdown 文件"
 And 错误类型为 CORRUPTED_SOURCE
 And 建议用户重新扫描该服务

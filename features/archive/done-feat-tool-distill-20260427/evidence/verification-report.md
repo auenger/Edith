@@ -1,6 +1,6 @@
 # Verification Report: feat-tool-distill
 
-**Feature**: jarvis_distill 工具（对接 distillator Skill）
+**Feature**: edith_distill 工具（对接 distillator Skill）
 **Date**: 2026-04-27
 **Status**: PASSED
 

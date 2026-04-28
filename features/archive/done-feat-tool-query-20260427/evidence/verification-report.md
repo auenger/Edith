@@ -1,6 +1,6 @@
 # Verification Report: feat-tool-query
 
-**Feature**: jarvis_query 工具（三层加载查询）
+**Feature**: edith_query 工具（三层加载查询）
 **Date**: 2026-04-27
 **Status**: PASSED
 
@@ -15,7 +15,7 @@
 | 5. Layer 2 Loading | COMPLETE | loadLayer2, relevance scoring, token budget control |
 | 6. Answer Assembly | COMPLETE | assembleAnswer, SourceCitation, citation format |
 | 7. Performance Optimization | COMPLETE | max_depth control, selective loading, token budget |
-| 8. Tool Registration | COMPLETE | extension.ts jarvis_query handler wired to query.ts |
+| 8. Tool Registration | COMPLETE | extension.ts edith_query handler wired to query.ts |
 
 **Total tasks**: 8
 **Completed**: 8 (100%)
@@ -86,7 +86,7 @@
 | File | Type | Description |
 |------|------|-------------|
 | `agent/src/query.ts` | NEW | Three-layer query engine (executeQuery, validateQueryParams, all loaders) |
-| `agent/src/extension.ts` | MODIFIED | jarvis_query tool handler wired to real implementation |
+| `agent/src/extension.ts` | MODIFIED | edith_query tool handler wired to real implementation |
 | `agent/src/__tests__/query.test.ts` | NEW | 24 unit tests covering all 8 scenarios |
 | `features/active-feat-tool-query/task.md` | MODIFIED | All tasks marked complete, progress log updated |
 

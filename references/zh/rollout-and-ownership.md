@@ -1,10 +1,10 @@
 # Rollout 与 Ownership
 
-把 JARVIS 当作一个多 owner rollout，而不是一次性建设任务。
+把 EDITH 当作一个多 owner rollout，而不是一次性建设任务。
 
 ## 为什么 ownership 很重要
 
-JARVIS 通常横跨：
+EDITH 通常横跨：
 - 不同数字资产，
 - 不同 repos，
 - 不同 teams，
@@ -42,7 +42,7 @@ JARVIS 通常横跨：
 - knowledge owner
 - repo owner(s)
 - workflow owner(s)
-- JARVIS maintainer / steward
+- EDITH maintainer / steward
 
 ## 良好 rollout 的输出
 
@@ -51,8 +51,8 @@ JARVIS 通常横跨：
 - 他们下一步该建设什么，
 - 什么被卡住了，
 - 哪些部分已经可用，
-- 当前 JARVIS 到达了哪个成熟度层级。
+- 当前 EDITH 到达了哪个成熟度层级。
 
 ## 需要避免的失败模式
 
-不要把早期 scaffolding 说得像组织已经拥有完整 JARVIS 覆盖一样。
+不要把早期 scaffolding 说得像组织已经拥有完整 EDITH 覆盖一样。
