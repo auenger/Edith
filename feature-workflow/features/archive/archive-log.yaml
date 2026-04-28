@@ -1,0 +1,23 @@
+archived:
+  - id: feat-explore-project
+    name: "项目探索命令"
+    completed: "2026-04-28T23:45:00+08:00"
+    tag: feat-explore-project-20260428
+    merge_commit: e3f56a3
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/explore-project
+    worktree_deleted: true
+    worktree_path: ../EDITH-explore-project
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 9
+      scenarios_passed: 9
+    stats:
+      started: "2026-04-28T23:30:00+08:00"
+      duration: "~15min"
+      commits: 1
+      files_changed: 3

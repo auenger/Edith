@@ -2,17 +2,6 @@
 # 基于 EDITH-PRODUCT-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1.3: Agent 增强命令集 ═══
-类似 Claude Code 的 context bar。
-
-  - id: feat-explore-project
-    name: "项目探索命令"
-    priority: 65
-    size: M
-    description: |
-      /explore 命令：快速浏览项目结构、技术栈、关键文件。
-      轻量级概览，区别于 edith_scan 的深度扫描。
-
   # ═══ Phase 1.5: TUI 交互重设计 ═══
 
 active:
@@ -95,6 +84,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-explore-project
+    name: "项目探索命令"
+    priority: 65
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-28T23:45:00+08:00"
+    tag: feat-explore-project-20260428
+
   - id: feat-subagent-support
     name: "SubAgent 子代理支持"
     priority: 55
@@ -267,7 +265,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T23:15:00+08:00"
+  last_updated: "2026-04-28T23:45:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"
