@@ -29,14 +29,6 @@ pending:
       基于 pi SDK 子进程模式实现。
 
   # ═══ Phase 1.5: TUI 交互重设计 ═══
-  - id: feat-tui-ink-layout
-    name: "TUI 布局框架（ink）"
-    priority: 70
-    size: M
-    parent: feat-tui-redesign
-    description: |
-      使用 ink (React for CLI) 替换 readline REPL，
-      构建全屏 TUI 布局：顶部 Logo、中间内容区、底部输入框。
 
   - id: feat-tui-thinking
     name: "AI 思考过程展示（折叠展开式）"
@@ -153,6 +145,15 @@ completed:
     completed_at: "2026-04-28T18:30:00+08:00"
     tag: feat-unlimited-storage-20260428
 
+  - id: feat-tui-ink-layout
+    name: "TUI 布局框架（ink）"
+    priority: 70
+    size: M
+    dependencies: []
+    parent: feat-tui-redesign
+    completed_at: "2026-04-28T19:30:00+08:00"
+    tag: feat-tui-ink-layout-20260428
+
   - id: feat-packaging
     name: "Pi Package 打包与分发配置"
     priority: 75
@@ -262,7 +263,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T18:30:00+08:00"
+  last_updated: "2026-04-28T19:30:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"

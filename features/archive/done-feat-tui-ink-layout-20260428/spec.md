@@ -10,6 +10,15 @@
 - **Children**: []
 - **Created**: 2026-04-28
 
+## Merge Record
+- **Completed**: 2026-04-28T19:30:00+08:00
+- **Merged Branch**: feature/tui-ink-layout
+- **Merge Commit**: ab25e617f82487447c211520eccc156ad8bf7c0c
+- **Archive Tag**: feat-tui-ink-layout-20260428
+- **Conflicts**: none
+- **Verification**: passed (3/3 Gherkin scenarios)
+- **Stats**: 1 commit, 10 files changed, 1062 insertions, 167 deletions
+
 ## Description
 使用 ink (React for CLI) 替换当前的 readline REPL，构建全屏 TUI 布局框架。包含三个核心区域：顶部 Logo 区域、中间可滚动内容区域、底部输入框。这是整个 TUI 重设计的基础，后续子特性在此基础上叠加。
 

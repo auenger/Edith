@@ -1,4 +1,31 @@
 archived:
+  - id: feat-tui-ink-layout
+    name: "TUI 布局框架（ink）"
+    priority: 70
+    size: M
+    dependencies: []
+    parent: feat-tui-redesign
+    completed: "2026-04-28T19:30:00+08:00"
+    tag: feat-tui-ink-layout-20260428
+    merge_commit: ab25e617
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-ink-layout
+    worktree_deleted: true
+    worktree_path: ../EDITH-tui-ink-layout
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-28T19:00:00+08:00"
+      duration: "30 min"
+      commits: 1
+      files_changed: 10
+
   - id: feat-unlimited-storage
     name: "知识产物存储与消费分离"
     priority: 80
