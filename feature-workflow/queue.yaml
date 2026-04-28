@@ -2,16 +2,6 @@
 # 基于 EDITH-PRODUCT-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1.2: 核心架构改进 ═══
-  - id: feat-unlimited-storage
-    name: "知识产物存储与消费分离"
-    priority: 80
-    size: M
-    description: |
-      蒸馏阶段不再截断，完整保存所有知识产物。
-      消费阶段根据相关性评分智能选择加载内容。
-      token_budget 只控制「上下文预算」，不控制「存储量」。
-
   # ═══ Phase 1.3: Agent 增强命令集 ═══
   - id: feat-context-command
     name: "Context 上下文查看命令"
@@ -154,6 +144,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-unlimited-storage
+    name: "知识产物存储与消费分离"
+    priority: 80
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-28T18:30:00+08:00"
+    tag: feat-unlimited-storage-20260428
+
   - id: feat-packaging
     name: "Pi Package 打包与分发配置"
     priority: 75
@@ -263,7 +262,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-28T17:00:00+08:00"
+  last_updated: "2026-04-28T18:30:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH Board 基础版"

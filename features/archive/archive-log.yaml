@@ -1,4 +1,31 @@
 archived:
+  - id: feat-unlimited-storage
+    name: "知识产物存储与消费分离"
+    priority: 80
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-04-28T18:30:00+08:00"
+    tag: feat-unlimited-storage-20260428
+    merge_commit: "583bec9"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-unlimited-storage
+    worktree_deleted: true
+    worktree_path: ../EDITH-feat-unlimited-storage
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 5
+      scenarios_passed: 5
+    stats:
+      started: "2026-04-28T18:00:00+08:00"
+      duration: "30 min"
+      commits: 1
+      files_changed: 15
+
   - id: feat-e2e-pilot
     name: "端到端试点验证（真实项目扫描→蒸馏→查询→路由）"
     priority: 85
