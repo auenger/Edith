@@ -14,6 +14,7 @@ import edithExtension from "../extension.js";
 import { buildSystemPrompt } from "../system-prompt.js";
 import { messageReducer } from "./types.js";
 import type { Message } from "./types.js";
+import { ContextMonitor, type PressureState, type RoundData } from "../context-monitor.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,6 +26,14 @@ export interface AgentSessionState {
   error: string | null;
   config: EdithConfig | null;
   sendUserMessage: (text: string) => Promise<void>;
+  monitorData: MonitorData | null;
+}
+
+export interface MonitorData {
+  latest: RoundData | null;
+  cacheHitRate: number;
+  pressure: PressureState;
+  totalRounds: number;
 }
 
 export function useAgentSession(): AgentSessionState {
@@ -33,13 +42,23 @@ export function useAgentSession(): AgentSessionState {
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<EdithConfig | null>(null);
+  const [monitorData, setMonitorData] = useState<MonitorData | null>(null);
 
   const sessionRef = useRef<any>(null);
+  const monitorRef = useRef<ContextMonitor | null>(null);
 
   const initialize = useCallback(async () => {
     try {
       const loadedConfig = loadConfig();
       setConfig(loadedConfig);
+
+      // Initialize context monitor
+      const monitor = new ContextMonitor({
+        contextWindowOverride: loadedConfig.llm.context_window,
+        modelHint: loadedConfig.llm.model,
+        thresholds: loadedConfig.context_monitor.thresholds,
+      });
+      monitorRef.current = monitor;
 
       const cwd = resolve(__dirname, "..");
       const authStorage = AuthStorage.create();
@@ -80,6 +99,41 @@ export function useAgentSession(): AgentSessionState {
         if (event.type === "agent_end") {
           dispatch({ type: "COMPLETE_ASSISTANT" });
           setIsProcessing(false);
+
+          // Collect context monitor data after each round
+          const mon = monitorRef.current;
+          if (mon && loadedConfig.context_monitor.enabled) {
+            try {
+              const sessionStats = session.getSessionStats?.();
+              const contextUsage = session.getContextUsage?.();
+
+              if (sessionStats || contextUsage) {
+                mon.record(
+                  {
+                    input: sessionStats?.tokens?.input ?? 0,
+                    output: sessionStats?.tokens?.output ?? 0,
+                    cacheRead: sessionStats?.tokens?.cacheRead ?? 0,
+                    cacheWrite: sessionStats?.tokens?.cacheWrite ?? 0,
+                    total: sessionStats?.tokens?.total ?? 0,
+                  },
+                  {
+                    tokens: contextUsage?.tokens ?? 0,
+                    contextWindow: contextUsage?.contextWindow ?? 128_000,
+                    percent: contextUsage?.percent ?? 0,
+                  },
+                );
+
+                setMonitorData({
+                  latest: mon.latest,
+                  cacheHitRate: mon.cacheHitRate,
+                  pressure: mon.pressure,
+                  totalRounds: mon.totalRounds,
+                });
+              }
+            } catch {
+              // Stats collection is best-effort
+            }
+          }
         }
         if (event.type === "error") {
           dispatch({ type: "ERROR_ASSISTANT", payload: event.error?.message ?? "Unknown error" });
@@ -128,5 +182,6 @@ export function useAgentSession(): AgentSessionState {
     error,
     config,
     sendUserMessage,
+    monitorData,
   };
 }

@@ -3,12 +3,35 @@ import { Box, Text, useApp } from "ink";
 import { BannerArea } from "./BannerArea.js";
 import { ContentArea } from "./ContentArea.js";
 import { InputArea } from "./InputArea.js";
+import { StatusBarMetrics } from "./StatusBarMetrics.js";
+import { WarningBar } from "./WarningBar.js";
 import { useAgentSession } from "./useAgentSession.js";
 import type { EdithConfig } from "../config.js";
 
+function ContextStatusBar({ config, monitorData }: {
+  config: EdithConfig | null;
+  monitorData: import("./useAgentSession.js").MonitorData | null;
+}) {
+  if (!monitorData?.latest || !config) return null;
+
+  const ctx = monitorData.latest.context;
+  const monitorEnabled = config.context_monitor.enabled;
+  if (!monitorEnabled) return null;
+
+  return (
+    <StatusBarMetrics
+      tokens={ctx.tokens}
+      contextWindow={ctx.contextWindow}
+      percent={ctx.percent}
+      cacheHitRate={monitorData.cacheHitRate}
+      pressureLevel={monitorData.pressure.level}
+    />
+  );
+}
+
 export function App() {
   const { exit } = useApp();
-  const { messages, isProcessing, initialized, error, config, sendUserMessage } = useAgentSession();
+  const { messages, isProcessing, initialized, error, config, sendUserMessage, monitorData } = useAgentSession();
 
   const handleSubmit = useCallback(
     async (text: string) => {
@@ -41,9 +64,13 @@ export function App() {
     );
   }
 
+  const showWarning = monitorData?.pressure && monitorData.pressure.level !== "normal";
+
   return (
     <Box flexDirection="column" height="100%">
       <BannerArea config={{ workspace: config!.workspace }} />
+      <ContextStatusBar config={config} monitorData={monitorData} />
+      {showWarning && <WarningBar pressure={monitorData!.pressure} />}
       <ContentArea messages={messages} />
       <InputArea onSubmit={handleSubmit} isProcessing={isProcessing} />
     </Box>
