@@ -45,12 +45,17 @@ export function App() {
     monitorData,
   } = useAgentSession();
 
-  // T key: toggle last thinking block or expand/collapse all
-  useInput(useCallback((_input: string, key: { escape?: boolean }) => {
+  // T: toggle last thinking block, Esc: collapse all
+  useInput(useCallback((input: string, key: { escape?: boolean }) => {
     if (key.escape) {
       collapseAllThinking();
+      return;
     }
-  }, [collapseAllThinking]));
+    if (input === "t" && thinkingBlocks.length > 0 && isProcessing) {
+      const last = thinkingBlocks[thinkingBlocks.length - 1];
+      toggleThinking(last.id);
+    }
+  }, [collapseAllThinking, toggleThinking, thinkingBlocks, isProcessing]));
 
   const handleToggleThinking = useCallback((id: string) => {
     toggleThinking(id);
