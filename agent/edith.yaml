@@ -1,6 +1,8 @@
 llm:
   provider: deepseek
   model: deepseek-v4-pro
+  # context_window: 1000000   # 可选，手动覆盖 context window 大小
+                               # 不填则从 session API 自动获取
 
 workspace:
   root: ./company-edith
@@ -17,6 +19,13 @@ agent:
     distillate_fragment: 4000
   auto_refresh: true
   refresh_interval: 24h
+
+context_monitor:
+  enabled: true                # 开关
+  thresholds:                  # 预警阈值（百分比）
+    warning: 70                # 黄色预警
+    critical: 85               # 橙色预警
+    emergency: 95              # 红色紧急
 
 # Optional theme configuration (defaults shown)
 # theme:

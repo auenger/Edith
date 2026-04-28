@@ -120,6 +120,10 @@ function makeConfig(workspaceRoot: string): EdithConfig {
       auto_refresh: true,
       refresh_interval: "24h",
     },
+    context_monitor: {
+      enabled: true,
+      thresholds: { warning: 70, critical: 85, emergency: 95 },
+    },
   };
 }
 

@@ -25,6 +25,17 @@ export interface LlmConfig {
   model: string;
   api_key?: string;
   base_url?: string;
+  /** Manual override for context window size. If unset, auto-detected from session API or model name. */
+  context_window?: number;
+}
+
+export interface ContextMonitorConfig {
+  enabled: boolean;
+  thresholds: {
+    warning: number;
+    critical: number;
+    emergency: number;
+  };
 }
 
 export interface WorkspaceConfig {
@@ -63,6 +74,7 @@ export interface EdithConfig {
   workspace: WorkspaceConfig;
   repos: RepoConfig[];
   agent: AgentConfig;
+  context_monitor: ContextMonitorConfig;
 }
 
 // ── Default Values ────────────────────────────────────────────────
@@ -78,6 +90,15 @@ const DEFAULT_AGENT: Omit<AgentConfig, never> = {
   context_budget: { ...DEFAULT_CONTEXT_BUDGET },
   auto_refresh: true,
   refresh_interval: "24h",
+};
+
+const DEFAULT_CONTEXT_MONITOR: ContextMonitorConfig = {
+  enabled: true,
+  thresholds: {
+    warning: 70,
+    critical: 85,
+    emergency: 95,
+  },
 };
 
 const CONFIG_FILENAME = "edith.yaml";
@@ -359,12 +380,25 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
     refresh_interval: ((existingAgent as Record<string, unknown>)?.refresh_interval as string) ?? DEFAULT_AGENT.refresh_interval,
   };
 
+  const existingMonitor = config.context_monitor as Record<string, unknown> | undefined;
+  const monitorThresholds = (existingMonitor?.thresholds ?? {}) as Record<string, unknown>;
+
+  const context_monitor: ContextMonitorConfig = {
+    enabled: (existingMonitor?.enabled as boolean) ?? DEFAULT_CONTEXT_MONITOR.enabled,
+    thresholds: {
+      warning: (monitorThresholds.warning as number) ?? DEFAULT_CONTEXT_MONITOR.thresholds.warning,
+      critical: (monitorThresholds.critical as number) ?? DEFAULT_CONTEXT_MONITOR.thresholds.critical,
+      emergency: (monitorThresholds.emergency as number) ?? DEFAULT_CONTEXT_MONITOR.thresholds.emergency,
+    },
+  };
+
   return {
     llm: {
       provider: llm.provider,
       model: llm.model,
       api_key: llm.api_key,
       base_url: llm.base_url,
+      context_window: (llm as unknown as Record<string, unknown>).context_window as number | undefined,
     },
     workspace: {
       root: workspace.root,
@@ -376,6 +410,7 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
       stack: r.stack,
     })),
     agent,
+    context_monitor,
   };
 }
 
