@@ -129,3 +129,14 @@ And 不报错或崩溃
 - [ ] Token 数字格式化（千位分隔符）
 - [ ] 百分比保留一位小数
 - [ ] 当 API 返回 null 值时优雅降级（显示 "N/A"）
+
+## Merge Record
+
+- **Completed:** 2026-04-28
+- **Branch:** feature/context-command (deleted)
+- **Merge Commit:** a515fbb
+- **Archive Tag:** feat-context-command-20260428
+- **Conflicts:** None
+- **Verification:** 3/3 Gherkin scenarios passed
+- **Files Changed:** 2 (1 new, 1 modified)
+- **Duration:** ~15 min

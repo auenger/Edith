@@ -1,4 +1,31 @@
 archived:
+  - id: feat-context-command
+    name: "Context 上下文查看命令"
+    priority: 70
+    size: S
+    dependencies: []
+    parent: null
+    completed: "2026-04-28T20:15:00+08:00"
+    tag: feat-context-command-20260428
+    merge_commit: a515fbb
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/context-command
+    worktree_deleted: true
+    worktree_path: ../EDITH-context-command
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-28T20:00:00+08:00"
+      duration: "15 min"
+      commits: 1
+      files_changed: 2
+
   - id: feat-tui-ink-layout
     name: "TUI 布局框架（ink）"
     priority: 70
