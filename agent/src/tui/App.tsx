@@ -4,6 +4,7 @@ import { BannerArea } from "./BannerArea.js";
 import { ContentArea } from "./ContentArea.js";
 import { InputArea } from "./InputArea.js";
 import { StatusBarMetrics } from "./StatusBarMetrics.js";
+import { ThinkingIndicator } from "./ThinkingIndicator.js";
 import { WarningBar } from "./WarningBar.js";
 import { useAgentSession } from "./useAgentSession.js";
 import type { EdithConfig } from "../config.js";
@@ -35,6 +36,9 @@ export function App() {
     messages,
     thinkingBlocks,
     isProcessing,
+    thinkingPhase,
+    processingStartedAt,
+    outputCharCount,
     initialized,
     error,
     config,
@@ -104,6 +108,12 @@ export function App() {
       />
       <ContextStatusBar config={config} monitorData={monitorData} />
       {showWarning && <WarningBar pressure={monitorData!.pressure} />}
+      <ThinkingIndicator
+        isActive={isProcessing}
+        phase={thinkingPhase}
+        startedAt={processingStartedAt}
+        outputChars={outputCharCount}
+      />
       <InputArea onSubmit={handleSubmit} isProcessing={isProcessing} />
     </Box>
   );

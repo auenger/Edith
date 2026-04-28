@@ -21,10 +21,15 @@ import type { SessionStats } from "../theme/context-panel.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+export type ThinkingPhase = "thinking" | "tools" | "generating";
+
 export interface AgentSessionState {
   messages: Message[];
   thinkingBlocks: ThinkingBlock[];
   isProcessing: boolean;
+  thinkingPhase: ThinkingPhase | null;
+  processingStartedAt: number | null;
+  outputCharCount: number;
   initialized: boolean;
   error: string | null;
   config: EdithConfig | null;
@@ -46,6 +51,9 @@ export function useAgentSession(): AgentSessionState {
   const [messages, dispatch] = useReducer(messageReducer, []);
   const [thinkingBlocks, thinkingDispatch] = useReducer(thinkingReducer, []);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [thinkingPhase, setThinkingPhase] = useState<ThinkingPhase | null>(null);
+  const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);
+  const [outputCharCount, setOutputCharCount] = useState(0);
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<EdithConfig | null>(null);
@@ -107,18 +115,22 @@ export function useAgentSession(): AgentSessionState {
           const sub = event.assistantMessageEvent;
           if (sub.type === "thinking_start") {
             thinkingDispatch({ type: "START_THINKING" });
+            setThinkingPhase("thinking");
           } else if (sub.type === "thinking_delta") {
             thinkingDispatch({ type: "APPEND_THINKING", payload: sub.delta });
           } else if (sub.type === "thinking_end") {
             thinkingDispatch({ type: "END_THINKING" });
           } else if (sub.type === "text_delta") {
             dispatch({ type: "APPEND_TO_ASSISTANT", payload: sub.delta });
+            setThinkingPhase("generating");
+            setOutputCharCount((c) => c + (sub.delta?.length ?? 0));
           }
         }
 
         // Tool execution events
         if (event.type === "tool_execution_start") {
           toolCallCountRef.current++;
+          setThinkingPhase("tools");
           thinkingDispatch({
             type: "START_TOOL_CALL",
             payload: { toolCallId: event.toolCallId, toolName: event.toolName },
@@ -143,6 +155,8 @@ export function useAgentSession(): AgentSessionState {
           dispatch({ type: "COMPLETE_ASSISTANT" });
           assistantMsgCountRef.current++;
           setIsProcessing(false);
+          setThinkingPhase(null);
+          setProcessingStartedAt(null);
 
           // Collect session stats and context usage
           const sdkStats = session.getSessionStats?.();
@@ -202,6 +216,8 @@ export function useAgentSession(): AgentSessionState {
         if (event.type === "error") {
           dispatch({ type: "ERROR_ASSISTANT", payload: event.error?.message ?? "Unknown error" });
           setIsProcessing(false);
+          setThinkingPhase(null);
+          setProcessingStartedAt(null);
         }
       });
 
@@ -222,6 +238,8 @@ export function useAgentSession(): AgentSessionState {
     dispatch({ type: "START_ASSISTANT_MESSAGE" });
     userMsgCountRef.current++;
     setIsProcessing(true);
+    setProcessingStartedAt(Date.now());
+    setOutputCharCount(0);
 
     try {
       await sessionRef.current.prompt(text);
@@ -256,6 +274,9 @@ export function useAgentSession(): AgentSessionState {
     messages,
     thinkingBlocks,
     isProcessing,
+    thinkingPhase,
+    processingStartedAt,
+    outputCharCount,
     initialized,
     error,
     config,
