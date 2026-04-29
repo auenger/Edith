@@ -9,7 +9,7 @@ import {
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadConfig, getActiveProfile, listProfiles, findConfigFile, saveActiveProfile, type EdithConfig, type LlmProfile } from "../config.js";
+import { loadConfig, getActiveProfile, listProfiles, findConfigFile, saveActiveProfile, type EdithConfig, type LlmProfile, type ApiType } from "../config.js";
 import edithExtension from "../extension.js";
 import { buildSystemPrompt } from "../system-prompt.js";
 import { messageReducer, thinkingReducer, toolCallReducer } from "./types.js";
@@ -117,7 +117,7 @@ export function useAgentSession(): AgentSessionState {
             }
             try {
               modelRegistry.registerProvider(profile.provider, {
-                api: (profile.api_type as any) ?? "openai-completions",
+                api: profile.api_type ?? "openai-completions",
                 baseUrl: profile.base_url,
                 apiKey: profile.api_key,
                 models: [{
@@ -456,7 +456,7 @@ export function useAgentSession(): AgentSessionState {
     if (profile.base_url && profile.api_key) {
       try {
         modelRegistryRef.current?.registerProvider(profile.provider, {
-          api: (profile.api_type as any) ?? "openai-completions",
+          api: profile.api_type ?? "openai-completions",
           baseUrl: profile.base_url,
           apiKey: profile.api_key,
           models: [{
