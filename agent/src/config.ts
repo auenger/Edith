@@ -571,6 +571,161 @@ export function listProfiles(config: EdithConfig): string[] {
   return Object.keys(config.llm.profiles);
 }
 
+// ── Config Write-back (line-level patch, preserves comments) ─────
+
+/**
+ * Update a scalar YAML field using line-level replacement.
+ * Finds the line matching `key:` under the given section header and replaces its value.
+ * Preserves all other content including comments.
+ */
+function patchYamlScalar(
+  content: string,
+  sectionKey: string,
+  fieldKey: string,
+  newValue: string,
+): string {
+  const lines = content.split("\n");
+  let inSection = false;
+  let sectionIndent = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trimStart();
+
+    // Detect section header (e.g. "llm:" at top level)
+    if (trimmed === `${sectionKey}:` || trimmed.startsWith(`${sectionKey}:`)) {
+      inSection = true;
+      sectionIndent = lines[i].length - trimmed.length;
+      continue;
+    }
+
+    if (inSection) {
+      const currentIndent = lines[i].length - trimmed.length;
+
+      // Stop if we hit another top-level key at same or lower indent
+      if (trimmed.length > 0 && currentIndent <= sectionIndent && !trimmed.startsWith("#")) {
+        inSection = false;
+        continue;
+      }
+
+      // Match the field (e.g. "active:" with indent > section indent)
+      const fieldPattern = new RegExp(`^(\\s{${sectionIndent + 1},}})${fieldKey}:\\s*(.*)$`);
+      const match = fieldPattern.exec(lines[i]);
+      if (match) {
+        // Preserve inline comment if present
+        const oldValue = match[2];
+        const commentIdx = oldValue.indexOf(" #");
+        const comment = commentIdx >= 0 ? "  " + oldValue.slice(commentIdx + 1) : "";
+        lines[i] = `${match[1]}${fieldKey}: ${newValue}${comment}`;
+        break;
+      }
+    }
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Append a YAML array entry under a section.
+ * Used for adding repos to the repos: list.
+ */
+function appendYamlArrayEntry(
+  content: string,
+  sectionKey: string,
+  entryLines: string[],
+): string {
+  const lines = content.split("\n");
+  let sectionLineIdx = -1;
+  let lastEntryEndIdx = -1;
+
+  // Find the section header
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trimStart();
+    if (trimmed === `${sectionKey}:` || trimmed.startsWith(`${sectionKey}:`)) {
+      sectionLineIdx = i;
+      break;
+    }
+  }
+
+  if (sectionLineIdx === -1) {
+    // Section doesn't exist, append it at end
+    return content + "\n" + sectionKey + ":\n" + entryLines.join("\n") + "\n";
+  }
+
+  // Find the last entry in the array (lines starting with "  - ")
+  const sectionIndent = lines[sectionLineIdx].length - lines[sectionLineIdx].trimStart().length;
+  for (let i = sectionLineIdx + 1; i < lines.length; i++) {
+    const trimmed = lines[i].trimStart();
+    const currentIndent = lines[i].length - trimmed.length;
+
+    if (trimmed.length === 0) continue;
+
+    // Stop at next top-level section
+    if (currentIndent <= sectionIndent && !trimmed.startsWith("#")) break;
+
+    if (currentIndent === sectionIndent + 2 && trimmed.startsWith("- ")) {
+      lastEntryEndIdx = i;
+    }
+    // Continuation lines of the last entry
+    if (lastEntryEndIdx !== -1 && currentIndent > sectionIndent + 2 && trimmed.length > 0) {
+      lastEntryEndIdx = i;
+    }
+  }
+
+  // Insert after the last entry (or after section header if empty)
+  const insertIdx = lastEntryEndIdx !== -1 ? lastEntryEndIdx + 1 : sectionLineIdx + 1;
+  const indented = entryLines.map((l) => "  " + l);
+  lines.splice(insertIdx, 0, ...indented);
+
+  return lines.join("\n");
+}
+
+/**
+ * Save the active profile name to edith.yaml.
+ * Line-level replacement preserves comments and formatting.
+ */
+export function saveActiveProfile(configPath: string, profileName: string): void {
+  try {
+    const content = readFileSync(configPath, "utf-8");
+    const updated = patchYamlScalar(content, "llm", "active", profileName);
+    if (updated !== content) {
+      writeFileSync(configPath, updated, "utf-8");
+      console.log(`[EDITH] Config updated: llm.active → ${profileName}`);
+    }
+  } catch (err) {
+    console.warn(`[EDITH] Failed to persist active profile: ${(err as Error).message}`);
+  }
+}
+
+/**
+ * Append a repo to edith.yaml repos list.
+ * Skips if a repo with the same name or path already exists.
+ */
+export function addRepo(configPath: string, repo: RepoConfig): void {
+  try {
+    const content = readFileSync(configPath, "utf-8");
+    const parsed = loadYaml(content) as Record<string, unknown>;
+    const repos = (parsed.repos ?? []) as RepoConfig[];
+
+    const isDuplicate = repos.some(
+      (r: RepoConfig) => r.name === repo.name || r.path === repo.path,
+    );
+    if (isDuplicate) {
+      console.log(`[EDITH] Repo '${repo.name}' already in config, skipping.`);
+      return;
+    }
+
+    const entryLines = [`- name: ${repo.name}`, `  path: ${repo.path}`];
+    if (repo.stack) {
+      entryLines.push(`  stack: ${repo.stack}`);
+    }
+    const updated = appendYamlArrayEntry(content, "repos", entryLines);
+    writeFileSync(configPath, updated, "utf-8");
+    console.log(`[EDITH] Config updated: added repo '${repo.name}'`);
+  } catch (err) {
+    console.warn(`[EDITH] Failed to add repo: ${(err as Error).message}`);
+  }
+}
+
 // ── edith-init Interactive Wizard ────────────────────────────────
 
 const PROVIDER_MODEL_HINTS: Record<string, string[]> = {
