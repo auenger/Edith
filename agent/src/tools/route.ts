@@ -34,7 +34,7 @@ export interface RouteParams {
 }
 
 /** Routing decision types */
-export type RouteDecision = "direct" | "quick-ref" | "deep-dive";
+export type RouteDecision = "direct" | "quick-ref" | "multi-service" | "deep-dive";
 
 /** Change type classification */
 export type ChangeType =
@@ -56,6 +56,18 @@ export interface RouteResult {
   reason: string;
   confidence: number;
   ambiguity?: string;
+  complexity?: ComplexityAnalysis;
+  urgent?: boolean;
+  isNewProject?: boolean;
+  decisionChain?: string[];
+}
+
+/** Multi-dimensional complexity analysis */
+export interface ComplexityAnalysis {
+  entityCount: number;
+  coordinationNeed: "none" | "low" | "medium" | "high";
+  breakingChange: boolean;
+  score: number;
 }
 
 /** Route error codes */
@@ -476,83 +488,65 @@ function classifyChange(requirement: string): ChangeType {
  *   1 service + crud -> direct
  *   1 service + api_change/logic_change/refactor/incident -> quick-ref
  *   1 service + schema_change -> deep-dive
- *   2+ services -> quick-ref (multi)
- *   2+ services + schema_change -> deep-dive (multi)
+ *   2+ services + non-cross -> multi-service
+ *   2+ services + cross_service/schema_change -> deep-dive
  */
 function routeDecision(
   services: RoutingTableEntry[],
   changeType: ChangeType,
-): { decision: RouteDecision; reason: string } {
+  isUrgent: boolean,
+): { decision: RouteDecision; reason: string; chain: string[] } {
+  const chain: string[] = [];
   const serviceCount = services.length;
+  const serviceNames = services.map((s) => s.service);
 
   if (serviceCount === 0) {
-    return {
-      decision: "direct",
-      reason: "无需特定服务上下文，未匹配到已知服务",
-    };
+    chain.push("信号: 无匹配服务");
+    return { decision: "direct", reason: "无需特定服务上下文，未匹配到已知服务", chain };
   }
 
   if (serviceCount === 1) {
     const svc = services[0].service;
+    chain.push(`信号: 单服务匹配=${svc}`);
+    chain.push(`信号: 变更类型=${changeType}`);
+
+    if (isUrgent) {
+      chain.push("信号: 紧急事件检测");
+      return { decision: "quick-ref", reason: `${svc} 紧急事件，优先加载速查卡快速定位`, chain };
+    }
+
     switch (changeType) {
       case "crud":
-        return {
-          decision: "direct",
-          reason: `单服务 ${svc} CRUD 操作，无需额外上下文`,
-        };
+        return { decision: "direct", reason: `单服务 ${svc} CRUD 操作，无需额外上下文`, chain };
       case "api_change":
-        return {
-          decision: "quick-ref",
-          reason: `需要修改 ${svc} 接口，了解现有约束和接口契约`,
-        };
+        return { decision: "quick-ref", reason: `需要修改 ${svc} 接口，了解现有约束和接口契约`, chain };
       case "logic_change":
-        return {
-          decision: "quick-ref",
-          reason: `需要修改 ${svc} 业务逻辑，了解关键约束和易错点`,
-        };
+        return { decision: "quick-ref", reason: `需要修改 ${svc} 业务逻辑，了解关键约束和易错点`, chain };
       case "incident":
-        return {
-          decision: "quick-ref",
-          reason: `${svc} 紧急故障，加载速查卡快速定位问题`,
-        };
+        return { decision: "quick-ref", reason: `${svc} 紧急故障，加载速查卡快速定位问题`, chain };
       case "refactor":
-        return {
-          decision: "quick-ref",
-          reason: `${svc} 需要重构，先了解接口约束和依赖关系`,
-        };
+        return { decision: "quick-ref", reason: `${svc} 需要重构，先了解接口约束和依赖关系`, chain };
       case "schema_change":
-        return {
-          decision: "deep-dive",
-          reason: `${svc} 需要修改数据模型/Schema，需要完整字段定义`,
-        };
+        return { decision: "deep-dive", reason: `${svc} 需要修改数据模型/Schema，需要完整字段定义`, chain };
       default:
-        // unknown change type on single service -> safe default to quick-ref
-        return {
-          decision: "quick-ref",
-          reason: `${svc} 可能需要接口或逻辑上下文，建议加载速查卡`,
-        };
+        return { decision: "quick-ref", reason: `${svc} 可能需要接口或逻辑上下文，建议加载速查卡`, chain };
     }
   }
 
   // serviceCount >= 2
+  chain.push(`信号: 多服务匹配=[${serviceNames.join(", ")}]`);
+  chain.push(`信号: 变更类型=${changeType}`);
+
   if (changeType === "schema_change") {
-    return {
-      decision: "deep-dive",
-      reason: `多服务 (${services.map((s) => s.service).join(", ")}) Schema 变更，需要多个服务的完整数据模型`,
-    };
+    return { decision: "deep-dive", reason: `多服务 (${serviceNames.join(", ")}) Schema 变更，需要多个服务的完整数据模型`, chain };
   }
 
   if (changeType === "cross_service") {
-    return {
-      decision: "quick-ref",
-      reason: `跨服务变更 (${services.map((s) => s.service).join(", ")})，需要了解各服务的接口契约`,
-    };
+    return { decision: "deep-dive", reason: `跨服务变更 (${serviceNames.join(", ")})，需要各服务的完整上下文`, chain };
   }
 
-  return {
-    decision: "quick-ref",
-    reason: `涉及 ${services.length} 个服务 (${services.map((s) => s.service).join(", ")})，建议加载各服务速查卡`,
-  };
+  // Non-cross-service multi-service: use multi-service strategy
+  return { decision: "multi-service", reason: `涉及 ${serviceCount} 个服务 (${serviceNames.join(", ")})，加载各服务速查卡`, chain };
 }
 
 // ── File Path Resolution ──────────────────────────────────────────
@@ -567,6 +561,7 @@ function resolveFilePaths(
   decision: RouteDecision,
   changeType: ChangeType,
   loadedContext: string[],
+  isUrgent?: boolean,
 ): { filesToLoad: string[]; missingFiles: string[] } {
   const filesToLoad: string[] = [];
   const missingFiles: string[] = [];
@@ -576,7 +571,6 @@ function resolveFilePaths(
   }
 
   for (const entry of services) {
-    // Determine quick-ref path
     const quickRefCandidates = [
       join(workspaceRoot, "skills", entry.service, "quick-ref.md"),
       join(workspaceRoot, entry.service, "quick-ref.md"),
@@ -590,11 +584,10 @@ function resolveFilePaths(
       }
     }
 
-    // For quick-ref and deep-dive decisions, always try to include quick-ref
-    if (decision === "quick-ref" || decision === "deep-dive") {
+    // quick-ref, multi-service, deep-dive all need quick-ref
+    if (decision === "quick-ref" || decision === "multi-service" || decision === "deep-dive") {
       const relativePath = `skills/${entry.service}/quick-ref.md`;
       if (quickRefPath) {
-        // Skip if already in loaded context
         if (!loadedContext.some((c) => c.includes(entry.service) && c.includes("quick-ref"))) {
           filesToLoad.push(relativePath);
         }
@@ -603,36 +596,21 @@ function resolveFilePaths(
       }
     }
 
-    // For deep-dive, also include relevant distillate fragments
-    if (decision === "deep-dive") {
+    // deep-dive or urgent incidents also need distillate fragments
+    if (decision === "deep-dive" || isUrgent) {
       const distillatesDir = join(workspaceRoot, "distillates", entry.service);
 
       if (existsSync(distillatesDir) && statSync(distillatesDir).isDirectory()) {
         let files: string[];
         try {
-          files = readdirSync(distillatesDir)
-            .filter((f) => f.endsWith(".md") && f !== "_index.md")
-            .sort();
-        } catch {
-          files = [];
-        }
+          files = readdirSync(distillatesDir).filter((f) => f.endsWith(".md") && f !== "_index.md").sort();
+        } catch { files = []; }
 
-        // Select distillate fragments based on change type
-        const selectedFragments = selectDistillateFragments(
-          files,
-          changeType,
-          loadedContext,
-          entry.service,
-        );
-
+        const selectedFragments = selectDistillateFragments(files, changeType, loadedContext, entry.service);
         for (const frag of selectedFragments) {
-          const relativePath = `distillates/${entry.service}/${frag}`;
-          filesToLoad.push(relativePath);
+          filesToLoad.push(`distillates/${entry.service}/${frag}`);
         }
-
-        if (files.length === 0) {
-          missingFiles.push(`distillates/${entry.service}/`);
-        }
+        if (files.length === 0) missingFiles.push(`distillates/${entry.service}/`);
       } else {
         missingFiles.push(`distillates/${entry.service}/`);
       }
@@ -756,6 +734,76 @@ function calculateConfidence(
   return Math.min(Math.round(combined * 100) / 100, 1.0);
 }
 
+// ── Complexity Analysis ────────────────────────────────────────────
+
+/**
+ * Multi-dimensional complexity analysis of the requirement.
+ */
+export function analyzeComplexity(requirement: string, serviceCount: number): ComplexityAnalysis {
+  const lower = requirement.toLowerCase();
+
+  // Entity count: extract noun phrases that look like domain entities
+  const entityPatterns = [
+    /[A-Z][a-z]+(?:[A-Z][a-z]+)*/g, // CamelCase
+    /[\w]+(?:表|模型|实体|字段|接口|服务)/g, // Chinese suffixed
+  ];
+  const entities = new Set<string>();
+  for (const pat of entityPatterns) {
+    let m;
+    while ((m = pat.exec(requirement)) !== null) entities.add(m[0]);
+  }
+
+  // Coordination need
+  let coordination: ComplexityAnalysis["coordinationNeed"] = "none";
+  if (serviceCount >= 3) coordination = "high";
+  else if (serviceCount >= 2) coordination = "medium";
+  else if (lower.includes("同步") || lower.includes("协调") || lower.includes("联调")) coordination = "low";
+
+  // Breaking change detection
+  const breakingKeywords = [
+    "删除字段", "改字段类型", "删除接口", "废弃", "breaking",
+    "不兼容", "迁移数据", "rename", "drop column", "删除表",
+  ];
+  const breakingChange = breakingKeywords.some((kw) => lower.includes(kw));
+
+  // Overall score 0-100
+  const entityScore = Math.min(entities.size * 5, 30);
+  const coordScore = coordination === "high" ? 30 : coordination === "medium" ? 20 : coordination === "low" ? 10 : 0;
+  const breakScore = breakingChange ? 40 : 0;
+  const score = Math.min(entityScore + coordScore + breakScore, 100);
+
+  return { entityCount: entities.size, coordinationNeed: coordination, breakingChange, score };
+}
+
+// ── Urgent Incident Detection ─────────────────────────────────────
+
+const URGENT_P0_KEYWORDS = ["线上故障", "生产事故", "500报错", "502", "503", "服务不可用", "outage", "down"];
+const URGENT_P1_KEYWORDS = ["紧急", "回滚", "紧急修复", "urgent", "rollback", "hotfix", "报错", "报警", "异常"];
+
+/**
+ * Detect if requirement describes an urgent incident.
+ */
+export function detectUrgentIncident(requirement: string): boolean {
+  const lower = requirement.toLowerCase();
+  return URGENT_P0_KEYWORDS.some((kw) => lower.includes(kw)) ||
+         URGENT_P1_KEYWORDS.filter((kw) => lower.includes(kw)).length >= 2;
+}
+
+// ── New Project Detection ─────────────────────────────────────────
+
+const NEW_PROJECT_KEYWORDS = [
+  "新建项目", "初始化", "创建新", "新项目", "从零开始", "全新服务",
+  "new project", "initialize", "scaffold", "from scratch",
+];
+
+/**
+ * Detect if the requirement is about creating a new project.
+ */
+export function isNewProject(requirement: string): boolean {
+  const lower = requirement.toLowerCase();
+  return NEW_PROJECT_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
 // ── Main Route Function ───────────────────────────────────────────
 
 /**
@@ -801,8 +849,15 @@ export function executeRoute(
   // ── Step 4: Classify change type ────────────────────────────────
   const changeType = classifyChange(requirement);
 
+  // ── Step 4b: Detect urgent incident and new project ────────────
+  const isUrgent = detectUrgentIncident(requirement);
+  const isNew = isNewProject(requirement);
+
+  // ── Step 4c: Analyze complexity ────────────────────────────────
+  const complexity = analyzeComplexity(requirement, matched.length);
+
   // ── Step 5: Check for unclear requirement ───────────────────────
-  if (matched.length === 0 && changeType === "unknown") {
+  if (matched.length === 0 && changeType === "unknown" && !isNew) {
     const serviceList = entries.map((e) => e.service).join(", ");
     return {
       ok: false,
@@ -814,8 +869,25 @@ export function executeRoute(
     };
   }
 
+  // ── Step 5b: New project short-circuit ──────────────────────────
+  if (isNew && matched.length === 0) {
+    return {
+      ok: true,
+      result: {
+        decision: "direct",
+        services: [],
+        filesToLoad: [],
+        reason: "新项目初始化，无需加载已有服务上下文",
+        confidence: 0.95,
+        isNewProject: true,
+        complexity,
+        decisionChain: ["信号: 新项目关键词检测", "决策: direct（新项目无需已有上下文）"],
+      },
+    };
+  }
+
   // ── Step 6: Routing decision ────────────────────────────────────
-  const { decision, reason } = routeDecision(matched, changeType);
+  const { decision, reason, chain } = routeDecision(matched, changeType, isUrgent);
 
   // ── Step 7: Resolve file paths ──────────────────────────────────
   const { filesToLoad, missingFiles } = resolveFilePaths(
@@ -824,10 +896,18 @@ export function executeRoute(
     decision,
     changeType,
     context,
+    isUrgent,
   );
 
   // ── Step 8: Calculate confidence & handle ambiguity ─────────────
-  const confidence = calculateConfidence(serviceConfidence, changeType, matched.length);
+  let confidence = calculateConfidence(serviceConfidence, changeType, matched.length);
+
+  // Urgent incidents: lower confidence threshold (more conservative)
+  if (isUrgent) {
+    confidence = Math.min(confidence * 0.9, 0.85);
+    chain.push("信号: 紧急事件 — 置信度降低，保守路由");
+  }
+
   let ambiguity: string | undefined;
 
   if (confidence < 0.7 && matched.length >= 2) {
@@ -844,7 +924,11 @@ export function executeRoute(
     filesToLoad,
     reason,
     confidence,
+    complexity,
     ...(ambiguity ? { ambiguity } : {}),
+    ...(isUrgent ? { urgent: true } : {}),
+    ...(isNew ? { isNewProject: true } : {}),
+    decisionChain: chain,
   };
 
   // Append missing files info to reason
@@ -863,8 +947,7 @@ export function executeRoute(
  */
 export function formatRouteSummary(result: RouteResult): string {
   const lines: string[] = [
-    "EDITH 需求路由分析",
-    "",
+    "EDITH 需求路由分析", "",
     `  决策: ${result.decision}`,
     `  匹配服务: ${result.services.length > 0 ? result.services.join(", ") : "无"}`,
     `  置信度: ${(result.confidence * 100).toFixed(0)}%`,
@@ -872,18 +955,24 @@ export function formatRouteSummary(result: RouteResult): string {
     `  原因: ${result.reason}`,
   ];
 
-  if (result.filesToLoad.length > 0) {
-    lines.push("");
-    lines.push("  建议加载:");
-    for (const file of result.filesToLoad) {
-      lines.push(`    - ${file}`);
-    }
+  if (result.urgent) lines.push("  ⚠️ 紧急事件: 是");
+  if (result.isNewProject) lines.push("  新项目: 是");
+
+  if (result.complexity && result.complexity.score > 0) {
+    lines.push("", `  复杂度: ${result.complexity.score}/100 (实体: ${result.complexity.entityCount}, 协调: ${result.complexity.coordinationNeed}, 破坏性: ${result.complexity.breakingChange ? "是" : "否"})`);
   }
 
-  if (result.ambiguity) {
-    lines.push("");
-    lines.push(`  注意: ${result.ambiguity}`);
+  if (result.filesToLoad.length > 0) {
+    lines.push("", "  建议加载:");
+    for (const file of result.filesToLoad) lines.push(`    - ${file}`);
   }
+
+  if (result.decisionChain && result.decisionChain.length > 0) {
+    lines.push("", "  决策依据:");
+    for (const step of result.decisionChain) lines.push(`    ${step}`);
+  }
+
+  if (result.ambiguity) lines.push("", `  注意: ${result.ambiguity}`);
 
   return lines.join("\n");
 }
