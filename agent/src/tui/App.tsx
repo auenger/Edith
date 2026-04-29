@@ -100,6 +100,7 @@ export function App() {
   const {
     messages,
     thinkingBlocks,
+    toolCallBlocks,
     isProcessing,
     thinkingPhase,
     processingStartedAt,
@@ -254,6 +255,7 @@ export function App() {
       <ContentArea
         messages={messages}
         thinkingBlocks={thinkingBlocks}
+        toolCallBlocks={toolCallBlocks}
         onToggleThinking={handleToggleThinking}
       />
       <ContextStatusBar config={config} monitorData={monitorData} modelName={modelName} isCustomProvider={isCustomProvider} />
