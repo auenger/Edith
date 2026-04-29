@@ -23,6 +23,7 @@ import { executeScan, formatScanSummary, formatScanError } from "./tools/scan.js
 import { executeExplore, formatExploreSummary, formatExploreError } from "./tools/explore.js";
 import { executeDistill, formatDistillSummary, formatDistillError } from "./tools/distill.js";
 import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/route.js";
+import { executeIndex, formatIndexSummary, formatIndexError } from "./tools/index.js";
 import { renderContextPanel, type SessionStats, type ContextUsage } from "./theme/context-panel.js";
 import { detectColorSupport } from "./theme/color-engine.js";
 import {
@@ -60,11 +61,18 @@ const ExploreParams = Type.Object({
   target: Type.String({ description: "项目名或路径" }),
 });
 
+const IndexParams = Type.Object({
+  target: Type.Optional(Type.String({ description: "知识库目录路径（默认自动发现）" })),
+  output_path: Type.Optional(Type.String({ description: "索引输出文件路径（默认 {kb-dir}/{company}-knowledge-index.md）" })),
+  services: Type.Optional(Type.Array(Type.String({ description: "限定索引的服务列表（为空时包含全部）" }), { description: "限定索引的服务范围" })),
+});
+
 type ScanInput = Static<typeof ScanParams>;
 type DistillInput = Static<typeof DistillParams>;
 type RouteInput = Static<typeof RouteParams>;
 type QueryInput = Static<typeof QueryParams>;
 type ExploreInput = Static<typeof ExploreParams>;
+type IndexInput = Static<typeof IndexParams>;
 
 // ── Skill Routing Map (internal, never exposed to users) ───────────
 
@@ -72,6 +80,7 @@ const SKILL_MAP: Record<string, string> = {
   scan: "document-project",
   distill: "distillator",
   route: "requirement-router",
+  index: "knowledge-index",
   // query: loaded via three-layer strategy, no single Skill
 };
 
@@ -109,6 +118,7 @@ const FRIENDLY_ACTION: Record<string, string> = {
   edith_distill: "正在蒸馏知识产物...",
   edith_route: "正在进行需求路由分析...",
   edith_query: "正在查询知识库...",
+  edith_index: "正在生成知识索引...",
 };
 
 // ── Extension Entry Point ──────────────────────────────────────────
@@ -122,7 +132,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
     name: string;
     label: string;
     description: string;
-    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams | typeof ExploreParams;
+    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams | typeof ExploreParams | typeof IndexParams;
     execute: (toolCallId: string, params: any, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) => Promise<any>;
   }> = [
     {
@@ -384,6 +394,56 @@ export default function edithExtension(pi: ExtensionAPI): void {
                 text: `[EDITH] 查询执行失败: ${(err as Error).message}`,
               },
             ],
+            isError: true,
+          };
+        }
+      },
+    },
+    {
+      name: "edith_index",
+      label: "EDITH Index",
+      description:
+        "将蒸馏知识库（routing-table + quick-ref + distillates）生成标准化 Markdown 索引。" +
+        " 索引文件可被外部 Agent（Claude Code 等）直接加载，获得项目知识。",
+      parameters: IndexParams,
+      execute: async (_toolCallId, params: IndexInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
+        console.log(FRIENDLY_ACTION["edith_index"]);
+        const skill = loadSkill("index");
+        if (!skill.loaded) {
+          return { content: [{ type: "text" as const, text: `[EDITH] 知识索引暂不可用: ${skill.error}` }], isError: true };
+        }
+
+        try {
+          const config = loadConfig();
+
+          const outcome = executeIndex(
+            {
+              target: params.target,
+              output_path: params.output_path,
+              services: params.services,
+            },
+            config.workspace.root,
+          );
+
+          if (outcome.ok) {
+            const summary = formatIndexSummary(outcome.result);
+            console.log(`[EDITH] Index completed: ${outcome.result.services_count} services → ${outcome.result.output_path}`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatIndexError(outcome.error);
+            console.warn(`[EDITH] Index failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[EDITH] Index error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[EDITH] 索引生成失败: ${message}` }],
             isError: true,
           };
         }

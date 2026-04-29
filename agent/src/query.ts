@@ -10,7 +10,7 @@
  *   1. Load Layer 0 routing-table.md
  *   2. Match question to relevant services
  *   3. Load Layer 1 quick-ref.md for matched services
- *   4. Load Layer 2 distillate fragments as needed
+ *   4. Load Layer 2 distillate fragments as needed (index-accelerated when available)
  *   5. Assemble answer with source citations
  */
 
@@ -464,6 +464,82 @@ function loadLayer1(
   };
 }
 
+// ── Index-Accelerated Fragment Selection ──────────────────────────
+
+interface IndexRoutingPattern {
+  topic: string;
+  fragmentFile: string;
+}
+
+/**
+ * Find a knowledge index file in the workspace.
+ */
+function findIndexFile(workspaceRoot: string): string | null {
+  const candidates = [
+    join(workspaceRoot, "company-edith", "*-knowledge-index.md"),
+    join(workspaceRoot, "skills", "company-edith", "*-knowledge-index.md"),
+  ];
+
+  for (const glob of candidates) {
+    const dir = resolve(glob, "..");
+    if (!existsSync(dir)) continue;
+    try {
+      const files = readdirSync(dir);
+      const match = files.find((f) => f.endsWith("-knowledge-index.md"));
+      if (match) return join(dir, match);
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
+/**
+ * Parse query routing patterns from an index file.
+ * Extracts lines like "问 API/接口 → 加载 02-api-contracts".
+ */
+function parseIndexRouting(indexContent: string): Map<string, string> {
+  const routing = new Map<string, string>();
+  const lines = indexContent.split("\n");
+
+  let inRoutingSection = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("## 查询路由")) {
+      inRoutingSection = true;
+      continue;
+    }
+    if (inRoutingSection && trimmed.startsWith("## ")) break;
+    if (!inRoutingSection) continue;
+
+    const match = trimmed.match(/^-\s+问(.+?)\s*→\s*加载\s+(\S+)/);
+    if (match) {
+      routing.set(match[1].trim(), match[2].trim());
+    }
+  }
+
+  return routing;
+}
+
+/**
+ * Check if a question matches a routing pattern and return the target fragment file.
+ */
+function matchRoutingPattern(
+  question: string,
+  routing: Map<string, string>,
+): string | null {
+  const qLower = question.toLowerCase();
+
+  for (const [pattern, fragment] of routing) {
+    const keywords = pattern.split(/[/\/,，、]/).map((k) => k.trim().toLowerCase());
+    if (keywords.some((kw) => kw.length > 0 && qLower.includes(kw))) {
+      return fragment;
+    }
+  }
+
+  return null;
+}
+
 // ── Layer 2: Distillate Fragment Loader ───────────────────────────
 
 /**
@@ -474,7 +550,8 @@ function loadLayer2(
   workspaceRoot: string,
   entry: RoutingTableEntry,
   question: string,
-  tokenBudget: number
+  tokenBudget: number,
+  indexRouting?: Map<string, string> | null
 ): { fragments: DistillateFragment[]; unloadedTitles: Array<{ file: string; name: string }>; warning?: QueryWarning } {
   const distillatesDir = entry.distillatesPath
     ? join(workspaceRoot, entry.distillatesPath)
@@ -540,6 +617,14 @@ function loadLayer2(
     // Score based on filename and content keyword matching
     const fileName = basename(file, ".md").toLowerCase();
     let score = 0;
+
+    // Index routing boost: if index suggests this fragment, give it a strong signal
+    if (indexRouting) {
+      const suggestedFile = matchRoutingPattern(question, indexRouting);
+      if (suggestedFile && file.includes(suggestedFile.replace(/^\d+-/, ""))) {
+        score += 15;
+      }
+    }
 
     // Filename keyword match (higher weight)
     for (const word of questionWords) {
@@ -889,14 +974,30 @@ export function executeQuery(params: QueryParams, config: EdithConfig): QueryRes
     }
   }
 
-  // ── Layer 2: Load Distillate Fragments ────────────────────────
+  // ── Layer 2: Load Distillate Fragments (index-accelerated) ────
   const layer2Fragments = new Map<string, DistillateFragment[]>();
   const unloadedTitles = new Map<string, Array<{ file: string; name: string }>>();
 
   if (max_depth >= 2) {
     const tokenBudget = config.agent.context_budget.distillate_per_query;
+
+    // Load index routing patterns if available
+    let indexRouting: Map<string, string> | null = null;
+    const indexPath = findIndexFile(workspaceRoot);
+    if (indexPath) {
+      try {
+        const indexContent = readFileSync(indexPath, "utf-8");
+        indexRouting = parseIndexRouting(indexContent);
+        if (indexRouting.size > 0) {
+          console.log(`[EDITH] Index-accelerated query: using ${indexRouting.size} routing patterns from ${basename(indexPath)}`);
+        }
+      } catch {
+        // Index not usable, fall back to keyword scoring
+      }
+    }
+
     for (const entry of matched) {
-      const { fragments, unloadedTitles: titles, warning } = loadLayer2(workspaceRoot, entry, question, tokenBudget);
+      const { fragments, unloadedTitles: titles, warning } = loadLayer2(workspaceRoot, entry, question, tokenBudget, indexRouting);
       if (warning) {
         warnings.push(warning);
       }
