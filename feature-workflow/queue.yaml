@@ -20,16 +20,6 @@ pending:
       scan 从"文件计数器"→"代码考古器"，distill 从基础过滤→无损压缩引擎，
       route 增加多服务路由和复杂度分析。
 
-  - id: feat-skill-align-distill
-    name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
-    priority: 88
-    size: M
-    dependencies: [feat-skill-align-scan]
-    parent: feat-skill-alignment
-    description: |
-      distill.ts 从基础过滤升级为无损压缩引擎。新增：5步压缩管线（提取→去重→过滤→分组→语言压缩）、
-      源文档冲突检测、跨文档分析、往返验证（≥95%覆盖率）、自动分组。
-
   - id: feat-skill-align-route
     name: "Route 精准路由增强（对齐 requirement-router SKILL.md）"
     priority: 82
@@ -137,6 +127,15 @@ pending:
 
 
 active:
+  - id: feat-skill-align-distill
+    name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
+    priority: 88
+    size: M
+    dependencies: [feat-skill-align-scan]
+    parent: feat-skill-alignment
+    branch: feature/skill-align-distill
+    worktree: ../EDITH-skill-align-distill
+    started_at: "2026-04-29T23:50:00+08:00"
 
 blocked:
   - id: feat-workflow-orchestrator
@@ -152,6 +151,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-skill-align-distill
+    name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
+    priority: 88
+    size: M
+    dependencies: [feat-skill-align-scan]
+    parent: feat-skill-alignment
+    completed_at: "2026-04-30T00:05:00+08:00"
+    tag: feat-skill-align-distill-20260429
+
   - id: feat-skill-align-scan
     name: "Scan 深度代码考古（对齐 document-project SKILL.md）"
     priority: 92
@@ -414,7 +422,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-29T23:45:00+08:00"
+  last_updated: "2026-04-29T23:50:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
