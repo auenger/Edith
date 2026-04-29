@@ -2,18 +2,6 @@
 # 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
 pending:
-  # ═══ TUI 渲染优化 ═══
-
-  - id: feat-tui-ctx-refresh
-    name: "CTX 动态刷新 + Token 计数修复"
-    priority: 75
-    size: S
-    dependencies: []
-    parent: null
-    description: |
-      修复状态栏 CTX 不动态刷新（仅在 agent_end 更新，非 Anthropic provider 无数据 fallback）
-      和 ThinkingIndicator token 计数不含工具调用 token 的问题。
-
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
   - id: feat-phase2
@@ -124,6 +112,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-tui-ctx-refresh
+    name: "CTX 动态刷新 + Token 计数修复"
+    priority: 75
+    size: S
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-30T00:10:00+08:00"
+    tag: feat-tui-ctx-refresh-20260429
+
   - id: feat-tui-tool-rendering
     name: "Claude Code 风格 Tool Call 渲染"
     priority: 78
@@ -359,7 +356,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-29T23:58:00+08:00"
+  last_updated: "2026-04-30T00:10:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH 全栈升级（Agent 集成 + Board）"
