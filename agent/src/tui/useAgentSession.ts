@@ -80,6 +80,8 @@ export function useAgentSession(): AgentSessionState {
   const assistantMsgCountRef = useRef(0);
   const toolCallCountRef = useRef(0);
   const toolResultCountRef = useRef(0);
+  const assistantSegmentClosedRef = useRef(false);
+  const suppressDisplayRef = useRef(true);
 
   const initialize = useCallback(async () => {
     try {
@@ -190,6 +192,7 @@ export function useAgentSession(): AgentSessionState {
 
       // Subscribe to session events
       session.subscribe((event: any) => {
+        if (suppressDisplayRef.current) return;
         // Thinking events from message_update
         if (event.type === "message_update") {
           const sub = event.assistantMessageEvent;
@@ -201,6 +204,10 @@ export function useAgentSession(): AgentSessionState {
           } else if (sub.type === "thinking_end") {
             thinkingDispatch({ type: "END_THINKING" });
           } else if (sub.type === "text_delta") {
+            if (assistantSegmentClosedRef.current) {
+              dispatch({ type: "START_ASSISTANT_MESSAGE" });
+              assistantSegmentClosedRef.current = false;
+            }
             dispatch({ type: "APPEND_TO_ASSISTANT", payload: sub.delta });
             setThinkingPhase("generating");
             setOutputCharCount((c) => c + (sub.delta?.length ?? 0));
@@ -211,12 +218,14 @@ export function useAgentSession(): AgentSessionState {
         if (event.type === "tool_execution_start") {
           toolCallCountRef.current++;
           setThinkingPhase("tools");
+          assistantSegmentClosedRef.current = true;
+          dispatch({ type: "COMPLETE_ASSISTANT" });
           toolCallDispatch({
             type: "START_TOOL_CALL",
             payload: {
               toolCallId: event.toolCallId,
               toolName: event.toolName,
-              args: event.args ? String(event.args).slice(0, 200) : undefined,
+              args: event.args ? JSON.stringify(event.args).slice(0, 200) : undefined,
             },
           });
         }
@@ -229,7 +238,7 @@ export function useAgentSession(): AgentSessionState {
             type: "END_TOOL_CALL",
             payload: {
               toolCallId: event.toolCallId,
-              result: String(result).slice(0, 200),
+              result: (typeof result === "string" ? result : JSON.stringify(result)).slice(0, 200),
               isError: event.isError,
             },
           });
@@ -360,8 +369,25 @@ export function useAgentSession(): AgentSessionState {
       });
 
       // Send system prompt
-      const systemPrompt = buildSystemPrompt(loadedConfig.workspace.language);
+      const systemPrompt = buildSystemPrompt(loadedConfig.workspace.language, loadedConfig);
       await session.prompt(systemPrompt);
+      suppressDisplayRef.current = false;
+
+      // Seed status bar with initial data from config
+      const ctxWindow = activeProfile.context_window ?? 128_000;
+      const mon = monitorRef.current;
+      if (mon) {
+        mon.record(
+          { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+          { tokens: 0, contextWindow: ctxWindow, percent: 0 },
+        );
+        setMonitorData({
+          latest: mon.latest,
+          cacheHitRate: mon.cacheHitRate,
+          pressure: mon.pressure,
+          totalRounds: mon.totalRounds,
+        });
+      }
 
       setInitialized(true);
     } catch (err) {
@@ -465,7 +491,9 @@ export function useAgentSession(): AgentSessionState {
     sessionRef.current = session;
 
     // Re-subscribe events for the new session
+    suppressDisplayRef.current = true;
     session.subscribe((event: any) => {
+      if (suppressDisplayRef.current) return;
       if (event.type === "message_update") {
         const sub = event.assistantMessageEvent;
         if (sub.type === "thinking_start") {
@@ -489,7 +517,7 @@ export function useAgentSession(): AgentSessionState {
           payload: {
             toolCallId: event.toolCallId,
             toolName: event.toolName,
-            args: event.args ? String(event.args).slice(0, 200) : undefined,
+            args: event.args ? JSON.stringify(event.args).slice(0, 200) : undefined,
           },
         });
       }
@@ -572,8 +600,9 @@ export function useAgentSession(): AgentSessionState {
     });
 
     // Send system prompt to new session
-    const systemPrompt = buildSystemPrompt(cfg.workspace.language);
+    const systemPrompt = buildSystemPrompt(cfg.workspace.language, cfg);
     await session.prompt(systemPrompt);
+    suppressDisplayRef.current = false;
 
     // Persist active profile to edith.yaml
     const cfgPath = configPathRef.current;

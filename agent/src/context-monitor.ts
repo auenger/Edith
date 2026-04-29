@@ -63,6 +63,9 @@ const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
   "llama3": 8_192,
   "mistral": 32_000,
   "qwen2": 128_000,
+  "mimo-v2.5-pro": 131_072,
+  "mimo-v2.5": 131_072,
+  "mimo-v2-pro": 131_072,
 };
 
 // ── Number Formatting ──────────────────────────────────────────────

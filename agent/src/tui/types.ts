@@ -154,7 +154,7 @@ export function thinkingReducer(state: ThinkingBlock[], action: MessageAction): 
           id: createThinkingId(),
           content: "",
           isStreaming: true,
-          expanded: false,
+          expanded: true,
           timestamp: Date.now(),
         },
       ];

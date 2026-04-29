@@ -15,7 +15,9 @@
  *   8. Context Management Strategy
  */
 
-import type { WorkspaceConfig } from "./config.js";
+import type { WorkspaceConfig, EdithConfig } from "./config.js";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 // ── System Prompt Builder ──────────────────────────────────────────
 
@@ -25,26 +27,73 @@ import type { WorkspaceConfig } from "./config.js";
  * @param language - The workspace language setting ("zh" or "en")
  * @returns The complete system prompt string
  */
-export function buildSystemPrompt(language: WorkspaceConfig["language"]): string {
+export function buildSystemPrompt(language: WorkspaceConfig["language"], config?: EdithConfig): string {
   if (language === "en") {
-    return buildEnglishPrompt();
+    return buildEnglishPrompt(config);
   }
-  return buildChinesePrompt();
+  return buildChinesePrompt(config);
+}
+
+// ── Workspace Context Injection ────────────────────────────────────
+
+function buildWorkspaceContext(config: EdithConfig, language: "zh" | "en"): string {
+  const lines: string[] = [];
+  const isZh = language === "zh";
+
+  lines.push(isZh ? "# 2.5. 工作空间上下文" : "# 2.5. Workspace Context");
+  lines.push("");
+
+  lines.push(isZh
+    ? `- 知识库根目录: \`${config.workspace.root}\``
+    : `- Knowledge root: \`${config.workspace.root}\``
+  );
+
+  if (config.repos.length > 0) {
+    lines.push("");
+    lines.push(isZh ? "## 已配置的项目仓库" : "## Configured Repositories");
+    for (const repo of config.repos) {
+      lines.push(`- **${repo.name}**: \`${repo.path}\`${repo.stack ? ` (${repo.stack})` : ""}`);
+    }
+  }
+
+  // Inject routing-table content (Layer 0)
+  const routingTablePath = resolve(config.workspace.root, "routing-table.md");
+  try {
+    if (existsSync(routingTablePath)) {
+      const content = readFileSync(routingTablePath, "utf-8");
+      const stripped = content.replace(/^---[\s\S]*?---\n*/, "").trim();
+      if (stripped) {
+        lines.push("");
+        lines.push(isZh ? "## 知识路由表 (Layer 0)" : "## Routing Table (Layer 0)");
+        lines.push(stripped);
+      }
+    }
+  } catch {
+    // routing-table is optional
+  }
+
+  return lines.join("\n");
 }
 
 // ── Chinese System Prompt ──────────────────────────────────────────
 
-function buildChinesePrompt(): string {
-  return [
+function buildChinesePrompt(config?: EdithConfig): string {
+  const sections = [
     chineseRoleDefinition(),
     chineseCoreResponsibilities(),
+  ];
+  if (config) {
+    sections.push(buildWorkspaceContext(config, "zh"));
+  }
+  sections.push(
     chineseTriggerMappingTable(),
     chineseBehaviorConstraints(),
     chineseCitationFormat(),
     chineseBoundaryHandling(),
     chineseMixedLanguageRules(),
     chineseContextManagement(),
-  ].join("\n\n");
+  );
+  return sections.join("\n\n");
 }
 
 function chineseRoleDefinition(): string {
@@ -258,17 +307,23 @@ function chineseContextManagement(): string {
 
 // ── English System Prompt ──────────────────────────────────────────
 
-function buildEnglishPrompt(): string {
-  return [
+function buildEnglishPrompt(config?: EdithConfig): string {
+  const sections = [
     englishRoleDefinition(),
     englishCoreResponsibilities(),
+  ];
+  if (config) {
+    sections.push(buildWorkspaceContext(config, "en"));
+  }
+  sections.push(
     englishTriggerMappingTable(),
     englishBehaviorConstraints(),
     englishCitationFormat(),
     englishBoundaryHandling(),
     englishMixedLanguageRules(),
     englishContextManagement(),
-  ].join("\n\n");
+  );
+  return sections.join("\n\n");
 }
 
 function englishRoleDefinition(): string {

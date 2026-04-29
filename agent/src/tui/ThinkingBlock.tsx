@@ -7,43 +7,30 @@ interface ThinkingBlockProps {
   onToggle: (id: string) => void;
 }
 
-function ThinkingSummary({ block }: ThinkingBlockProps) {
-  const lineCount = block.content.split("\n").length;
-  const statusText = block.isStreaming
-    ? "analyzing..."
-    : `${lineCount} line${lineCount > 1 ? "s" : ""}`;
-
-  return (
-    <Box>
-      <Text dimColor>
-        {"  "}💭 {statusText}
-      </Text>
-      <Text color="gray"> {" [T] expand"}</Text>
-    </Box>
-  );
-}
-
-function ThinkingDetail({ block }: ThinkingBlockProps) {
-  return (
-    <Box flexDirection="column" marginLeft={2}>
-      <Text color="gray">{"─".repeat(40)}</Text>
-      {block.content.split("\n").map((line, i) => (
-        <Text key={i} dimColor>
-          {line || " "}
-        </Text>
-      ))}
-      <Text color="gray">{"─".repeat(40)}</Text>
-      <Text color="gray">{"  "}[T] collapse</Text>
-    </Box>
-  );
-}
+const MAX_VISIBLE_LINES = 5;
 
 export function ThinkingBlock({ block, onToggle }: ThinkingBlockProps) {
   if (!block.content) return null;
 
-  if (block.expanded) {
-    return <ThinkingDetail block={block} onToggle={onToggle} />;
-  }
+  const lines = block.content.split("\n");
+  const lineCount = lines.length;
+  const truncated = lineCount > MAX_VISIBLE_LINES + 1;
+  const visibleLines = truncated ? lines.slice(0, MAX_VISIBLE_LINES) : lines;
 
-  return <ThinkingSummary block={block} onToggle={onToggle} />;
+  return (
+    <Box flexDirection="column" marginLeft={2}>
+      <Text dimColor>
+        {"  "}💭 {block.isStreaming ? "analyzing..." : `${lineCount} lines`}
+        {truncated && <Text color="gray"> {" [T] collapse"}</Text>}
+      </Text>
+      {visibleLines.map((line, i) => (
+        <Text key={i} dimColor>
+          {"  "}{line || " "}
+        </Text>
+      ))}
+      {truncated && (
+        <Text color="gray">{"  "}... +{lineCount - MAX_VISIBLE_LINES} more lines</Text>
+      )}
+    </Box>
+  );
 }

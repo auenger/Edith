@@ -93,10 +93,6 @@ export function ContentArea({ messages, thinkingBlocks, toolCallBlocks, onToggle
             );
         }
       })}
-
-      {!hasContent && (
-        <Text dimColor>Agent is ready. Type your message below.</Text>
-      )}
     </Box>
   );
 }
