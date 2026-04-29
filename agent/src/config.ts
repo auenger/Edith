@@ -20,12 +20,25 @@ import * as readline from "node:readline";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
-export interface LlmConfig {
+export interface LlmProfile {
   provider: string;
   model: string;
   api_key?: string;
   base_url?: string;
-  /** Manual override for context window size. If unset, auto-detected from session API or model name. */
+  api_type?: string;
+  context_window?: number;
+}
+
+export interface LlmConfig {
+  // New format: profiles mode
+  active?: string;
+  profiles?: Record<string, LlmProfile>;
+
+  // Legacy format (backward compat, auto-converted to profiles.default)
+  provider: string;
+  model: string;
+  api_key?: string;
+  base_url?: string;
   context_window?: number;
 }
 
@@ -250,15 +263,46 @@ export function validateConfig(raw: unknown): void {
   }
 
   const llm = config.llm as Record<string, unknown>;
-  if (!llm.provider || typeof llm.provider !== "string") {
-    throw new ConfigValidationError(
-      `llm.provider 是必填项${llm.provider !== undefined ? `，当前值: ${JSON.stringify(llm.provider)}` : ""}`
-    );
-  }
-  if (!llm.model || typeof llm.model !== "string") {
-    throw new ConfigValidationError(
-      `llm.model 是必填项${llm.model !== undefined ? `，当前值: ${JSON.stringify(llm.model)}` : ""}`
-    );
+  const hasProfiles = llm.profiles && typeof llm.profiles === "object";
+
+  if (hasProfiles) {
+    // New format: validate profiles
+    const profiles = llm.profiles as Record<string, unknown>;
+    if (Object.keys(profiles).length === 0) {
+      throw new ConfigValidationError("llm.profiles 不能为空，至少需要一个 profile");
+    }
+    for (const [name, profile] of Object.entries(profiles)) {
+      if (typeof profile !== "object" || profile === null) {
+        throw new ConfigValidationError(`llm.profiles.${name} 必须为对象`);
+      }
+      const p = profile as Record<string, unknown>;
+      if (!p.provider || typeof p.provider !== "string") {
+        throw new ConfigValidationError(`llm.profiles.${name}.provider 是必填项`);
+      }
+      if (!p.model || typeof p.model !== "string") {
+        throw new ConfigValidationError(`llm.profiles.${name}.model 是必填项`);
+      }
+    }
+    if (llm.active !== undefined && typeof llm.active !== "string") {
+      throw new ConfigValidationError("llm.active 必须为字符串");
+    }
+    if (llm.active && !(llm.active in profiles)) {
+      throw new ConfigValidationError(
+        `llm.active '${llm.active}' 不存在于 profiles 中。可用: ${Object.keys(profiles).join(", ")}`
+      );
+    }
+  } else {
+    // Legacy format: validate provider + model
+    if (!llm.provider || typeof llm.provider !== "string") {
+      throw new ConfigValidationError(
+        `llm.provider 是必填项${llm.provider !== undefined ? `，当前值: ${JSON.stringify(llm.provider)}` : ""}`
+      );
+    }
+    if (!llm.model || typeof llm.model !== "string") {
+      throw new ConfigValidationError(
+        `llm.model 是必填项${llm.model !== undefined ? `，当前值: ${JSON.stringify(llm.model)}` : ""}`
+      );
+    }
   }
 
   // Validate workspace section
@@ -353,10 +397,48 @@ export function validateConfig(raw: unknown): void {
  * Only fills in fields that are not provided — never overwrites existing values.
  */
 export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
-  const llm = config.llm ?? {
+  const rawLlm = config.llm ?? {
     provider: "",
     model: "",
   };
+
+  // Convert legacy format to profiles if needed
+  let llm: LlmConfig;
+  if (rawLlm.profiles && Object.keys(rawLlm.profiles).length > 0) {
+    // New format — normalize each profile's api_type default
+    const profiles: Record<string, LlmProfile> = {};
+    for (const [name, profile] of Object.entries(rawLlm.profiles)) {
+      profiles[name] = {
+        ...profile,
+        api_type: profile.api_type ?? (profile.base_url ? "openai-completions" : undefined),
+      };
+    }
+    const firstProfileName = Object.keys(profiles)[0];
+    llm = {
+      active: rawLlm.active ?? firstProfileName,
+      profiles,
+      provider: "",
+      model: "",
+    };
+  } else {
+    // Legacy format — wrap as profiles.default
+    const legacyProfile: LlmProfile = {
+      provider: rawLlm.provider,
+      model: rawLlm.model,
+      api_key: rawLlm.api_key,
+      base_url: rawLlm.base_url,
+      context_window: rawLlm.context_window,
+    };
+    llm = {
+      active: "default",
+      profiles: { default: legacyProfile },
+      provider: rawLlm.provider,
+      model: rawLlm.model,
+      api_key: rawLlm.api_key,
+      base_url: rawLlm.base_url,
+      context_window: rawLlm.context_window,
+    };
+  }
 
   const workspace = config.workspace ?? {
     root: "./company-edith",
@@ -393,13 +475,7 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
   };
 
   return {
-    llm: {
-      provider: llm.provider,
-      model: llm.model,
-      api_key: llm.api_key,
-      base_url: llm.base_url,
-      context_window: (llm as unknown as Record<string, unknown>).context_window as number | undefined,
-    },
+    llm,
     workspace: {
       root: workspace.root,
       language: workspace.language,
@@ -469,12 +545,41 @@ export function loadConfig(filePath?: string): EdithConfig {
   return applyDefaults(resolved as Partial<EdithConfig>);
 }
 
+// ── Profile Helpers ─────────────────────────────────────────────────
+
+export function getActiveProfile(config: EdithConfig): LlmProfile {
+  const profiles = config.llm.profiles;
+  if (!profiles) {
+    return {
+      provider: config.llm.provider,
+      model: config.llm.model,
+      api_key: config.llm.api_key,
+      base_url: config.llm.base_url,
+      context_window: config.llm.context_window,
+    };
+  }
+  const activeName = config.llm.active ?? Object.keys(profiles)[0];
+  const profile = profiles[activeName];
+  if (!profile) {
+    throw new ConfigError(`Active profile '${activeName}' not found. Available: ${Object.keys(profiles).join(", ")}`);
+  }
+  return profile;
+}
+
+export function listProfiles(config: EdithConfig): string[] {
+  if (!config.llm.profiles) return ["default"];
+  return Object.keys(config.llm.profiles);
+}
+
 // ── edith-init Interactive Wizard ────────────────────────────────
 
 const PROVIDER_MODEL_HINTS: Record<string, string[]> = {
   openai: ["gpt-4", "gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
   anthropic: ["claude-sonnet-4-6", "claude-3.5-sonnet", "claude-3-opus", "claude-3-haiku"],
+  deepseek: ["deepseek-v4-pro", "deepseek-chat", "deepseek-coder"],
   ollama: ["llama3", "mistral", "codellama", "qwen2"],
+  xiaomi: ["MiMo-V2.5-Pro", "MiMo-V2.5"],
+  moonshot: ["moonshot-v1-128k", "moonshot-v1-32k"],
   other: [],
 };
 

@@ -9,7 +9,7 @@ import {
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadConfig, type EdithConfig } from "../config.js";
+import { loadConfig, getActiveProfile, listProfiles, type EdithConfig, type LlmProfile } from "../config.js";
 import edithExtension from "../extension.js";
 import { buildSystemPrompt } from "../system-prompt.js";
 import { messageReducer, thinkingReducer } from "./types.js";
@@ -40,6 +40,8 @@ export interface AgentSessionState {
   expandAllThinking: () => void;
   collapseAllThinking: () => void;
   monitorData: MonitorData | null;
+  switchProfile: (profileName: string) => Promise<string>;
+  activeProfileName: string | null;
 }
 
 export interface MonitorData {
@@ -63,6 +65,12 @@ export function useAgentSession(): AgentSessionState {
 
   const sessionRef = useRef<any>(null);
   const monitorRef = useRef<ContextMonitor | null>(null);
+  const configRef = useRef<EdithConfig | null>(null);
+  const modelRegistryRef = useRef<any>(null);
+  const resourceLoaderRef = useRef<any>(null);
+  const sessionManagerRef = useRef<any>(null);
+  const authStorageRef = useRef<any>(null);
+  const [activeProfileName, setActiveProfileName] = useState<string | null>(null);
   const userMsgCountRef = useRef(0);
   const assistantMsgCountRef = useRef(0);
   const toolCallCountRef = useRef(0);
@@ -72,11 +80,15 @@ export function useAgentSession(): AgentSessionState {
     try {
       const loadedConfig = loadConfig();
       setConfig(loadedConfig);
+      configRef.current = loadedConfig;
+
+      const activeProfile = getActiveProfile(loadedConfig);
+      setActiveProfileName(loadedConfig.llm.active ?? "default");
 
       // Initialize context monitor
       const monitor = new ContextMonitor({
-        contextWindowOverride: loadedConfig.llm.context_window,
-        modelHint: loadedConfig.llm.model,
+        contextWindowOverride: activeProfile.context_window,
+        modelHint: activeProfile.model,
         thresholds: loadedConfig.context_monitor.thresholds,
       });
       monitorRef.current = monitor;
@@ -86,17 +98,58 @@ export function useAgentSession(): AgentSessionState {
       const modelRegistry = ModelRegistry.create(authStorage);
       const sessionManager = SessionManager.inMemory();
 
+      // Register custom providers for all profiles with base_url
+      if (loadedConfig.llm.profiles) {
+        for (const [name, profile] of Object.entries(loadedConfig.llm.profiles)) {
+          if (profile.base_url) {
+            if (!profile.api_key) {
+              console.warn(`[EDITH] Profile '${name}': skipped registerProvider (base_url requires api_key)`);
+              continue;
+            }
+            try {
+              modelRegistry.registerProvider(profile.provider, {
+                api: (profile.api_type as any) ?? "openai-completions",
+                baseUrl: profile.base_url,
+                apiKey: profile.api_key,
+              });
+              console.log(`[EDITH] Registered custom provider: ${profile.provider} (${name})`);
+            } catch (err) {
+              console.warn(`[EDITH] Failed to register provider '${profile.provider}': ${(err as Error).message}`);
+            }
+          }
+        }
+      }
+
+      // Also handle legacy base_url on the top-level config
+      if (!loadedConfig.llm.profiles && loadedConfig.llm.base_url && loadedConfig.llm.api_key) {
+        try {
+          modelRegistry.registerProvider(loadedConfig.llm.provider, {
+            api: "openai-completions" as any,
+            baseUrl: loadedConfig.llm.base_url,
+            apiKey: loadedConfig.llm.api_key,
+          });
+          console.log(`[EDITH] Registered custom provider: ${loadedConfig.llm.provider}`);
+        } catch (err) {
+          console.warn(`[EDITH] Failed to register provider '${loadedConfig.llm.provider}': ${(err as Error).message}`);
+        }
+      }
+
+      modelRegistryRef.current = modelRegistry;
+      sessionManagerRef.current = sessionManager;
+      authStorageRef.current = authStorage;
+
       const resourceLoader = new DefaultResourceLoader({
         cwd,
         agentDir: cwd,
         extensionFactories: [edithExtension],
       });
       await resourceLoader.reload();
+      resourceLoaderRef.current = resourceLoader;
 
-      const model = modelRegistry.find(loadedConfig.llm.provider, loadedConfig.llm.model);
+      const model = modelRegistry.find(activeProfile.provider, activeProfile.model);
       if (!model) {
         throw new Error(
-          `Model not found: ${loadedConfig.llm.provider}/${loadedConfig.llm.model}.`
+          `Model not found: ${activeProfile.provider}/${activeProfile.model}.`
         );
       }
 
@@ -273,6 +326,112 @@ export function useAgentSession(): AgentSessionState {
     thinkingDispatch({ type: "COLLAPSE_ALL_THINKING" });
   }, []);
 
+  const switchProfile = useCallback(async (profileName: string): Promise<string> => {
+    const cfg = configRef.current;
+    if (!cfg || !cfg.llm.profiles) {
+      return "No profiles configured";
+    }
+
+    const profile = cfg.llm.profiles[profileName];
+    if (!profile) {
+      const available = listProfiles(cfg);
+      return `Profile '${profileName}' not found. Available: ${available.join(", ")}`;
+    }
+
+    // Update active in config
+    cfg.llm.active = profileName;
+    setActiveProfileName(profileName);
+
+    // Register provider if needed (may already be registered from init)
+    if (profile.base_url && profile.api_key) {
+      try {
+        modelRegistryRef.current?.registerProvider(profile.provider, {
+          api: (profile.api_type as any) ?? "openai-completions",
+          baseUrl: profile.base_url,
+          apiKey: profile.api_key,
+        });
+      } catch {
+        // Provider may already be registered
+      }
+    }
+
+    const model = modelRegistryRef.current?.find(profile.provider, profile.model);
+    if (!model) {
+      return `Model not found: ${profile.provider}/${profile.model}`;
+    }
+
+    // Create new session with the new model
+    const { session } = await createAgentSession({
+      sessionManager: sessionManagerRef.current,
+      authStorage: authStorageRef.current,
+      modelRegistry: modelRegistryRef.current,
+      resourceLoader: resourceLoaderRef.current,
+      model,
+    });
+
+    sessionRef.current = session;
+
+    // Re-subscribe events for the new session
+    session.subscribe((event: any) => {
+      if (event.type === "message_update") {
+        const sub = event.assistantMessageEvent;
+        if (sub.type === "thinking_start") {
+          thinkingDispatch({ type: "START_THINKING" });
+          setThinkingPhase("thinking");
+        } else if (sub.type === "thinking_delta") {
+          thinkingDispatch({ type: "APPEND_THINKING", payload: sub.delta });
+        } else if (sub.type === "thinking_end") {
+          thinkingDispatch({ type: "END_THINKING" });
+        } else if (sub.type === "text_delta") {
+          dispatch({ type: "APPEND_TO_ASSISTANT", payload: sub.delta });
+          setThinkingPhase("generating");
+          setOutputCharCount((c) => c + (sub.delta?.length ?? 0));
+        }
+      }
+      if (event.type === "tool_execution_start") {
+        toolCallCountRef.current++;
+        setThinkingPhase("tools");
+        thinkingDispatch({
+          type: "START_TOOL_CALL",
+          payload: { toolCallId: event.toolCallId, toolName: event.toolName },
+        });
+      }
+      if (event.type === "tool_execution_end") {
+        toolResultCountRef.current++;
+        const summary = typeof event.result === "string"
+          ? event.result.slice(0, 80)
+          : event.result?.message ?? event.result?.content ?? "done";
+        thinkingDispatch({
+          type: "END_TOOL_CALL",
+          payload: {
+            toolCallId: event.toolCallId,
+            summary: String(summary).slice(0, 80),
+            isError: event.isError,
+          },
+        });
+      }
+      if (event.type === "agent_end") {
+        dispatch({ type: "COMPLETE_ASSISTANT" });
+        assistantMsgCountRef.current++;
+        setIsProcessing(false);
+        setThinkingPhase(null);
+        setProcessingStartedAt(null);
+      }
+      if (event.type === "error") {
+        dispatch({ type: "ERROR_ASSISTANT", payload: event.error?.message ?? "Unknown error" });
+        setIsProcessing(false);
+        setThinkingPhase(null);
+        setProcessingStartedAt(null);
+      }
+    });
+
+    // Send system prompt to new session
+    const systemPrompt = buildSystemPrompt(cfg.workspace.language);
+    await session.prompt(systemPrompt);
+
+    return `Switched to ${profile.model} (${profileName})`;
+  }, [dispatch]);
+
   const initStartedRef = useRef(false);
 
   useEffect(() => {
@@ -299,5 +458,7 @@ export function useAgentSession(): AgentSessionState {
     expandAllThinking,
     collapseAllThinking,
     monitorData,
+    switchProfile,
+    activeProfileName,
   };
 }

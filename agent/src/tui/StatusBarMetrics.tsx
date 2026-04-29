@@ -8,6 +8,8 @@ interface StatusBarMetricsProps {
   percent: number;
   cacheHitRate: number;
   pressureLevel: PressureLevel;
+  modelName?: string;
+  isCustomProvider?: boolean;
 }
 
 function pressureColor(level: PressureLevel): string {
@@ -31,6 +33,8 @@ export function StatusBarMetrics({
   percent,
   cacheHitRate,
   pressureLevel,
+  modelName,
+  isCustomProvider,
 }: StatusBarMetricsProps) {
   const tokenStr = formatTokenCount(tokens);
   const windowStr = formatTokenCount(contextWindow);
@@ -38,9 +42,12 @@ export function StatusBarMetrics({
   const cacheStr = `${(cacheHitRate * 100).toFixed(0)}%`;
 
   const color = pressureColor(pressureLevel);
+  const modelColor = isCustomProvider ? "cyan" : "white";
 
   return (
     <Box gap={1}>
+      {modelName && <Text color={modelColor}>Model: {modelName}</Text>}
+      <Text color="gray">│</Text>
       <Text color={color}>CTX {tokenStr}/{windowStr} ({pctStr})</Text>
       <Text color={cacheColor(cacheHitRate)}>Cache: {cacheStr}</Text>
     </Box>
