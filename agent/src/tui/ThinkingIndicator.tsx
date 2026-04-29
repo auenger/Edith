@@ -9,6 +9,7 @@ interface ThinkingIndicatorProps {
   phase: ThinkingPhase | null;
   startedAt: number | null;
   outputChars: number;
+  accumulatedTokens: number;
 }
 
 function formatDuration(ms: number): string {
@@ -19,10 +20,9 @@ function formatDuration(ms: number): string {
   return `${minutes}m ${secs}s`;
 }
 
-function formatTokenEstimate(chars: number): string {
-  const tokens = Math.round(chars / 4);
-  if (tokens < 1000) return `${tokens}`;
-  return `${(tokens / 1000).toFixed(1)}k`;
+function formatTokenCount(n: number): string {
+  if (n < 1000) return `${n}`;
+  return `${(n / 1000).toFixed(1)}k`;
 }
 
 function phaseLabel(phase: ThinkingPhase | null): string {
@@ -34,7 +34,7 @@ function phaseLabel(phase: ThinkingPhase | null): string {
   }
 }
 
-export function ThinkingIndicator({ isActive, phase, startedAt, outputChars }: ThinkingIndicatorProps) {
+export function ThinkingIndicator({ isActive, phase, startedAt, outputChars, accumulatedTokens }: ThinkingIndicatorProps) {
   const [frame, setFrame] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
@@ -54,7 +54,15 @@ export function ThinkingIndicator({ isActive, phase, startedAt, outputChars }: T
   const spinner = SPINNER_FRAMES[frame];
   const label = phaseLabel(phase);
   const duration = startedAt ? formatDuration(elapsed) : "";
-  const tokenStr = outputChars > 0 ? `↓ ${formatTokenEstimate(outputChars)} tokens` : "";
+
+  // Prefer real token count from SDK; fall back to char estimate
+  let tokenStr = "";
+  if (accumulatedTokens > 0) {
+    tokenStr = `↓ ${formatTokenCount(accumulatedTokens)} tokens`;
+  } else if (outputChars > 0) {
+    const estimated = Math.round(outputChars / 4);
+    tokenStr = `↓ ~${formatTokenCount(estimated)} tokens`;
+  }
 
   return (
     <Box gap={1}>

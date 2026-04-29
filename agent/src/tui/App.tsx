@@ -105,6 +105,7 @@ export function App() {
     thinkingPhase,
     processingStartedAt,
     outputCharCount,
+    accumulatedTokens,
     initialized,
     error,
     config,
@@ -265,6 +266,7 @@ export function App() {
         phase={thinkingPhase}
         startedAt={processingStartedAt}
         outputChars={outputCharCount}
+        accumulatedTokens={accumulatedTokens}
       />
       <InputArea onSubmit={handleSubmit} onCommand={handleCommand} isProcessing={isProcessing} />
     </Box>
