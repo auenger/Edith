@@ -31,6 +31,7 @@ export interface AgentSessionState {
   thinkingPhase: ThinkingPhase | null;
   processingStartedAt: number | null;
   outputCharCount: number;
+  accumulatedTokens: number;
   initialized: boolean;
   error: string | null;
   config: EdithConfig | null;
@@ -60,6 +61,7 @@ export function useAgentSession(): AgentSessionState {
   const [thinkingPhase, setThinkingPhase] = useState<ThinkingPhase | null>(null);
   const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);
   const [outputCharCount, setOutputCharCount] = useState(0);
+  const [accumulatedTokens, setAccumulatedTokens] = useState(0);
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<EdithConfig | null>(null);
@@ -231,6 +233,49 @@ export function useAgentSession(): AgentSessionState {
               isError: event.isError,
             },
           });
+
+          // Incremental CTX refresh after each tool call
+          const mon = monitorRef.current;
+          if (mon && loadedConfig.context_monitor.enabled) {
+            try {
+              const sdkStats = session.getSessionStats?.();
+              const contextUsage = session.getContextUsage?.() as import("../theme/context-panel.js").ContextUsage | undefined;
+              const tokenTotal = sdkStats?.tokens?.total ?? 0;
+
+              if (tokenTotal > 0) {
+                // Fallback for non-Anthropic providers: derive percent from token total
+                const ctxTokens = contextUsage?.tokens ?? tokenTotal;
+                const ctxWindow = contextUsage?.contextWindow ?? activeProfile.context_window ?? 128_000;
+                const ctxPercent = contextUsage?.percent ?? (ctxTokens / ctxWindow);
+
+                mon.record(
+                  {
+                    input: sdkStats?.tokens?.input ?? 0,
+                    output: sdkStats?.tokens?.output ?? 0,
+                    cacheRead: sdkStats?.tokens?.cacheRead ?? 0,
+                    cacheWrite: sdkStats?.tokens?.cacheWrite ?? 0,
+                    total: tokenTotal,
+                  },
+                  {
+                    tokens: ctxTokens,
+                    contextWindow: ctxWindow,
+                    percent: ctxPercent,
+                  },
+                );
+
+                setMonitorData({
+                  latest: mon.latest,
+                  cacheHitRate: mon.cacheHitRate,
+                  pressure: mon.pressure,
+                  totalRounds: mon.totalRounds,
+                });
+
+                setAccumulatedTokens(tokenTotal);
+              }
+            } catch {
+              // Stats collection is best-effort
+            }
+          }
         }
 
         if (event.type === "agent_end") {
@@ -263,23 +308,34 @@ export function useAgentSession(): AgentSessionState {
           // Share stats with extension layer for /context command
           setSharedStats(fullStats, contextUsage ?? null);
 
+          // Update accumulated tokens at round end
+          const tokenTotal = sdkStats?.tokens?.total ?? 0;
+          if (tokenTotal > 0) {
+            setAccumulatedTokens(tokenTotal);
+          }
+
           // Collect context monitor data after each round
           const mon = monitorRef.current;
           if (mon && loadedConfig.context_monitor.enabled) {
             try {
               if (sdkStats || contextUsage) {
+                // Fallback for non-Anthropic providers
+                const ctxTokens = contextUsage?.tokens ?? tokenTotal;
+                const ctxWindow = contextUsage?.contextWindow ?? activeProfile.context_window ?? 128_000;
+                const ctxPercent = contextUsage?.percent ?? (ctxTokens / ctxWindow);
+
                 mon.record(
                   {
                     input: sdkStats?.tokens?.input ?? 0,
                     output: sdkStats?.tokens?.output ?? 0,
                     cacheRead: sdkStats?.tokens?.cacheRead ?? 0,
                     cacheWrite: sdkStats?.tokens?.cacheWrite ?? 0,
-                    total: sdkStats?.tokens?.total ?? 0,
+                    total: tokenTotal,
                   },
                   {
-                    tokens: contextUsage?.tokens ?? 0,
-                    contextWindow: contextUsage?.contextWindow ?? 128_000,
-                    percent: contextUsage?.percent ?? 0,
+                    tokens: ctxTokens,
+                    contextWindow: ctxWindow,
+                    percent: ctxPercent,
                   },
                 );
 
@@ -322,6 +378,7 @@ export function useAgentSession(): AgentSessionState {
     setIsProcessing(true);
     setProcessingStartedAt(Date.now());
     setOutputCharCount(0);
+    setAccumulatedTokens(0);
 
     try {
       await sessionRef.current.prompt(text);
@@ -449,6 +506,48 @@ export function useAgentSession(): AgentSessionState {
             isError: event.isError,
           },
         });
+
+        // Incremental CTX refresh after each tool call
+        const mon = monitorRef.current;
+        if (mon && cfg.context_monitor.enabled) {
+          try {
+            const sdkStats = session.getSessionStats?.();
+            const contextUsage = session.getContextUsage?.() as import("../theme/context-panel.js").ContextUsage | undefined;
+            const tokenTotal = sdkStats?.tokens?.total ?? 0;
+
+            if (tokenTotal > 0) {
+              const ctxTokens = contextUsage?.tokens ?? tokenTotal;
+              const ctxWindow = contextUsage?.contextWindow ?? profile.context_window ?? 128_000;
+              const ctxPercent = contextUsage?.percent ?? (ctxTokens / ctxWindow);
+
+              mon.record(
+                {
+                  input: sdkStats?.tokens?.input ?? 0,
+                  output: sdkStats?.tokens?.output ?? 0,
+                  cacheRead: sdkStats?.tokens?.cacheRead ?? 0,
+                  cacheWrite: sdkStats?.tokens?.cacheWrite ?? 0,
+                  total: tokenTotal,
+                },
+                {
+                  tokens: ctxTokens,
+                  contextWindow: ctxWindow,
+                  percent: ctxPercent,
+                },
+              );
+
+              setMonitorData({
+                latest: mon.latest,
+                cacheHitRate: mon.cacheHitRate,
+                pressure: mon.pressure,
+                totalRounds: mon.totalRounds,
+              });
+
+              setAccumulatedTokens(tokenTotal);
+            }
+          } catch {
+            // Stats collection is best-effort
+          }
+        }
       }
       if (event.type === "agent_end") {
         dispatch({ type: "COMPLETE_ASSISTANT" });
@@ -456,6 +555,13 @@ export function useAgentSession(): AgentSessionState {
         setIsProcessing(false);
         setThinkingPhase(null);
         setProcessingStartedAt(null);
+
+        // Update accumulated tokens at round end
+        const sdkStats = session.getSessionStats?.();
+        const tokenTotal = sdkStats?.tokens?.total ?? 0;
+        if (tokenTotal > 0) {
+          setAccumulatedTokens(tokenTotal);
+        }
       }
       if (event.type === "error") {
         dispatch({ type: "ERROR_ASSISTANT", payload: event.error?.message ?? "Unknown error" });
@@ -495,6 +601,7 @@ export function useAgentSession(): AgentSessionState {
     thinkingPhase,
     processingStartedAt,
     outputCharCount,
+    accumulatedTokens,
     initialized,
     error,
     config,
