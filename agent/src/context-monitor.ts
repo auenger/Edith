@@ -66,6 +66,11 @@ const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
   "mimo-v2.5-pro": 131_072,
   "mimo-v2.5": 131_072,
   "mimo-v2-pro": 131_072,
+  "minimax-m2.7": 1_000_000,
+  "minimax-m1": 1_000_000,
+  "glm-5.1": 128_000,
+  "glm-4-plus": 128_000,
+  "glm-4": 128_000,
 };
 
 // ── Number Formatting ──────────────────────────────────────────────

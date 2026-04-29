@@ -20,12 +20,16 @@ import * as readline from "node:readline";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
+export type ApiType = "openai-completions" | "openai-responses" | "anthropic";
+
+const VALID_API_TYPES: readonly string[] = ["openai-completions", "openai-responses", "anthropic"];
+
 export interface LlmProfile {
   provider: string;
   model: string;
   api_key?: string;
   base_url?: string;
-  api_type?: string;
+  api_type?: ApiType;
   context_window?: number;
 }
 
@@ -281,6 +285,13 @@ export function validateConfig(raw: unknown): void {
       }
       if (!p.model || typeof p.model !== "string") {
         throw new ConfigValidationError(`llm.profiles.${name}.model 是必填项`);
+      }
+      if (p.api_type !== undefined) {
+        if (typeof p.api_type !== "string" || !VALID_API_TYPES.includes(p.api_type)) {
+          throw new ConfigValidationError(
+            `llm.profiles.${name}.api_type 必须为 ${VALID_API_TYPES.join(" / ")}，当前值: ${JSON.stringify(p.api_type)}`
+          );
+        }
       }
     }
     if (llm.active !== undefined && typeof llm.active !== "string") {
@@ -734,6 +745,8 @@ const PROVIDER_MODEL_HINTS: Record<string, string[]> = {
   deepseek: ["deepseek-v4-pro", "deepseek-chat", "deepseek-coder"],
   ollama: ["llama3", "mistral", "codellama", "qwen2"],
   xiaomi: ["MiMo-V2.5-Pro", "MiMo-V2.5"],
+  minimax: ["MiniMax-M2.7", "MiniMax-M1"],
+  zhipu: ["GLM-5.1", "GLM-4-Plus", "GLM-4"],
   moonshot: ["moonshot-v1-128k", "moonshot-v1-32k"],
   other: [],
 };
