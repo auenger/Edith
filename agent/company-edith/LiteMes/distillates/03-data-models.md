@@ -5,7 +5,10 @@ type: edith-distillate
 target_service: "LiteMes"
 sources:
   - "LiteMes/docs/data-models.md"
+  - "LiteMes/src/main/java/com/litemes/domain/"
+  - "LiteMes/src/main/java/com/litemes/domain/enums/"
 created: "2026-04-29T02:18:35.060Z"
+enriched: "2026-04-29T03:00:00.000Z"
 ---
 
 # LiteMes — Data Models
@@ -120,9 +123,47 @@ Each Resource has 4 standard DTO types:
 | `Dto` | Response body | Full entity representation |
 
 **Shared DTOs:**
-- `R<T>` — unified response wrapper
+- `R<T>` — unified response wrapper `{ code, message, data, timestamp }`
 - `PagedResult<T>` — paginated result (records, total, current, size)
 - `DropdownItem` — dropdown option (id, name)
 - `AssociatedItemDto` / `AssociatedEntityDto` — cascade selector linked items
 - `UserInfoDto` — current user info
 - `PageDto` — pagination params (page, size)
+- `ErrorResponse` — error response `{ code, message }`
+
+## Domain Enums
+
+| Enum | Values | Usage |
+|------|--------|-------|
+| `RunningStatus` | `RUNNING`(运行), `FAULT`(故障), `SHUTDOWN`(停机), `MAINTENANCE`(维修保养) | EquipmentLedger.runningStatus |
+| `ManageStatus` | `IN_USE`(使用中), `IDLE`(闲置), `SCRAPPED`(报废) | EquipmentLedger.mgmtStatus |
+| `AttributeCategory` | - | 物料属性分类 |
+| `BasicCategory` | - | 基础数据分类 |
+
+**枚举传输方式**：DTO 中以 String 类型传输枚举名（如 `"RUNNING"`），不做枚举序列化映射。
+
+## Data Permission Model
+
+三层权限范围，权限组 (DataPermissionGroup) 定义范围，用户权限 (UserDataPermission) 绑定用户与权限组：
+
+```
+DataPermissionGroup
+  ├── DataPermissionGroupFactory     (N:M)
+  ├── DataPermissionGroupWorkCenter  (N:M)
+  └── DataPermissionGroupProcess     (N:M)
+
+UserDataPermission
+  ├── UserDataPermissionFactory      (覆盖组级 Factory 范围)
+  ├── UserDataPermissionWorkCenter   (覆盖组级 WorkCenter 范围)
+  └── UserDataPermissionProcess      (覆盖组级 Process 范围)
+```
+
+## EquipmentLedger 冗余字段模式
+
+为避免多表 JOIN，EquipmentLedger 存储关联实体的冗余字段：
+
+| 字段 | 来源 | 更新时机 |
+|------|------|----------|
+| equipmentModelId, modelCode, modelName | EquipmentModel | Create / modelId 变更时 |
+| equipmentTypeId, typeCode, typeName | EquipmentModel.type → EquipmentType | 随 modelId 变更联动 |
+| factoryId, factoryCode, factoryName | Factory | Create / factoryId 变更时 |

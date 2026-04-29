@@ -1,4 +1,31 @@
 archived:
+  - id: feat-model-hot-switch
+    name: "Model 热切换修复（持久化 + 自定义 Provider 模型注册）"
+    priority: 88
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-04-29T23:45:00+08:00"
+    tag: feat-model-hot-switch-20260429
+    merge_commit: "c1a163d"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/model-hot-switch
+    worktree_deleted: true
+    worktree_path: ../EDITH-model-hot-switch
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-04-29T23:30:00+08:00"
+      duration: "15 min"
+      commits: 1
+      files_changed: 4
+
   - id: feat-openai-compatible-provider
     name: "多 LLM Provider 配置化 + TUI 切换 + 状态栏显示"
     priority: 70

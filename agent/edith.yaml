@@ -3,7 +3,7 @@
 # 旧格式（单 provider/model）仍然兼容，启动时自动转为 profiles.default。
 
 llm:
-  active: deepseek                     # 当前使用的 profile 名
+  active: xiaomi                     # 当前使用的 profile 名
   profiles:
     deepseek:
       provider: deepseek

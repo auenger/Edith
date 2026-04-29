@@ -2,6 +2,29 @@
 # 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
 pending:
+  # ═══ TUI 渲染优化 ═══
+
+  - id: feat-tui-tool-rendering
+    name: "Claude Code 风格 Tool Call 渲染"
+    priority: 78
+    size: M
+    dependencies: []
+    parent: null
+    description: |
+      Tool calls 从折叠式 ThinkingBlock 重设计为展开式内联渲染。
+      每个 tool call 默认展开，显示名称、参数摘要和结果。
+      参考 Claude Code 的 ⏺ + ⎿ 渲染风格。
+
+  - id: feat-tui-ctx-refresh
+    name: "CTX 动态刷新 + Token 计数修复"
+    priority: 75
+    size: S
+    dependencies: []
+    parent: null
+    description: |
+      修复状态栏 CTX 不动态刷新（仅在 agent_end 更新，非 Anthropic provider 无数据 fallback）
+      和 ThinkingIndicator token 计数不含工具调用 token 的问题。
+
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
   - id: feat-phase2
@@ -112,7 +135,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
-completed:
+  - id: feat-model-hot-switch
+    name: "Model 热切换修复（持久化 + 自定义 Provider 模型注册）"
+    priority: 88
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-29T23:45:00+08:00"
+    tag: feat-model-hot-switch-20260429
+
   - id: feat-openai-compatible-provider
     name: "多 LLM Provider 配置化 + TUI 切换 + 状态栏显示"
     priority: 70
@@ -330,7 +361,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-29T22:45:00+08:00"
+  last_updated: "2026-04-29T23:45:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase2: "EDITH 全栈升级（Agent 集成 + Board）"

@@ -13,7 +13,8 @@
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/edith-repo/distillates",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes/docs",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes/distillates",
-    "/Users/ryan/mycode/HS_jarvis/agent"
+    "/Users/ryan/mycode/HS_jarvis/features",
+    "/Users/ryan/mycode/HS_jarvis/features/pending-feat-explore-project"
   ],
   "agent_skip_permissions": false
 }

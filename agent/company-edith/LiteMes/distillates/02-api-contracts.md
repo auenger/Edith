@@ -5,7 +5,10 @@ type: edith-distillate
 target_service: "LiteMes"
 sources:
   - "LiteMes/docs/api-endpoints.md"
+  - "LiteMes/src/main/java/com/litemes/web/"
+  - "LiteMes/frontend/src/api/"
 created: "2026-04-29T02:18:35.059Z"
+enriched: "2026-04-29T03:00:00.000Z"
 ---
 
 # LiteMes — API Contracts
@@ -262,10 +265,10 @@ Equipment: 设备管理 — 设备台账
 |--------|------|-------------|-----------|
 | GET | `/api/equipment-ledger` | Paginated list (filters: code/name, type, model, runStatus, mgmtStatus, factory, status) | — |
 | GET | `/api/equipment-ledger/{id}` | Get ledger detail | — |
-| POST | `/api/equipment-ledger` | Create ledger entry (code, name, model, runStatus, mgmtStatus, factory, entryDate) | Code immutable after create |
-| PUT | `/api/equipment-ledger/{id}` | Update ledger (name, model, status, factory etc; code and type read-only) | — |
-| DELETE | `/api/equipment-ledger/{id}` | Soft-delete ledger | Logical delete |
-| PUT | `/api/equipment-ledger/{id}/status` | Toggle status | — |
+| POST | `/api/equipment-ledger` | Create ledger entry (code, name, model, runStatus, mgmtStatus, factory, entryDate) | Code immutable after create; 关联型号自动填充冗余字段 (modelCode/typeCode 等) |
+| PUT | `/api/equipment-ledger/{id}` | Update ledger (name, model, status, factory; code/type read-only) | 型号或工厂变更时自动更新所有冗余字段 |
+| DELETE | `/api/equipment-ledger/{id}` | Soft-delete ledger | Logical delete, 审计日志记录 |
+| PUT | `/api/equipment-ledger/{id}/status` | Toggle status | 审计日志记录 |
 
 ## Resource: Customer (`/api/customers`)
 
@@ -342,7 +345,7 @@ System: 级联下拉选项
 | GET | `/api/dropdowns/factories?companyId=` | Get factory dropdown (filtered by company) |
 | GET | `/api/dropdowns/departments?factoryId=` | Get department dropdown (filtered by factory) |
 
-## Frontend API Modules (24 files)
+## Frontend API Modules (22 files)
 
 
 Located in `frontend/src/api/`, one TypeScript module per backend resource. Each uses the shared Axios instance (`http.ts`) with JWT interceptor.
@@ -359,15 +362,30 @@ Located in `frontend/src/api/`, one TypeScript module per backend resource. Each
 | equipmentModel.ts | /api/equipment-models | list, getById, create, update, delete, updateStatus |
 | equipmentLedger.ts | /api/equipment-ledger | list, getById, create, update, delete, updateStatus |
 | materialCategory.ts | /api/material-categories | tree, getById, create, update, delete |
-| material.ts | /api/materials | list, getById, create, update, delete, updateStatus |
+| material.ts | /api/materials | list, getById, create, update, delete, updateStatus (+ material-versions 子路由) |
 | inspectionExemption.ts | /api/inspection-exemptions | list, getById, create, update, delete |
 | customer.ts | /api/customers | list, getById, create, update, delete, updateStatus |
 | supplier.ts | /api/suppliers | list, getById, create, update, delete, updateStatus |
 | workCenter.ts | /api/work-centers | list, getById, create, update, delete, updateStatus |
 | uom.ts | /api/uoms | list, getById, create, update, delete |
-| uomConversion.ts | /api/uom-conversions | list, getById, create, update, delete |
 | process.ts | /api/processes | list, getById, create, update, delete |
 | dataPermissionGroup.ts | /api/data-permission-groups | list, getById, create, update, delete |
 | userDataPermission.ts | /api/user-data-permissions | list, batchAssign |
 | auditLog.ts | /api/audit-logs | list |
 | dropdown.ts | /api/dropdowns | getCompanyDropdown, getFactoryDropdown, getDepartmentDropdown |
+
+## Error Response Format
+
+| HTTP Status | Error Code | Scenario |
+|-------------|-----------|----------|
+| 400 | `{entity}_CODE_DUPLICATE` | 编码重复 |
+| 400 | `NOT_FOUND` | 实体不存在 |
+| 400 | `STATUS_UNCHANGED` | 状态未变更 |
+| 400 | `{ENTITY}_REFERENCED` | 被引用无法删除 |
+| 401 | `UNAUTHORIZED` | 未认证 |
+| 403 | `FORBIDDEN` | 权限不足 |
+| 500 | `INTERNAL_ERROR` | 服务器内部错误 |
+
+## Backend Resources (25)
+
+后端共有 25 个 JAX-RS Resource 类，其中 24 个为业务资源 + 1 个 ExampleResource（模板参考）。
