@@ -2,6 +2,57 @@
 # 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
 pending:
+  # ═══ Phase 1.5: Skill 能力对齐 ═══
+
+  - id: feat-skill-alignment
+    name: "Skill 能力对齐（agent/ → edith-skills/ 完整设计）"
+    priority: 90
+    size: L
+    dependencies: []
+    parent: null
+    split: true
+    children:
+      - feat-skill-align-scan
+      - feat-skill-align-distill
+      - feat-skill-align-route
+    description: |
+      将 agent/src/tools/ 中的内置 skill 实现对齐到 edith-skills/ 的完整版设计。
+      scan 从"文件计数器"→"代码考古器"，distill 从基础过滤→无损压缩引擎，
+      route 增加多服务路由和复杂度分析。
+
+  - id: feat-skill-align-scan
+    name: "Scan 深度代码考古（对齐 document-project SKILL.md）"
+    priority: 92
+    size: L
+    dependencies: []
+    parent: feat-skill-alignment
+    description: |
+      scan.ts 从文件计数升级为代码考古器。新增：12种项目类型检测、5种架构模式识别、
+      API契约提取（Spring/Express/FastAPI/Gin）、数据模型分析（JPA/TypeORM/Prisma/SQLAlchemy）、
+      业务逻辑发现、模块Deep Dive、10+文档输出、增量扫描。
+
+  - id: feat-skill-align-distill
+    name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
+    priority: 88
+    size: M
+    dependencies: [feat-skill-align-scan]
+    parent: feat-skill-alignment
+    description: |
+      distill.ts 从基础过滤升级为无损压缩引擎。新增：5步压缩管线（提取→去重→过滤→分组→语言压缩）、
+      源文档冲突检测、跨文档分析、往返验证（≥95%覆盖率）、自动分组。
+
+  - id: feat-skill-align-route
+    name: "Route 精准路由增强（对齐 requirement-router SKILL.md）"
+    priority: 82
+    size: S
+    dependencies: [feat-skill-align-distill]
+    parent: feat-skill-alignment
+    description: |
+      route.ts 小幅增强。新增：multi-service独立路由策略、复杂度多维分析、
+      紧急事件特殊路由、新项目检测、透明决策推理。差距较小，增量修改即可。
+
+  # ═══ Phase 1.5: Agent 增强 ═══
+
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
   - id: feat-phase2
@@ -112,6 +163,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-multi-api-protocol
+    name: "Multi-API Protocol Provider Support"
+    priority: 82
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-29T22:55:00+08:00"
+    tag: feat-multi-api-protocol-20260429
+
   - id: feat-tui-ctx-refresh
     name: "CTX 动态刷新 + Token 计数修复"
     priority: 75
@@ -356,12 +416,20 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-30T00:10:00+08:00"
+  last_updated: "2026-04-29T22:55:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
+    phase1_5: "Skill 能力对齐 + Agent 增强"
     phase2: "EDITH 全栈升级（Agent 集成 + Board）"
     phase3: "增值功能（待规划）"
   parents:
+    - id: feat-skill-alignment
+      name: "Skill 能力对齐"
+      split: true
+      children:
+        - feat-skill-align-scan
+        - feat-skill-align-distill
+        - feat-skill-align-route
     - id: feat-agent-mvp
       name: "EDITH Agent MVP"
       split: false

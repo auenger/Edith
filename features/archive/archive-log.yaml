@@ -1,4 +1,31 @@
 archived:
+  - id: feat-multi-api-protocol
+    name: "Multi-API Protocol Provider Support"
+    priority: 82
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-04-29T22:55:00+08:00"
+    tag: feat-multi-api-protocol-20260429
+    merge_commit: "4882a0e"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/multi-api-protocol
+    worktree_deleted: true
+    worktree_path: ../EDITH-multi-api-protocol
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 4
+      scenarios_passed: 4
+    stats:
+      started: "2026-04-29T22:50:00+08:00"
+      duration: "5 min"
+      commits: 1
+      files_changed: 4
+
   - id: feat-tui-tool-rendering
     name: "Claude Code 风格 Tool Call 渲染"
     priority: 78
