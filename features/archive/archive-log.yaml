@@ -1,4 +1,31 @@
 archived:
+  - id: feat-tui-tool-rendering
+    name: "Claude Code 风格 Tool Call 渲染"
+    priority: 78
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-04-29T23:58:00+08:00"
+    tag: feat-tui-tool-rendering-20260429
+    merge_commit: "9aa7505"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-tool-rendering
+    worktree_deleted: true
+    worktree_path: ../EDITH-tui-tool-rendering
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 5
+      scenarios_passed: 5
+    stats:
+      started: "2026-04-29T23:55:00+08:00"
+      duration: "3 min"
+      commits: 2
+      files_changed: 10
+
   - id: feat-model-hot-switch
     name: "Model 热切换修复（持久化 + 自定义 Provider 模型注册）"
     priority: 88

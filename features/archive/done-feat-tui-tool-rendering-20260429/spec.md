@@ -148,3 +148,12 @@ Scenario: Tool call 错误状态显示
 - [x] 不影响现有 ThinkingBlock 的折叠/展开功能
 - [x] 保持向后兼容（event 接口不变）
 - [x] 性能：大量 tool calls 时不过度重渲染
+
+## Merge Record
+- **Completed**: 2026-04-29T23:58:00+08:00
+- **Merged Branch**: feature/tui-tool-rendering
+- **Merge Commit**: 9aa7505
+- **Archive Tag**: feat-tui-tool-rendering-20260429
+- **Conflicts**: none
+- **Verification**: 5/5 Gherkin scenarios passed, 0 TS errors
+- **Stats**: 10 files changed, +318/-223, 2 commits
