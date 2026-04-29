@@ -20,17 +20,6 @@ pending:
       scan 从"文件计数器"→"代码考古器"，distill 从基础过滤→无损压缩引擎，
       route 增加多服务路由和复杂度分析。
 
-  - id: feat-skill-align-scan
-    name: "Scan 深度代码考古（对齐 document-project SKILL.md）"
-    priority: 92
-    size: L
-    dependencies: []
-    parent: feat-skill-alignment
-    description: |
-      scan.ts 从文件计数升级为代码考古器。新增：12种项目类型检测、5种架构模式识别、
-      API契约提取（Spring/Express/FastAPI/Gin）、数据模型分析（JPA/TypeORM/Prisma/SQLAlchemy）、
-      业务逻辑发现、模块Deep Dive、10+文档输出、增量扫描。
-
   - id: feat-skill-align-distill
     name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
     priority: 88
@@ -163,6 +152,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-skill-align-scan
+    name: "Scan 深度代码考古（对齐 document-project SKILL.md）"
+    priority: 92
+    size: L
+    dependencies: []
+    parent: feat-skill-alignment
+    completed_at: "2026-04-29T23:45:00+08:00"
+    tag: feat-skill-align-scan-20260429
+
   - id: feat-multi-api-protocol
     name: "Multi-API Protocol Provider Support"
     priority: 82
@@ -416,7 +414,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-29T22:55:00+08:00"
+  last_updated: "2026-04-29T23:45:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
