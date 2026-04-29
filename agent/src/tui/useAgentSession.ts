@@ -12,8 +12,8 @@ import { fileURLToPath } from "node:url";
 import { loadConfig, getActiveProfile, listProfiles, findConfigFile, saveActiveProfile, type EdithConfig, type LlmProfile } from "../config.js";
 import edithExtension from "../extension.js";
 import { buildSystemPrompt } from "../system-prompt.js";
-import { messageReducer, thinkingReducer } from "./types.js";
-import type { Message, ThinkingBlock } from "./types.js";
+import { messageReducer, thinkingReducer, toolCallReducer } from "./types.js";
+import type { Message, ThinkingBlock, ToolCallBlock } from "./types.js";
 import { ContextMonitor, type PressureState, type RoundData } from "../context-monitor.js";
 import { setSharedStats } from "../shared-stats.js";
 import type { SessionStats } from "../theme/context-panel.js";
@@ -26,6 +26,7 @@ export type ThinkingPhase = "thinking" | "tools" | "generating";
 export interface AgentSessionState {
   messages: Message[];
   thinkingBlocks: ThinkingBlock[];
+  toolCallBlocks: ToolCallBlock[];
   isProcessing: boolean;
   thinkingPhase: ThinkingPhase | null;
   processingStartedAt: number | null;
@@ -54,6 +55,7 @@ export interface MonitorData {
 export function useAgentSession(): AgentSessionState {
   const [messages, dispatch] = useReducer(messageReducer, []);
   const [thinkingBlocks, thinkingDispatch] = useReducer(thinkingReducer, []);
+  const [toolCallBlocks, toolCallDispatch] = useReducer(toolCallReducer, []);
   const [isProcessing, setIsProcessing] = useState(false);
   const [thinkingPhase, setThinkingPhase] = useState<ThinkingPhase | null>(null);
   const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);
@@ -207,21 +209,25 @@ export function useAgentSession(): AgentSessionState {
         if (event.type === "tool_execution_start") {
           toolCallCountRef.current++;
           setThinkingPhase("tools");
-          thinkingDispatch({
+          toolCallDispatch({
             type: "START_TOOL_CALL",
-            payload: { toolCallId: event.toolCallId, toolName: event.toolName },
+            payload: {
+              toolCallId: event.toolCallId,
+              toolName: event.toolName,
+              args: event.args ? String(event.args).slice(0, 200) : undefined,
+            },
           });
         }
         if (event.type === "tool_execution_end") {
           toolResultCountRef.current++;
-          const summary = typeof event.result === "string"
-            ? event.result.slice(0, 80)
+          const result = typeof event.result === "string"
+            ? event.result.slice(0, 200)
             : event.result?.message ?? event.result?.content ?? "done";
-          thinkingDispatch({
+          toolCallDispatch({
             type: "END_TOOL_CALL",
             payload: {
               toolCallId: event.toolCallId,
-              summary: String(summary).slice(0, 80),
+              result: String(result).slice(0, 200),
               isError: event.isError,
             },
           });
@@ -421,21 +427,25 @@ export function useAgentSession(): AgentSessionState {
       if (event.type === "tool_execution_start") {
         toolCallCountRef.current++;
         setThinkingPhase("tools");
-        thinkingDispatch({
+        toolCallDispatch({
           type: "START_TOOL_CALL",
-          payload: { toolCallId: event.toolCallId, toolName: event.toolName },
+          payload: {
+            toolCallId: event.toolCallId,
+            toolName: event.toolName,
+            args: event.args ? String(event.args).slice(0, 200) : undefined,
+          },
         });
       }
       if (event.type === "tool_execution_end") {
         toolResultCountRef.current++;
-        const summary = typeof event.result === "string"
-          ? event.result.slice(0, 80)
+        const result = typeof event.result === "string"
+          ? event.result.slice(0, 200)
           : event.result?.message ?? event.result?.content ?? "done";
-        thinkingDispatch({
+        toolCallDispatch({
           type: "END_TOOL_CALL",
           payload: {
             toolCallId: event.toolCallId,
-            summary: String(summary).slice(0, 80),
+            result: String(result).slice(0, 200),
             isError: event.isError,
           },
         });
@@ -480,6 +490,7 @@ export function useAgentSession(): AgentSessionState {
   return {
     messages,
     thinkingBlocks,
+    toolCallBlocks,
     isProcessing,
     thinkingPhase,
     processingStartedAt,
