@@ -2,14 +2,21 @@
 
 ## Basic Information
 
-- **ID**: feat-workflow-orchestrator
-- **Name**: Workflow Orchestrator（SKILL.md 8阶段流程编排引擎）
-- **Priority**: 85
-- **Size**: L
-- **Dependencies**: []
-- **Parent**: feat-agent-mvp
-- **Children**: []
-- **Created**: 2026-04-28
+* **ID**: feat-workflow-orchestrator
+
+* **Name**: Workflow Orchestrator（SKILL.md 8阶段流程编排引擎）
+
+* **Priority**: 85
+
+* **Size**: L
+
+* **Dependencies**: []
+
+* **Parent**: feat-agent-mvp
+
+* **Children**: []
+
+* **Created**: 2026-04-28
 
 ## Description
 
@@ -20,37 +27,48 @@
 ## User Value Points
 
 1. **阶段状态机** — 8 阶段的有序推进、回退、跳过逻辑，明确当前所处阶段
+
 2. **状态持久化** — 阶段进度和产出物持久化到文件系统，支持中断后恢复
+
 3. **阶段间数据流** — 上游阶段产出自动作为下游阶段输入，无需人工搬运
+
 4. **人工确认门控** — CONFIRM 等阶段暂停等待人工确认，确认后才推进
+
 5. **阶段感知工具调度** — 根据当前阶段自动选择并调用对应工具
+
 6. **Stop Condition 检查** — 每阶段执行前检查前置条件，不满足则阻止推进并给出原因
 
 ## Context Analysis
 
 ### Reference Code
 
-- `agent/src/extension.ts` — 当前 Extension 路由层（工具注册 + 消息路由）
-- `agent/src/agent-startup.ts` — Agent 启动入口（REPL 循环）
-- `agent/src/tools/` — 4 个工具的现有实现
-- `agent/src/system-prompt.ts` — System Prompt 构建
-- `edith-skills/INTEGRATION.md` — Skill 与 Agent 融合方案
+* `agent/src/extension.ts` — 当前 Extension 路由层（工具注册 + 消息路由）
+
+* `agent/src/agent-startup.ts` — Agent 启动入口（REPL 循环）
+
+* `agent/src/tools/` — 4 个工具的现有实现
+
+* `agent/src/system-prompt.ts` — System Prompt 构建
+
+* `edith-skills/INTEGRATION.md` — Skill 与 Agent 融合方案
 
 ### Related Documents
 
-- `SKILL.md` — 8 阶段黄金路径定义（每个阶段的 goal / output / stop condition）
-- `EDITH-PRODUCT-DESIGN.md` — 产品设计文档
+* `SKILL.md` — 8 阶段黄金路径定义（每个阶段的 goal / output / stop condition）
+
+* `EDITH-PRODUCT-DESIGN.md` — 产品设计文档
 
 ### Related Features
 
-- 已完成：feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route（工具层）
-- 已完成：feat-extension-core（路由层）
-- 已完成：feat-system-prompt（System Prompt）
-- 可能关联：feat-subagent-support（子代理支持，用于并行阶段执行）
+* 已完成：feat-tool-scan, feat-tool-distill, feat-tool-query, feat-tool-route（工具层）
+
+* 已完成：feat-extension-core（路由层）
+
+* 已完成：feat-system-prompt（System Prompt）
+
+* 可能关联：feat-subagent-support（子代理支持，用于并行阶段执行）
 
 ## Technical Solution
-
-<!-- 设计待定，blocked 状态下进一步思考后再补充 -->
 
 ### 初步架构方向
 
@@ -132,11 +150,13 @@ And 自动检查该阶段是否可以完成
 
 ### General Checklist
 
-- [ ] 8 个阶段全部定义，含 goal / output / stop condition
-- [ ] 状态机支持 forward / backward / skip
-- [ ] 状态持久化到文件系统，支持恢复
-- [ ] 阶段间数据自动传递
-- [ ] 人工确认节点可暂停流程
-- [ ] Stop condition 不满足时给出明确原因
-- [ ] 与现有 REPL 集成，不破坏现有工具手动调用
-- [ ] 不影响 pi SDK 的正常使用
+* [ ] 8 个阶段全部定义，含 goal / output / stop condition
+* [ ] 状态机支持 forward / backward / skip
+* [ ] 状态持久化到文件系统，支持恢复
+* [ ] 阶段间数据自动传递
+* [ ] 人工确认节点可暂停流程
+* [ ] Stop condition 不满足时给出明确原因
+* [ ] 与现有 REPL 集成，不破坏现有工具手动调用
+* [ ] 不影响 pi SDK 的正常使用
+
+⠀

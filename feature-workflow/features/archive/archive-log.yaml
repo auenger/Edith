@@ -1,23 +1,185 @@
 archived:
+  # ═══ 2026-04-30 ═══
+
+  - id: feat-tui-ctx-refresh
+    name: "CTX 动态刷新 + Token 计数修复"
+    completed: "2026-04-30T00:10:00+08:00"
+    tag: feat-tui-ctx-refresh-20260429
+    merge_commit: ff078fe
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/tui-ctx-refresh
+    worktree_deleted: true
+    worktree_path: ../EDITH-tui-ctx-refresh
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+
+  # ═══ 2026-04-29 ═══
+
+  - id: feat-tui-tool-rendering
+    name: "Claude Code 风格 Tool Call 渲染"
+    completed: "2026-04-29T23:58:00+08:00"
+    tag: feat-tui-tool-rendering-20260429
+    merge_commit: 9aa7505
+
+  - id: feat-model-hot-switch
+    name: "Model 热切换修复（持久化 + 自定义 Provider 模型注册）"
+    completed: "2026-04-29T23:45:00+08:00"
+    tag: feat-model-hot-switch-20260429
+    merge_commit: c1a163d
+
+  - id: feat-openai-compatible-provider
+    name: "多 LLM Provider 配置化 + TUI 切换 + 状态栏显示"
+    completed: "2026-04-29T22:45:00+08:00"
+    tag: feat-openai-compatible-provider-20260429
+    merge_commit: 9be99d0
+
+  - id: feat-tui-slash-commands
+    name: "TUI 斜杠命令系统（本地拦截 + 命令补全）"
+    completed: "2026-04-29T00:15:00+08:00"
+    tag: feat-tui-slash-commands-20260428
+    merge_commit: 7f1a351
+
+  - id: feat-tui-context-fix
+    name: "Context 数据修复 + 状态栏位置调整"
+    completed: "2026-04-29T00:15:00+08:00"
+    tag: feat-tui-context-fix-20260429
+    merge_commit: 1e6074e
+
+  - id: feat-tui-layout
+    name: "对话布局修正 + Markdown 修复 + 思考指示器"
+    completed: "2026-04-28T23:45:00+08:00"
+    tag: feat-tui-layout-20260428
+    merge_commit: 2ae01a2
+
   - id: feat-explore-project
     name: "项目探索命令"
     completed: "2026-04-28T23:45:00+08:00"
     tag: feat-explore-project-20260428
     merge_commit: e3f56a3
-    merged_to: main
     branch_deleted: true
     branch_name: feature/explore-project
     worktree_deleted: true
     worktree_path: ../EDITH-explore-project
-    conflicts:
-      had_conflict: false
-      conflict_files: []
     verification:
       status: passed
       scenarios_total: 9
       scenarios_passed: 9
-    stats:
-      started: "2026-04-28T23:30:00+08:00"
-      duration: "~15min"
-      commits: 1
-      files_changed: 3
+
+  - id: feat-subagent-support
+    name: "SubAgent 子代理支持"
+    completed: "2026-04-28T23:15:00+08:00"
+    tag: feat-subagent-support-20260428
+    merge_commit: e668359
+
+  - id: feat-tui-streaming
+    name: "流式输出增强（Markdown 渲染 + 进度指示）"
+    completed: "2026-04-28T22:35:00+08:00"
+    tag: feat-tui-streaming-20260428
+    merge_commit: 731af6d
+
+  - id: feat-tui-thinking
+    name: "AI 思考过程展示（折叠展开式）"
+    completed: "2026-04-28T21:45:00+08:00"
+    tag: feat-tui-thinking-20260428
+    merge_commit: e1fe8c1
+
+  - id: feat-tui-context-monitor
+    name: "Context 上下文主动监控与预警"
+    completed: "2026-04-28T21:00:00+08:00"
+    tag: feat-tui-context-monitor-20260428
+    merge_commit: 666cfc2
+
+  - id: feat-context-command
+    name: "Context 上下文查看命令"
+    completed: "2026-04-28T20:15:00+08:00"
+    tag: feat-context-command-20260428
+    merge_commit: a515fbb
+
+  - id: feat-tui-ink-layout
+    name: "TUI 布局框架（ink）"
+    completed: "2026-04-28T19:30:00+08:00"
+    tag: feat-tui-ink-layout-20260428
+    merge_commit: ab25e61
+
+  - id: feat-unlimited-storage
+    name: "知识产物存储与消费分离"
+    completed: "2026-04-28T18:30:00+08:00"
+    tag: feat-unlimited-storage-20260428
+    merge_commit: 72fc4c1
+
+  - id: feat-packaging
+    name: "Pi Package 打包与分发配置"
+    completed: "2026-04-28T00:15:00+08:00"
+    tag: feat-packaging-20260427
+    merge_commit: 26ebecc
+
+  - id: feat-tui-branding
+    name: "TUI 主题定制（EDITH 品牌化）"
+    completed: "2026-04-28T00:05:00+08:00"
+    tag: feat-tui-branding-20260427
+    merge_commit: 83e9789
+
+  - id: feat-e2e-pilot
+    name: "端到端试点验证（真实项目扫描→蒸馏→查询）"
+    completed: "2026-04-28T00:00:00+08:00"
+    tag: feat-e2e-pilot-20260427
+    merge_commit: ebf58bf
+
+  # ═══ 2026-04-27 ═══
+
+  - id: feat-system-prompt
+    name: "System Prompt 调优"
+    completed: "2026-04-27T23:50:00+08:00"
+    tag: feat-system-prompt-20260427
+    merge_commit: bef03b4
+
+  - id: feat-tool-route
+    name: "edith_route 工具（对接 requirement-router Skill）"
+    completed: "2026-04-27T23:00:00+08:00"
+    tag: feat-tool-route-20260427
+    merge_commit: e4880f2
+
+  - id: feat-tool-distill
+    name: "edith_distill 工具（对接 distillator Skill）"
+    completed: "2026-04-27T22:50:00+08:00"
+    tag: feat-tool-distill-20260427
+    merge_commit: 001c88c
+
+  - id: feat-tool-query
+    name: "edith_query 工具（三层加载查询）"
+    completed: "2026-04-27T22:20:00+08:00"
+    tag: feat-tool-query-20260427
+    merge_commit: 0022024
+
+  - id: feat-tool-scan
+    name: "edith_scan 工具（对接 document-project Skill）"
+    completed: "2026-04-27T22:15:00+08:00"
+    tag: feat-tool-scan-20260427
+    merge_commit: 0022024
+
+  - id: feat-extension-core
+    name: "edith.ts Extension 核心路由层"
+    completed: "2026-04-27T21:30:00+08:00"
+    tag: feat-extension-core-20260427
+    merge_commit: b6199d1
+
+  - id: feat-config-management
+    name: "edith.yaml 配置管理"
+    completed: "2026-04-27T21:25:00+08:00"
+    tag: feat-config-management-20260427
+    merge_commit: ace2d50
+
+  - id: feat-agent-scaffold
+    name: "Agent 项目骨架 + pi SDK 环境搭建"
+    completed: "2026-04-27T20:35:00+08:00"
+    tag: feat-agent-scaffold-20260427
+    merge_commit: 0e6d5d4
+
+  - id: feat-init-edith
+    name: "EDITH 知识基础设施项目初始化"
+    completed: "2026-04-27T00:00:00+08:00"
+    tag: feat-init-edith-20260427
+    merge_commit: e44cefb
