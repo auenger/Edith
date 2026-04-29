@@ -9,7 +9,7 @@ import {
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadConfig, getActiveProfile, listProfiles, type EdithConfig, type LlmProfile } from "../config.js";
+import { loadConfig, getActiveProfile, listProfiles, findConfigFile, saveActiveProfile, type EdithConfig, type LlmProfile } from "../config.js";
 import edithExtension from "../extension.js";
 import { buildSystemPrompt } from "../system-prompt.js";
 import { messageReducer, thinkingReducer } from "./types.js";
@@ -66,6 +66,7 @@ export function useAgentSession(): AgentSessionState {
   const sessionRef = useRef<any>(null);
   const monitorRef = useRef<ContextMonitor | null>(null);
   const configRef = useRef<EdithConfig | null>(null);
+  const configPathRef = useRef<string | null>(null);
   const modelRegistryRef = useRef<any>(null);
   const resourceLoaderRef = useRef<any>(null);
   const sessionManagerRef = useRef<any>(null);
@@ -79,6 +80,8 @@ export function useAgentSession(): AgentSessionState {
   const initialize = useCallback(async () => {
     try {
       const loadedConfig = loadConfig();
+      const cfgPath = findConfigFile();
+      configPathRef.current = cfgPath;
       setConfig(loadedConfig);
       configRef.current = loadedConfig;
 
@@ -111,6 +114,15 @@ export function useAgentSession(): AgentSessionState {
                 api: (profile.api_type as any) ?? "openai-completions",
                 baseUrl: profile.base_url,
                 apiKey: profile.api_key,
+                models: [{
+                  id: profile.model,
+                  name: profile.model,
+                  reasoning: false,
+                  input: ["text"],
+                  contextWindow: profile.context_window ?? 128000,
+                  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+                  maxTokens: 8192,
+                }],
               });
               console.log(`[EDITH] Registered custom provider: ${profile.provider} (${name})`);
             } catch (err) {
@@ -127,6 +139,15 @@ export function useAgentSession(): AgentSessionState {
             api: "openai-completions" as any,
             baseUrl: loadedConfig.llm.base_url,
             apiKey: loadedConfig.llm.api_key,
+            models: [{
+              id: loadedConfig.llm.model,
+              name: loadedConfig.llm.model,
+              reasoning: false,
+              input: ["text"],
+              contextWindow: loadedConfig.llm.context_window ?? 128000,
+              cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+              maxTokens: 8192,
+            }],
           });
           console.log(`[EDITH] Registered custom provider: ${loadedConfig.llm.provider}`);
         } catch (err) {
@@ -349,6 +370,15 @@ export function useAgentSession(): AgentSessionState {
           api: (profile.api_type as any) ?? "openai-completions",
           baseUrl: profile.base_url,
           apiKey: profile.api_key,
+          models: [{
+            id: profile.model,
+            name: profile.model,
+            reasoning: false,
+            input: ["text"],
+            contextWindow: profile.context_window ?? 128000,
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            maxTokens: 8192,
+          }],
         });
       } catch {
         // Provider may already be registered
@@ -428,6 +458,12 @@ export function useAgentSession(): AgentSessionState {
     // Send system prompt to new session
     const systemPrompt = buildSystemPrompt(cfg.workspace.language);
     await session.prompt(systemPrompt);
+
+    // Persist active profile to edith.yaml
+    const cfgPath = configPathRef.current;
+    if (cfgPath) {
+      saveActiveProfile(cfgPath, profileName);
+    }
 
     return `Switched to ${profile.model} (${profileName})`;
   }, [dispatch]);

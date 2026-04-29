@@ -17,6 +17,7 @@ import { existsSync, readdirSync, mkdirSync, writeFileSync, accessSync, constant
 import { resolve, join, extname } from "node:path";
 
 import type { RepoConfig } from "../config.js";
+import { addRepo, findConfigFile } from "../config.js";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
@@ -772,7 +773,17 @@ export async function executeScan(
     projectPath,
   );
 
-  // ── Step 7: Build result ───────────────────────────────────────
+  // ── Step 7: Auto-register repo in edith.yaml ──────────────────
+  const cfgPath = findConfigFile();
+  if (cfgPath) {
+    addRepo(cfgPath, {
+      name,
+      path: projectPath,
+      stack: techStack.length > 0 ? techStack.join(", ") : undefined,
+    });
+  }
+
+  // ── Step 8: Build result ───────────────────────────────────────
   const result: ScanResult = {
     service: name,
     path: projectPath,
