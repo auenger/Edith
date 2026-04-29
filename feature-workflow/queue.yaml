@@ -22,6 +22,18 @@ pending:
 
   # ═══ Phase 1.5: Agent 增强 ═══
 
+  - id: feat-session-lifecycle
+    name: "Session 生命周期命令修复（/new, /clear, /compact）"
+    priority: 85
+    size: M
+    dependencies: []
+    parent: null
+    description: |
+      TUI 的 /new、/clear、/compact 命令无法真正操作 SDK session 状态。
+      根因：commandContextActions（newSession 等）未通过 bindExtensions() 绑定，
+      extension handler 调用的是 no-op。compact 已绑定但 TUI 不监听 compaction 事件。
+      修复：bindExtensions 集成 + session 重建逻辑 + compaction 事件监听。
+
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
   - id: feat-phase2
@@ -116,16 +128,7 @@ pending:
       按月份分组、事件类型筛选、分页加载。
 
 
-active:
-  - id: feat-skill-align-distill
-    name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
-    priority: 88
-    size: M
-    dependencies: [feat-skill-align-scan]
-    parent: feat-skill-alignment
-    branch: feature/skill-align-distill
-    worktree: ../EDITH-skill-align-distill
-    started_at: "2026-04-29T23:50:00+08:00"
+active: []
 
 blocked:
   - id: feat-workflow-orchestrator
@@ -141,6 +144,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-knowledge-index-skill
+    name: "Knowledge Index Skill（蒸馏知识库 → 外部 Agent 可消费的索引 Skill）"
+    priority: 88
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-29T18:15:00+08:00"
+    tag: feat-knowledge-index-skill-20260429
+
   - id: feat-skill-align-route
     name: "Route 精准路由增强（对齐 requirement-router SKILL.md）"
     priority: 82
@@ -421,7 +433,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-29T23:50:00+08:00"
+  last_updated: "2026-04-29T18:15:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"

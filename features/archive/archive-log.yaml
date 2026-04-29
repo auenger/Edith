@@ -1,4 +1,31 @@
 archived:
+  - id: feat-knowledge-index-skill
+    name: "Knowledge Index Skill（蒸馏知识库 → 外部 Agent 可消费的索引 Skill）"
+    priority: 88
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-04-29T18:15:00+08:00"
+    tag: feat-knowledge-index-skill-20260429
+    merge_commit: "3bec1b7"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/knowledge-index-skill
+    worktree_deleted: true
+    worktree_path: ../EDITH-knowledge-index-skill
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 4
+      scenarios_passed: 4
+    stats:
+      started: "2026-04-29T01:00:00+08:00"
+      duration: "15 min"
+      commits: 1
+      files_changed: 3
+
   - id: feat-skill-align-route
     name: "Route 精准路由增强（对齐 requirement-router SKILL.md）"
     priority: 82
