@@ -29,55 +29,65 @@ Layer 2 — distillates/*.md    (无损压缩，按需加载)
 
 * `agent/` — EDITH Agent TypeScript 应用（`npm start` 启动）
 
-  * `src/agent-startup.ts` — Agent 启动入口（配置加载 → Banner → Session → REPL 循环）
-
+  * `src/agent-startup.ts` — Agent 启动入口（配置加载 → Banner → Ink 渲染）
   * `src/extension.ts` — Extension 路由层（工具注册 + 命令注册）
-
-  * `src/config.ts` — `edith.yaml` 配置加载与校验
-
-  * `src/system-prompt.ts` — System Prompt 构建
-
-  * `src/theme/` — TUI 品牌化（Banner、渐变色、状态栏）
-
-  * `src/tools/` — edith_scan / edith_distill / edith_route 工具实现
-
-  * `edith.yaml` — Agent 运行配置（LLM provider、workspace、token budget）
+  * `src/config.ts` — `edith.yaml` 配置加载 + 多 Profile 管理 + `edith-init` 向导
+  * `src/system-prompt.ts` — System Prompt 构建 + Workspace Context 注入（repos + routing-table Layer 0）
+  * `src/context-monitor.ts` — Token 计数 + 压力检测 + Cache 命中率（支持 DeepSeek/MiMo 等模型）
+  * `src/query.ts` — `edith_query` 工具实现
+  * `src/shared-stats.ts` — 跨组件共享状态
+  * `src/theme/` — TUI 品牌化（Banner 渐变色、主题配置、Context/SubAgent 面板）
+  * `src/tui/` — React + Ink TUI 组件
+    * `App.tsx` — 主应用组件
+    * `BannerArea.tsx` — 欢迎横幅
+    * `ContentArea.tsx` — 消息内容区
+    * `InputArea.tsx` — 用户输入区（readline）
+    * `StatusBarMetrics.tsx` — 状态栏指标
+    * `ThinkingBlock.tsx` — 截断预览式思考展示
+    * `ToolCallBlock.tsx` — Claude Code 风格 Tool Call 渲染
+    * `MarkdownRenderer.tsx` / `CodeBlock.tsx` — Markdown/代码渲染
+    * `CommandPalette.tsx` / `command-registry.ts` — Slash 命令系统
+    * `WarningBar.tsx` — 压力警告条
+    * `useAgentSession.ts` — Session 管理 Hook（事件订阅 + 消息分发 + suppress 控制）
+    * `types.ts` — 消息/ToolCall/Thinking 类型定义 + Reducer
+  * `src/tools/` — edith_scan / edith_distill / edith_route / edith_explore / subagent
+  * `edith.yaml` — Agent 运行配置（多 LLM Profile、workspace、repos、context_window、thresholds）
 
 * `SKILL.md` — 黄金路径（8 阶段主流程），唯一权威执行路径
 
 * `edith-skills/` — 三个运营 Skill（EDITH Agent 的内部实现）
 
   * `document-project/` → `edith_scan` 工具（扫描项目代码，逆向生成文档）
-
   * `distillator/` → `edith_distill` 工具（蒸馏文档，生成三层知识产物）
-
   * `requirement-router/` → `edith_route` 工具（需求路由分析）
-
   * `INTEGRATION.md` — Skill 与 EDITH 的融合方案
 
 * `templates/en/` — 英文模板（权威），`templates/zh/` — 中文镜像
-
 * `references/en/` — 英文参考文档，`references/zh/` — 中文参考
-
 * `EDITH-PRODUCT-DESIGN.md` — 产品设计文档（Agent / Board / Artifacts 三件套）
-
 * `SCALABILITY-ANALYSIS.md` — 微服务规模下的瓶颈分析与三层加载设计
+* `project-context.md` — 技术项目上下文（目录结构、架构、命名约定、变更日志）
 
 ### Agent 架构分层
 
 ```text
-用户 (自然语言对话)
-  → TUI 层 (Banner + readline REPL + 主题渲染)
+用户 (自然语言)
+  → TUI 层 (React + Ink 组件化终端界面)
+    → BannerArea / ContentArea / StatusBarMetrics / InputArea
+    → ThinkingBlock (截断预览) / ToolCallBlock (展开式渲染)
+    → Slash 命令 (/model, /new, /clear, /compact, /context, /delegate, /explore)
+  → Context Monitor (Token 计数 + 压力检测 + Cache 命中率)
   → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册)
+  → System Prompt (Workspace Context 注入 + routing-table Layer 0)
   → Skill 执行层 (document-project / distillator / requirement-router)
-  → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query)
-  → pi SDK (AgentSession + 20+ LLM + Tool Calling + 流式输出)
+  → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query / edith_explore / subagent)
+  → pi SDK (AgentSession + 多 LLM Provider + Tool Calling + 流式输出)
   → 产出物 (纯 Markdown)
 ```
 
 ### 配置模型
 
-用户通过 `edith.yaml` 定制（LLM provider、workspace 路径、repos 列表、token budget 等），不改代码。
+用户通过 `edith.yaml` 定制（多 LLM Profile、workspace 路径、repos 列表、context_window、token budget thresholds 等），不改代码。支持环境变量（`${VAR_NAME}`）和交互式 `edith-init` 向导。
 
 ## 工作纪律
 
@@ -112,11 +122,6 @@ Layer 2 — distillates/*.md    (无损压缩，按需加载)
 ## 语言约定
 
 * 产出物支持 `zh` / `en` 双语（由 `edith.yaml` 配置）
-
 * 模板和参考文档维护 `en/` + `zh/` 镜像
-
 * 代码和配置标识符保持英文
-
 * 与用户沟通使用中文
-
-⠀
