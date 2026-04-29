@@ -18,7 +18,8 @@ export const SLASH_COMMANDS: SlashCommand[] = [
 ];
 
 export function findCommand(input: string): SlashCommand | undefined {
-  const name = input.startsWith("/") ? input.slice(1) : input;
+  const raw = input.startsWith("/") ? input.slice(1) : input;
+  const name = raw.split(/\s/)[0];
   return SLASH_COMMANDS.find(
     (cmd) => cmd.name === name || cmd.aliases?.includes(name)
   );

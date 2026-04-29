@@ -5,7 +5,7 @@ type: edith-distillate
 target_service: "LiteMes"
 sources:
   - "LiteMes/docs/data-models.md"
-created: "2026-04-28T01:25:43.759Z"
+created: "2026-04-29T02:18:35.060Z"
 ---
 
 # LiteMes — Data Models

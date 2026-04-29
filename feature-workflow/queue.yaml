@@ -1,94 +1,104 @@
 # EDITH Feature Queue
-# 基于 EDITH-PRODUCT-DESIGN.md 路线图生成
+# 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1.5: TUI 交互优化 ═══
+  # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
-  - id: feat-tui-interaction-optimize
-    name: "Agent TUI 交互优化"
-    priority: 72
-    size: M
+  - id: feat-phase2
+    name: "EDITH Phase 2 全栈升级"
+    priority: 85
+    size: L
     dependencies: []
     parent: null
     split: true
     children:
-      - feat-tui-context-fix
-      - feat-tui-layout
-      - feat-tui-slash-commands
-    all_children_completed: true
+      - feat-p2-multimodal-ingestion
+      - feat-p2-graphify-index
+      - feat-p2-board-scaffold
+      - feat-p2-board-dashboard
+      - feat-p2-board-explorer
+      - feat-p2-knowledge-map
+      - feat-p2-timeline
     description: |
-      优化 EDITH Agent TUI 三个交互问题：
-      1. /context 命令数据不准确（Messages/Tools/Token Detail 显示 N/A）
-      2. CTX 状态栏位置不合理
-      3. 对话布局溢出到 Banner 上方
-      4. 斜杠命令无补全、计数错误、渲染位置不对
+      EDITH Phase 2：从"代码侧知识引擎"升级为"全栈知识基础设施"。
+      包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
+      和 Board 侧（Web 看板 5 个页面 + 部署）。
+
+  - id: feat-p2-multimodal-ingestion
+    name: "MarkItDown 多模态摄入"
+    priority: 85
+    size: S
+    dependencies: []
+    parent: feat-phase2
+    description: |
+      扩展 edith_scan 输入范围：PDF/Office/图片/音频 → 结构化 Markdown。
+      支持 LLM Vision 图表理解和隐私模式本地化处理。
+
+  - id: feat-p2-graphify-index
+    name: "Graphify 认知图谱索引"
+    priority: 80
+    size: M
+    dependencies: []
+    parent: feat-phase2
+    description: |
+      集成 Graphify 作为 Layer 2 索引引擎。tree-sitter AST 提取 → graph.json
+      全局拓扑 → 自动生成 routing-table / distillates 骨架 / Board 图谱数据源。
+
+  - id: feat-p2-board-scaffold
+    name: "Board 项目脚手架 + Git 数据层"
+    priority: 75
+    size: M
+    dependencies: []
+    parent: feat-phase2
+    description: |
+      初始化 EDITH Board 项目（Next.js + Fastify API Server）+
+      Git 知识仓库只读读取层 + 文件变更监听 + WebSocket 推送。
+
+  - id: feat-p2-board-dashboard
+    name: "Dashboard 总览仪表盘"
+    priority: 70
+    size: M
+    dependencies: [feat-p2-board-scaffold]
+    parent: feat-phase2
+    description: |
+      知识库健康度面板、服务覆盖率、最近变更时间线、
+      产出物统计、快速操作入口。WebSocket 实时更新。
+
+  - id: feat-p2-board-explorer
+    name: "Services + Artifacts 浏览器"
+    priority: 65
+    size: M
+    dependencies: [feat-p2-board-scaffold]
+    parent: feat-phase2
+    description: |
+      Services 列表页（筛选搜索 + 知识覆盖详情 + Layer 补全操作）+
+      Artifacts 文件树 + Markdown 预览 + Token 计数。
+
+  - id: feat-p2-knowledge-map
+    name: "Knowledge Map 知识图谱可视化"
+    priority: 60
+    size: M
+    dependencies: [feat-p2-graphify-index, feat-p2-board-scaffold]
+    parent: feat-phase2
+    description: |
+      D3.js 力导向图可视化服务依赖关系。消费 graph.json 数据。
+      节点大小=知识完整度，线条粗细=调用频率。
+      服务依赖 + 概念拓扑双视图。置信度标注着色。
+
+  - id: feat-p2-timeline
+    name: "Timeline 知识时间线"
+    priority: 55
+    size: S
+    dependencies: [feat-p2-board-scaffold]
+    parent: feat-phase2
+    description: |
+      知识回写历史时间线。聚合 Git 提交历史、扫描/蒸馏/摄入日志。
+      按月份分组、事件类型筛选、分页加载。
 
 
 active:
 
 blocked:
-  # ═══ Phase 2: EDITH Board 基础版 — 暂缓 ═══
-  - id: feat-board-scaffold
-    name: "Board 项目脚手架（Next.js + API Server）"
-    priority: 60
-    size: M
-    blocked_at: "2026-04-28"
-    blocked_reason: "Phase 2 暂缓"
-    description: |
-      初始化 EDITH Board 前端项目：Next.js + React、
-      API Server 骨架、Git 知识仓库读取层。
-
-  - id: feat-board-dashboard
-    name: "Dashboard 总览仪表盘"
-    priority: 60
-    size: M
-    dependencies: [feat-board-scaffold]
-    blocked_at: "2026-04-28"
-    blocked_reason: "Phase 2 暂缓"
-    description: |
-      知识库健康度、服务覆盖率、最近变更、产出物统计。
-
-  - id: feat-board-services
-    name: "Services 服务列表页"
-    priority: 55
-    size: S
-    dependencies: [feat-board-scaffold]
-    blocked_at: "2026-04-28"
-    blocked_reason: "Phase 2 暂缓"
-    description: |
-      服务列表、筛选搜索、知识覆盖详情、Layer 补全操作。
-
-  - id: feat-board-artifacts
-    name: "Artifacts 产出物浏览器（Markdown 预览）"
-    priority: 55
-    size: M
-    dependencies: [feat-board-scaffold]
-    blocked_at: "2026-04-28"
-    blocked_reason: "Phase 2 暂缓"
-    description: |
-      文件树 + Markdown 预览 + Token 计数 + Monaco Editor。
-
-  - id: feat-board-knowledge-map
-    name: "Knowledge Map 服务依赖图谱"
-    priority: 50
-    size: M
-    dependencies: [feat-board-services]
-    blocked_at: "2026-04-28"
-    blocked_reason: "Phase 2 暂缓"
-    description: |
-      D3.js 力导向图可视化服务依赖关系。
-      节点大小=知识完整度，线条粗细=调用频率。
-
-  - id: feat-board-timeline
-    name: "Timeline 知识时间线"
-    priority: 50
-    size: S
-    dependencies: [feat-board-scaffold]
-    blocked_at: "2026-04-28"
-    blocked_reason: "Phase 2 暂缓"
-    description: |
-      知识回写历史时间线，展示组织知识演化过程。
-
   - id: feat-workflow-orchestrator
     name: "Workflow Orchestrator（SKILL.md 8阶段流程编排引擎）"
     priority: 85
@@ -102,6 +112,16 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+completed:
+  - id: feat-openai-compatible-provider
+    name: "多 LLM Provider 配置化 + TUI 切换 + 状态栏显示"
+    priority: 70
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-29T22:45:00+08:00"
+    tag: feat-openai-compatible-provider-20260429
+
   - id: feat-tui-slash-commands
     name: "TUI 斜杠命令系统（本地拦截 + 命令补全）"
     priority: 75
@@ -310,10 +330,10 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-29T00:15:00+08:00"
+  last_updated: "2026-04-29T22:45:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
-    phase2: "EDITH Board 基础版"
+    phase2: "EDITH 全栈升级（Agent 集成 + Board）"
     phase3: "增值功能（待规划）"
   parents:
     - id: feat-agent-mvp
@@ -340,9 +360,31 @@ meta:
         - feat-tui-thinking
         - feat-tui-streaming
         - feat-tui-context-monitor
+    - id: feat-tui-interaction-optimize
+      name: "Agent TUI 交互优化"
+      split: true
+      children:
+        - feat-tui-context-fix
+        - feat-tui-layout
+        - feat-tui-slash-commands
+      all_children_completed: true
+    - id: feat-phase2
+      name: "EDITH Phase 2 全栈升级"
+      split: true
+      children:
+        - feat-p2-multimodal-ingestion
+        - feat-p2-graphify-index
+        - feat-p2-board-scaffold
+        - feat-p2-board-dashboard
+        - feat-p2-board-explorer
+        - feat-p2-knowledge-map
+        - feat-p2-timeline
+    # deprecated — 被 feat-phase2 替代
     - id: feat-board-base
-      name: "EDITH Board 基础版"
+      name: "EDITH Board 基础版（已替代）"
       split: false
+      deprecated: true
+      replaced_by: feat-phase2
       children:
         - feat-board-scaffold
         - feat-board-dashboard
