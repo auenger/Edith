@@ -1,4 +1,31 @@
 archived:
+  - id: feat-skill-align-route
+    name: "Route 精准路由增强（对齐 requirement-router SKILL.md）"
+    priority: 82
+    size: S
+    dependencies: [feat-skill-align-distill]
+    parent: feat-skill-alignment
+    completed: "2026-04-30T00:15:00+08:00"
+    tag: feat-skill-align-route-20260429
+    merge_commit: HEAD
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/skill-align-route
+    worktree_deleted: true
+    worktree_path: ../EDITH-skill-align-route
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-30T00:10:00+08:00"
+      duration: "5 min"
+      commits: 1
+      files_changed: 1
+
   - id: feat-skill-align-distill
     name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
     priority: 88

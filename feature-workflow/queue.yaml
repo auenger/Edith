@@ -20,16 +20,6 @@ pending:
       scan 从"文件计数器"→"代码考古器"，distill 从基础过滤→无损压缩引擎，
       route 增加多服务路由和复杂度分析。
 
-  - id: feat-skill-align-route
-    name: "Route 精准路由增强（对齐 requirement-router SKILL.md）"
-    priority: 82
-    size: S
-    dependencies: [feat-skill-align-distill]
-    parent: feat-skill-alignment
-    description: |
-      route.ts 小幅增强。新增：multi-service独立路由策略、复杂度多维分析、
-      紧急事件特殊路由、新项目检测、透明决策推理。差距较小，增量修改即可。
-
   # ═══ Phase 1.5: Agent 增强 ═══
 
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
@@ -151,6 +141,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-skill-align-route
+    name: "Route 精准路由增强（对齐 requirement-router SKILL.md）"
+    priority: 82
+    size: S
+    dependencies: [feat-skill-align-distill]
+    parent: feat-skill-alignment
+    completed_at: "2026-04-30T00:15:00+08:00"
+    tag: feat-skill-align-route-20260429
+
   - id: feat-skill-align-distill
     name: "Distill 无损压缩引擎（对齐 distillator SKILL.md）"
     priority: 88
