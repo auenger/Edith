@@ -7,6 +7,7 @@ export interface SlashCommand {
 
 export const SLASH_COMMANDS: SlashCommand[] = [
   { name: "context", description: "显示上下文统计信息", type: "local", aliases: ["ctx"] },
+  { name: "model", description: "列出/切换 LLM Profile", type: "local" },
   { name: "status", description: "知识库状态总览", type: "local" },
   { name: "new", description: "新建会话（清除所有上下文）", type: "session" },
   { name: "clear", description: "清除上下文（保留 system prompt）", type: "session" },

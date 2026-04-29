@@ -9,13 +9,15 @@ import { WarningBar } from "./WarningBar.js";
 import { useAgentSession } from "./useAgentSession.js";
 import { findCommand, type SlashCommand } from "./command-registry.js";
 import { getSharedStats } from "../shared-stats.js";
-import { loadConfig } from "../config.js";
+import { loadConfig, getActiveProfile, listProfiles } from "../config.js";
 import type { EdithConfig } from "../config.js";
 import type { MessageAction } from "./types.js";
 
-function ContextStatusBar({ config, monitorData }: {
+function ContextStatusBar({ config, monitorData, modelName, isCustomProvider }: {
   config: EdithConfig | null;
   monitorData: import("./useAgentSession.js").MonitorData | null;
+  modelName?: string;
+  isCustomProvider?: boolean;
 }) {
   if (!monitorData?.latest || !config) return null;
 
@@ -30,6 +32,8 @@ function ContextStatusBar({ config, monitorData }: {
       percent={ctx.percent}
       cacheHitRate={monitorData.cacheHitRate}
       pressureLevel={monitorData.pressure.level}
+      modelName={modelName}
+      isCustomProvider={isCustomProvider}
     />
   );
 }
@@ -110,6 +114,8 @@ export function App() {
     expandAllThinking,
     collapseAllThinking,
     monitorData,
+    switchProfile,
+    activeProfileName,
   } = useAgentSession();
 
   useInput(useCallback((input: string, key: { escape?: boolean }) => {
@@ -135,6 +141,9 @@ export function App() {
       case "status":
         _dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: formatStatusPanel() });
         break;
+      case "model":
+        // /model is handled async in handleCommand
+        break;
       default:
         _dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `Unknown local command: /${cmd.name}` });
     }
@@ -145,6 +154,35 @@ export function App() {
 
     if (!cmdDef) {
       dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `Unknown command: ${text}\n  Type / to see available commands.` });
+      return;
+    }
+
+    // /model command — special handling
+    if (cmdDef.name === "model") {
+      const parts = text.trim().split(/\s+/);
+      const profileArg = parts[1];
+
+      if (!profileArg) {
+        // List all profiles
+        if (!config?.llm.profiles) {
+          dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: "No profiles configured (using legacy single-provider mode)." });
+          return;
+        }
+        const profiles = listProfiles(config);
+        const active = config.llm.active ?? "default";
+        const lines = profiles.map((name) => {
+          const p = config.llm.profiles![name];
+          const marker = name === active ? " ← active" : "";
+          return `  ${name}: ${p.provider}/${p.model}${marker}`;
+        });
+        dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `Profiles:\n${lines.join("\n")}` });
+        return;
+      }
+
+      // Switch profile
+      dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `[System] Switching model to '${profileArg}'...` });
+      const result = await switchProfile(profileArg);
+      dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `[System] ${result}` });
       return;
     }
 
@@ -160,7 +198,7 @@ export function App() {
         await sendUserMessage(text);
         break;
     }
-  }, [dispatch, handleLocalCommand, sendSlashCommand, sendUserMessage]);
+  }, [dispatch, handleLocalCommand, sendSlashCommand, sendUserMessage, switchProfile, config]);
 
   const handleSubmit = useCallback(
     async (text: string) => {
@@ -199,6 +237,17 @@ export function App() {
 
   const showWarning = monitorData?.pressure && monitorData.pressure.level !== "normal";
 
+  // Derive model display info from config
+  let modelName: string | undefined;
+  let isCustomProvider: boolean | undefined;
+  if (config) {
+    try {
+      const profile = getActiveProfile(config);
+      modelName = profile.model;
+      isCustomProvider = !!profile.base_url;
+    } catch { /* ignore */ }
+  }
+
   return (
     <Box flexDirection="column" height="100%">
       <BannerArea config={{ workspace: config!.workspace }} />
@@ -207,7 +256,7 @@ export function App() {
         thinkingBlocks={thinkingBlocks}
         onToggleThinking={handleToggleThinking}
       />
-      <ContextStatusBar config={config} monitorData={monitorData} />
+      <ContextStatusBar config={config} monitorData={monitorData} modelName={modelName} isCustomProvider={isCustomProvider} />
       {showWarning && <WarningBar pressure={monitorData!.pressure} />}
       <ThinkingIndicator
         isActive={isProcessing}
