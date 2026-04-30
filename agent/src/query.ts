@@ -170,7 +170,7 @@ function parseRoutingTable(content: string): RoutingTableEntry[] {
       entry.quickRefPath = quickRefPaths.get(entry.service);
     }
     // Derive distillates path conventionally
-    entry.distillatesPath = `distillates/${entry.service}`;
+    entry.distillatesPath = join("distillates", entry.service);
   }
 
   return entries;
@@ -421,7 +421,7 @@ function loadLayer1(
         code: "CORRUPTED_FILE",
         service: entry.service,
         file: quickRefPath,
-        message: `${entry.service}/quick-ref.md 无法读取，已跳过`,
+        message: `${join(entry.service, "quick-ref.md")} 无法读取，已跳过`,
       },
     };
   }
@@ -433,7 +433,7 @@ function loadLayer1(
         code: "CORRUPTED_FILE",
         service: entry.service,
         file: quickRefPath,
-        message: `${entry.service}/quick-ref.md 为空，已跳过`,
+        message: `${join(entry.service, "quick-ref.md")} 为空，已跳过`,
       },
     };
   }
@@ -582,7 +582,7 @@ function loadLayer2(
       warning: {
         code: "CORRUPTED_FILE",
         service: entry.service,
-        message: `${entry.service}/distillates/ 目录无法读取，已跳过`,
+        message: `${join(entry.service, "distillates")} 目录无法读取，已跳过`,
       },
     };
   }
@@ -685,7 +685,7 @@ function loadLayer2(
 
     if (tokensUsed + estimatedTokens <= tokenBudget) {
       fragments.push({
-        file: `${entry.distillatesPath || `distillates/${entry.service}`}/${file}`,
+        file: join(entry.distillatesPath || join("distillates", entry.service), file),
         name: basename(file, ".md"),
         content,
         estimatedTokens,
@@ -694,7 +694,7 @@ function loadLayer2(
     } else {
       // Budget exceeded — list as unloaded title for reference
       unloadedTitles.push({
-        file: `${entry.distillatesPath || `distillates/${entry.service}`}/${file}`,
+        file: join(entry.distillatesPath || join("distillates", entry.service), file),
         name: basename(file, ".md"),
       });
     }
@@ -708,7 +708,7 @@ function loadLayer2(
       const content = readFileSync(filePath, "utf-8");
       const estimatedTokens = estimateTokens(content);
       fragments.push({
-        file: `${entry.distillatesPath || `distillates/${entry.service}`}/${file}`,
+        file: join(entry.distillatesPath || join("distillates", entry.service), file),
         name: basename(file, ".md"),
         content,
         estimatedTokens,
@@ -790,8 +790,8 @@ function assembleAnswer(
         sources.push({
           layer: 1,
           file: quickRef.content
-            ? `skills/${entry.service}/quick-ref.md`
-            : entry.quickRefPath || `skills/${entry.service}/quick-ref.md`,
+            ? join("skills", entry.service, "quick-ref.md")
+            : entry.quickRefPath || join("skills", entry.service, "quick-ref.md"),
           relevance: 0.9,
         });
 

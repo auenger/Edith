@@ -17,7 +17,8 @@
 
 import type { WorkspaceConfig, EdithConfig } from "./config.js";
 import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, sep } from "node:path";
+import { platform } from "node:process";
 
 // ── System Prompt Builder ──────────────────────────────────────────
 
@@ -42,6 +43,16 @@ function buildWorkspaceContext(config: EdithConfig, language: "zh" | "en"): stri
 
   lines.push(isZh ? "# 2.5. 工作空间上下文" : "# 2.5. Workspace Context");
   lines.push("");
+
+  lines.push(isZh ? `- 运行平台: \`${platform}\`` : `- Platform: \`${platform}\``);
+  lines.push(isZh ? `- 路径分隔符: \`${sep}\`` : `- Path separator: \`${sep}\``);
+
+  if (platform === "win32") {
+    lines.push(isZh
+      ? "**重要**: 当前运行在 Windows 上。执行命令时请使用 PowerShell/cmd 命令（dir、type、findstr），不要使用 Unix 命令（ls、cat、grep、find、rm、mkdir -p）。"
+      : "**IMPORTANT**: Running on Windows. Use PowerShell/cmd commands only (dir, type, findstr). Do NOT use Unix commands (ls, cat, grep, find, rm, mkdir -p)."
+    );
+  }
 
   lines.push(isZh
     ? `- 知识库根目录: \`${config.workspace.root}\``

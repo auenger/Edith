@@ -586,7 +586,7 @@ function resolveFilePaths(
 
     // quick-ref, multi-service, deep-dive all need quick-ref
     if (decision === "quick-ref" || decision === "multi-service" || decision === "deep-dive") {
-      const relativePath = `skills/${entry.service}/quick-ref.md`;
+      const relativePath = join("skills", entry.service, "quick-ref.md");
       if (quickRefPath) {
         if (!loadedContext.some((c) => c.includes(entry.service) && c.includes("quick-ref"))) {
           filesToLoad.push(relativePath);
@@ -608,11 +608,11 @@ function resolveFilePaths(
 
         const selectedFragments = selectDistillateFragments(files, changeType, loadedContext, entry.service);
         for (const frag of selectedFragments) {
-          filesToLoad.push(`distillates/${entry.service}/${frag}`);
+          filesToLoad.push(join("distillates", entry.service, frag));
         }
-        if (files.length === 0) missingFiles.push(`distillates/${entry.service}/`);
+        if (files.length === 0) missingFiles.push(join("distillates", entry.service) + "/");
       } else {
-        missingFiles.push(`distillates/${entry.service}/`);
+        missingFiles.push(join("distillates", entry.service) + "/");
       }
     }
   }
@@ -676,7 +676,7 @@ function selectDistillateFragments(
     if (score === 0 && selected.length > 0) continue;
 
     // Check if already in loaded context
-    const relativePath = `distillates/${serviceName}/${file}`;
+    const relativePath = join("distillates", serviceName, file);
     if (loadedContext.some((c) => c.includes(relativePath))) continue;
 
     selected.push(file);
@@ -685,7 +685,7 @@ function selectDistillateFragments(
   // If no matches at all, include first file as fallback
   if (selected.length === 0 && allFiles.length > 0) {
     const file = allFiles[0];
-    const relativePath = `distillates/${serviceName}/${file}`;
+    const relativePath = join("distillates", serviceName, file);
     if (!loadedContext.some((c) => c.includes(relativePath))) {
       selected.push(file);
     }
