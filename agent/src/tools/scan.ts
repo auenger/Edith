@@ -70,6 +70,48 @@ export interface DocCodeDiscrepancy {
   field: string;
 }
 
+/** Extracted function/method signature */
+export interface FunctionSignature {
+  name: string;
+  params: string[];
+  returnType: string;
+  isExported: boolean;
+  isAsync: boolean;
+  source: string;
+  language: string;
+}
+
+/** Extracted type/interface/class definition */
+export interface TypeDefinition {
+  name: string;
+  kind: "interface" | "type" | "class" | "struct" | "enum";
+  fields: string[];
+  source: string;
+  language: string;
+}
+
+/** File-level dependency edge */
+export interface DependencyEdge {
+  from: string;
+  to: string;
+  importType: "named" | "default" | "namespace" | "module";
+}
+
+/** Core dependency node (most depended upon) */
+export interface DependencyNode {
+  file: string;
+  inDegree: number;
+  outDegree: number;
+}
+
+/** Detected design/error/side-effect pattern */
+export interface CodePattern {
+  type: "error_handling" | "design_pattern" | "side_effect" | "config_usage";
+  name: string;
+  source: string;
+  description: string;
+}
+
 /** 12 project types per SKILL.md */
 export type ProjectType =
   | "web" | "mobile" | "backend" | "cli" | "library"
@@ -143,6 +185,16 @@ export interface ScanResult {
   mdDocuments: DiscoveredMd[];
   /** Cross-validation discrepancies between docs and code */
   docCodeDiscrepancies: DocCodeDiscrepancy[];
+  /** Function/method signatures extracted from code */
+  functionSignatures: FunctionSignature[];
+  /** Type definitions extracted from code */
+  typeDefinitions: TypeDefinition[];
+  /** File-level dependency edges */
+  dependencyEdges: DependencyEdge[];
+  /** Core dependency nodes */
+  dependencyNodes: DependencyNode[];
+  /** Detected code patterns */
+  codePatterns: CodePattern[];
   endpoints: number;
   models: number;
   flows: number;
@@ -801,6 +853,418 @@ export function crossValidateDocWithCode(
   }
 
   return discrepancies;
+}
+
+// ── Code Deep Analysis ──────────────────────────────────────────────
+
+const LANG_EXTENSIONS: Record<string, string[]> = {
+  typescript: [".ts", ".tsx"],
+  javascript: [".js", ".jsx", ".mjs", ".cjs"],
+  go: [".go"],
+  python: [".py", ".pyi"],
+  java: [".java"],
+};
+
+/**
+ * Extract function signatures from source files.
+ */
+export function extractSignatures(dirPath: string): { signatures: FunctionSignature[]; types: TypeDefinition[] } {
+  const signatures: FunctionSignature[] = [];
+  const types: TypeDefinition[] = [];
+  const codeFiles = collectCodeFiles(dirPath, dirPath);
+
+  for (const relPath of codeFiles) {
+    const content = readFileText(join(dirPath, relPath));
+    if (!content) continue;
+    const ext = extname(relPath);
+
+    if (LANG_EXTENSIONS.typescript.includes(ext) || LANG_EXTENSIONS.javascript.includes(ext)) {
+      signatures.push(...extractTsSignatures(content, relPath));
+      types.push(...extractTsTypes(content, relPath));
+    } else if (LANG_EXTENSIONS.go.includes(ext)) {
+      signatures.push(...extractGoSignatures(content, relPath));
+      types.push(...extractGoTypes(content, relPath));
+    } else if (LANG_EXTENSIONS.python.includes(ext)) {
+      signatures.push(...extractPySignatures(content, relPath));
+      types.push(...extractPyTypes(content, relPath));
+    } else if (LANG_EXTENSIONS.java.includes(ext)) {
+      signatures.push(...extractJavaSignatures(content, relPath));
+      types.push(...extractJavaTypes(content, relPath));
+    }
+  }
+
+  return { signatures, types };
+}
+
+function extractTsSignatures(content: string, source: string): FunctionSignature[] {
+  const sigs: FunctionSignature[] = [];
+  // export function name(params): ReturnType
+  const funcRegex = /(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)\s*(?::\s*([^{\n]+?))?\s*\{/g;
+  let match;
+  while ((match = funcRegex.exec(content)) !== null) {
+    const isExported = content.substring(Math.max(0, match.index - 20), match.index).includes("export");
+    sigs.push({
+      name: match[1],
+      params: match[2].split(",").map((p) => p.trim()).filter(Boolean),
+      returnType: (match[3] ?? "void").trim(),
+      isExported,
+      isAsync: content.substring(match.index, match.index + 30).includes("async"),
+      source,
+      language: "typescript",
+    });
+  }
+  // const name = (params): ReturnType =>
+  const arrowRegex = /(?:export\s+)?(?:const|let)\s+(\w+)\s*=\s*(?:async\s+)?\(([^)]*)\)\s*(?::\s*([^=>]+?))?\s*=>/g;
+  while ((match = arrowRegex.exec(content)) !== null) {
+    const isExported = content.substring(Math.max(0, match.index - 20), match.index).includes("export");
+    sigs.push({
+      name: match[1],
+      params: match[2].split(",").map((p) => p.trim()).filter(Boolean),
+      returnType: (match[3] ?? "void").trim(),
+      isExported,
+      isAsync: content.substring(match.index, match.index + 50).includes("async"),
+      source,
+      language: "typescript",
+    });
+  }
+  return sigs;
+}
+
+function extractTsTypes(content: string, source: string): TypeDefinition[] {
+  const defs: TypeDefinition[] = [];
+  // interface Name { ... }
+  const ifaceRegex = /(?:export\s+)?interface\s+(\w+)\s*(?:extends\s+\w+\s*)?\{([^}]*)\}/g;
+  let match;
+  while ((match = ifaceRegex.exec(content)) !== null) {
+    const fields = match[2].split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("//") && l.includes(":"));
+    defs.push({ name: match[1], kind: "interface", fields, source, language: "typescript" });
+  }
+  // type Name = ...
+  const typeRegex = /(?:export\s+)?type\s+(\w+)\s*(?:<[^>]+>)?\s*=\s*([^;\n]+)/g;
+  while ((match = typeRegex.exec(content)) !== null) {
+    defs.push({ name: match[1], kind: "type", fields: [match[2].trim()], source, language: "typescript" });
+  }
+  // class Name { ... }
+  const classRegex = /(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/g;
+  while ((match = classRegex.exec(content)) !== null) {
+    defs.push({ name: match[1], kind: "class", fields: [], source, language: "typescript" });
+  }
+  // enum Name { ... }
+  const enumRegex = /(?:export\s+)?(?:const\s+)?enum\s+(\w+)\s*\{([^}]*)\}/g;
+  while ((match = enumRegex.exec(content)) !== null) {
+    const fields = match[2].split(",").map((f) => f.trim()).filter(Boolean);
+    defs.push({ name: match[1], kind: "enum", fields, source, language: "typescript" });
+  }
+  return defs;
+}
+
+function extractGoSignatures(content: string, source: string): FunctionSignature[] {
+  const sigs: FunctionSignature[] = [];
+  // func (r *Receiver) Name(params) (returns)
+  const funcRegex = /func\s+(?:\(\w+\s+\*?\w+\)\s+)?(\w+)\s*\(([^)]*)\)\s*(?:\(([^)]*)\))?/g;
+  let match;
+  while ((match = funcRegex.exec(content)) !== null) {
+    const isExported = match[1][0] === match[1][0].toUpperCase();
+    sigs.push({
+      name: match[1],
+      params: match[2].split(",").map((p) => p.trim()).filter(Boolean),
+      returnType: (match[3] ?? "").trim(),
+      isExported,
+      isAsync: false,
+      source,
+      language: "go",
+    });
+  }
+  return sigs;
+}
+
+function extractGoTypes(content: string, source: string): TypeDefinition[] {
+  const defs: TypeDefinition[] = [];
+  // type Name struct { ... }
+  const structRegex = /type\s+(\w+)\s+struct\s*\{([^}]*)\}/g;
+  let match;
+  while ((match = structRegex.exec(content)) !== null) {
+    const fields = match[2].split("\n").map((l) => l.trim()).filter(Boolean);
+    defs.push({ name: match[1], kind: "struct", fields, source, language: "go" });
+  }
+  // type Name interface { ... }
+  const ifaceRegex = /type\s+(\w+)\s+interface\s*\{([^}]*)\}/g;
+  while ((match = ifaceRegex.exec(content)) !== null) {
+    const fields = match[2].split("\n").map((l) => l.trim()).filter(Boolean);
+    defs.push({ name: match[1], kind: "interface", fields, source, language: "go" });
+  }
+  return defs;
+}
+
+function extractPySignatures(content: string, source: string): FunctionSignature[] {
+  const sigs: FunctionSignature[] = [];
+  const funcRegex = /(?:async\s+)?def\s+(\w+)\s*\(([^)]*)\)\s*(?::\s*([^:\n]+))?/g;
+  let match;
+  while ((match = funcRegex.exec(content)) !== null) {
+    if (match[1].startsWith("_") && !match[1].startsWith("__")) continue;
+    sigs.push({
+      name: match[1],
+      params: match[2].split(",").map((p) => p.trim()).filter(Boolean),
+      returnType: (match[3] ?? "").trim(),
+      isExported: !match[1].startsWith("_"),
+      isAsync: content.substring(match.index, match.index + 20).includes("async"),
+      source,
+      language: "python",
+    });
+  }
+  return sigs;
+}
+
+function extractPyTypes(content: string, source: string): TypeDefinition[] {
+  const defs: TypeDefinition[] = [];
+  const classRegex = /class\s+(\w+)(?:\([^)]*\))?:/g;
+  let match;
+  while ((match = classRegex.exec(content)) !== null) {
+    defs.push({ name: match[1], kind: "class", fields: [], source, language: "python" });
+  }
+  return defs;
+}
+
+function extractJavaSignatures(content: string, source: string): FunctionSignature[] {
+  const sigs: FunctionSignature[] = [];
+  const methodRegex = /(?:public|private|protected)\s+(?:static\s+)?(?:<[^>]+>\s+)?(\w+(?:<[^>]+>)?)\s+(\w+)\s*\(([^)]*)\)/g;
+  let match;
+  while ((match = methodRegex.exec(content)) !== null) {
+    if (["if", "for", "while", "switch", "catch"].includes(match[2])) continue;
+    sigs.push({
+      name: match[2],
+      params: match[3].split(",").map((p) => p.trim()).filter(Boolean),
+      returnType: match[1],
+      isExported: content.substring(Math.max(0, match.index - 10), match.index).includes("public"),
+      isAsync: false,
+      source,
+      language: "java",
+    });
+  }
+  return sigs;
+}
+
+function extractJavaTypes(content: string, source: string): TypeDefinition[] {
+  const defs: TypeDefinition[] = [];
+  const classRegex = /(?:public\s+)?(?:abstract\s+)?(?:class|interface|enum)\s+(\w+)/g;
+  let match;
+  while ((match = classRegex.exec(content)) !== null) {
+    const kind = content.substring(match.index, match.index + 30).includes("interface") ? "interface" :
+                 content.substring(match.index, match.index + 30).includes("enum") ? "enum" : "class";
+    defs.push({ name: match[1], kind, fields: [], source, language: "java" });
+  }
+  return defs;
+}
+
+/**
+ * Build file-level dependency graph from import statements.
+ */
+export function buildDependencyGraph(dirPath: string): { edges: DependencyEdge[]; nodes: DependencyNode[] } {
+  const edges: DependencyEdge[] = [];
+  const codeFiles = collectCodeFiles(dirPath, dirPath);
+  const inFileMap = new Map<string, string>();
+
+  // Build lookup: filename → relative path
+  for (const rel of codeFiles) {
+    const base = basename(rel, extname(rel));
+    inFileMap.set(base, rel);
+  }
+
+  const outDegree = new Map<string, number>();
+  const inDegree = new Map<string, number>();
+
+  for (const relPath of codeFiles) {
+    const content = readFileText(join(dirPath, relPath));
+    if (!content) continue;
+
+    const imports = extractImports(content, relPath);
+    for (const imp of imports) {
+      // Resolve local imports
+      const resolved = resolveImport(imp, relPath, inFileMap);
+      if (resolved) {
+        edges.push({ from: relPath, to: resolved, importType: imp.type });
+        outDegree.set(relPath, (outDegree.get(relPath) ?? 0) + 1);
+        inDegree.set(resolved, (inDegree.get(resolved) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Compute core nodes (top in-degree)
+  const nodes: DependencyNode[] = [];
+  for (const [file, deg] of inDegree) {
+    nodes.push({ file, inDegree: deg, outDegree: outDegree.get(file) ?? 0 });
+  }
+  nodes.sort((a, b) => b.inDegree - a.inDegree);
+
+  return { edges, nodes: nodes.slice(0, 50) };
+}
+
+interface ImportInfo {
+  path: string;
+  type: "named" | "default" | "namespace" | "module";
+}
+
+function extractImports(content: string, _source: string): ImportInfo[] {
+  const imports: ImportInfo[] = [];
+
+  // TS/JS: import ... from './path' or import './path'
+  const tsImportRegex = /import\s+(?:(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s+)?['"]([^'"]+)['"]/g;
+  let match;
+  while ((match = tsImportRegex.exec(content)) !== null) {
+    const path = match[1];
+    if (path.startsWith(".") || path.startsWith("/")) {
+      imports.push({ path, type: "named" });
+    }
+  }
+
+  // Go: import "path" or import ( ... )
+  const goImportRegex = /import\s+(?:\([^)]*\)|"([^"]+)")/g;
+  while ((match = goImportRegex.exec(content)) !== null) {
+    if (match[1]) {
+      imports.push({ path: match[1], type: "module" });
+    } else {
+      const block = match[0];
+      const innerImports = [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+      for (const imp of innerImports) {
+        imports.push({ path: imp, type: "module" });
+      }
+    }
+  }
+
+  // Python: from X import Y or import X
+  const pyImportRegex = /(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))/g;
+  while ((match = pyImportRegex.exec(content)) !== null) {
+    imports.push({ path: match[1] ?? match[2] ?? "", type: "named" });
+  }
+
+  return imports;
+}
+
+function resolveImport(imp: ImportInfo, fromFile: string, fileMap: Map<string, string>): string | null {
+  if (!imp.path.startsWith(".")) return null;
+  const dir = fromFile.split("/").slice(0, -1).join("/");
+  const resolved = dir ? `${dir}/${imp.path}` : imp.path;
+  // Try exact, .ts, .js, .go, .py
+  const base = resolved.replace(/\.\w+$/, "");
+  for (const ext of ["", ".ts", ".tsx", ".js", ".go", ".py"]) {
+    const candidate = `${base}${ext}`;
+    if (fileMap.has(candidate.replace(/\.\w+$/, "").split("/").pop() ?? "")) {
+      // Best effort: check if the resolved path matches a known file
+      for (const [, path] of fileMap) {
+        if (path === candidate || path === `${base}/index${ext}`) return path;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Detect code patterns: error handling, design patterns, side effects.
+ */
+export function detectCodePatterns(dirPath: string): CodePattern[] {
+  const patterns: CodePattern[] = [];
+  const codeFiles = collectCodeFiles(dirPath, dirPath);
+
+  // Track error types for dedup
+  const errorTypes = new Map<string, { count: number; sources: string[] }>();
+
+  for (const relPath of codeFiles) {
+    const content = readFileText(join(dirPath, relPath));
+    if (!content) continue;
+
+    // Error handling patterns
+    detectErrorPatterns(content, relPath, errorTypes);
+
+    // Side effects
+    detectSideEffects(content, relPath, patterns);
+
+    // Design patterns
+    detectDesignPatterns(content, relPath, patterns);
+
+    // Config usage
+    detectConfigPatterns(content, relPath, patterns);
+  }
+
+  // Add error type patterns
+  for (const [name, info] of errorTypes) {
+    if (info.count >= 2) {
+      patterns.push({
+        type: "error_handling",
+        name,
+        source: info.sources.slice(0, 3).join(", "),
+        description: `全局错误类型，在 ${info.count} 处使用`,
+      });
+    }
+  }
+
+  return patterns;
+}
+
+function detectErrorPatterns(content: string, source: string, errorTypes: Map<string, { count: number; sources: string[] }>): void {
+  // class XxxError extends Error
+  const errorClassRegex = /class\s+(\w+Error)\s+extends\s+\w+/g;
+  let match;
+  while ((match = errorClassRegex.exec(content)) !== null) {
+    const info = errorTypes.get(match[1]) ?? { count: 0, sources: [] };
+    info.count++;
+    if (!info.sources.includes(source)) info.sources.push(source);
+    errorTypes.set(match[1], info);
+  }
+
+  // new XxxError(...)
+  const throwRegex = /throw\s+new\s+(\w+Error)/g;
+  while ((match = throwRegex.exec(content)) !== null) {
+    const info = errorTypes.get(match[1]) ?? { count: 0, sources: [] };
+    info.count++;
+    if (!info.sources.includes(source)) info.sources.push(source);
+    errorTypes.set(match[1], info);
+  }
+}
+
+function detectSideEffects(content: string, source: string, patterns: CodePattern[]): void {
+  // HTTP calls
+  if (/(?:fetch|axios|http\.\w+|requests\.\w+)\s*\(/i.test(content)) {
+    patterns.push({ type: "side_effect", name: "HTTP 调用", source, description: "包含外部 HTTP 请求" });
+  }
+  // Database
+  if (/(?:\.query\(|\.save\(|\.find\(|\.execute\(|repository\.|prisma\.)/i.test(content)) {
+    patterns.push({ type: "side_effect", name: "数据库访问", source, description: "包含数据库操作" });
+  }
+  // File I/O
+  if (/(?:readFile|writeFile|createReadStream|os\.Open|open\()/i.test(content)) {
+    patterns.push({ type: "side_effect", name: "文件 I/O", source, description: "包含文件读写操作" });
+  }
+}
+
+function detectDesignPatterns(content: string, source: string, patterns: CodePattern[]): void {
+  // Factory: createXxx method
+  if (/create\w+\s*\(/i.test(content) && /class\s+\w+/i.test(content)) {
+    patterns.push({ type: "design_pattern", name: "Factory", source, description: "检测到工厂模式（create 方法 + class）" });
+  }
+  // Strategy: interface with multiple implementations
+  if (/interface\s+\w*Strategy\w*/i.test(content) || /strategy.*implement/i.test(content)) {
+    patterns.push({ type: "design_pattern", name: "Strategy", source, description: "检测到策略模式" });
+  }
+  // Observer/Event: addEventListener, subscribe, on(
+  if (/(?:addEventListener|subscribe|\.on\(|\.emit\(|EventEmitter)/i.test(content)) {
+    patterns.push({ type: "design_pattern", name: "Observer/Event", source, description: "检测到观察者/事件模式" });
+  }
+  // Middleware: next( or use(
+  if (/(?:\.use\(|function\s*\w*middleware|next\s*\(\))/i.test(content)) {
+    patterns.push({ type: "design_pattern", name: "Middleware", source, description: "检测到中间件模式" });
+  }
+}
+
+function detectConfigPatterns(content: string, source: string, patterns: CodePattern[]): void {
+  if (/(?:process\.env|config\.get|viper\.Get|os\.Getenv|dotenv)/i.test(content)) {
+    const envVars = [...content.matchAll(/process\.env\.(\w+)/g)].map((m) => m[1]);
+    patterns.push({
+      type: "config_usage",
+      name: "环境变量消费",
+      source,
+      description: envVars.length > 0 ? `使用: ${envVars.slice(0, 5).join(", ")}` : "使用配置/环境变量",
+    });
+  }
 }
 
 // ── Project Classification ────────────────────────────────────────
@@ -1567,6 +2031,11 @@ interface DeepScanData {
   businessFlows: BusinessFlow[];
   mdDocuments: DiscoveredMd[];
   docCodeDiscrepancies: DocCodeDiscrepancy[];
+  functionSignatures: FunctionSignature[];
+  typeDefinitions: TypeDefinition[];
+  dependencyEdges: DependencyEdge[];
+  dependencyNodes: DependencyNode[];
+  codePatterns: CodePattern[];
   endpoints: number;
   models: number;
   flows: number;
@@ -2053,6 +2522,11 @@ export async function executeScan(
     moduleBoundaries,
     mdDocuments: scanData.mdDocuments,
     docCodeDiscrepancies: scanData.docCodeDiscrepancies,
+    functionSignatures: scanData.functionSignatures,
+    typeDefinitions: scanData.typeDefinitions,
+    dependencyEdges: scanData.dependencyEdges,
+    dependencyNodes: scanData.dependencyNodes,
+    codePatterns: scanData.codePatterns,
     endpoints: scanData.endpoints,
     models: scanData.models,
     flows: scanData.flows,
@@ -2124,6 +2598,15 @@ function performDeepScan(
     ? crossValidateDocWithCode(mdDocuments, techStack, apiContracts, dataEntities)
     : [];
 
+  // Code deep analysis
+  const { signatures: functionSignatures, types: typeDefinitions } = shouldAnalyze
+    ? extractSignatures(dirPath)
+    : { signatures: [] as FunctionSignature[], types: [] as TypeDefinition[] };
+  const { edges: dependencyEdges, nodes: dependencyNodes } = shouldAnalyze
+    ? buildDependencyGraph(dirPath)
+    : { edges: [] as DependencyEdge[], nodes: [] as DependencyNode[] };
+  const codePatterns = shouldAnalyze ? detectCodePatterns(dirPath) : [];
+
   return {
     projectType,
     architecture,
@@ -2135,6 +2618,11 @@ function performDeepScan(
     businessFlows,
     mdDocuments,
     docCodeDiscrepancies,
+    functionSignatures,
+    typeDefinitions,
+    dependencyEdges,
+    dependencyNodes,
+    codePatterns,
     endpoints,
     models,
     flows,
@@ -2170,6 +2658,16 @@ export function formatScanSummary(result: ScanResult): string {
   lines.push("", `  MD 文档: ${result.mdDocuments.length} (P0:${p0} P1:${p1} P2:${p2})`);
   if (result.docCodeDiscrepancies.length > 0) {
     lines.push(`  文档-代码不一致: ${result.docCodeDiscrepancies.length} 处`);
+  }
+  lines.push(
+    `  函数签名: ${result.functionSignatures.length}`,
+    `  类型定义: ${result.typeDefinitions.length}`,
+    `  依赖边: ${result.dependencyEdges.length}`,
+    `  代码模式: ${result.codePatterns.length}`,
+  );
+  if (result.dependencyNodes.length > 0) {
+    const topNodes = result.dependencyNodes.slice(0, 3).map((n) => `${n.file}(${n.inDegree})`);
+    lines.push(`  核心依赖: ${topNodes.join(", ")}`);
   }
 
   lines.push(
