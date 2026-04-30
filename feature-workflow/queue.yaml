@@ -168,6 +168,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-cross-platform-support
+    name: "跨平台兼容性支持（Windows / macOS / Linux）"
+    priority: 88
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-30T15:15:00+08:00"
+    tag: feat-cross-platform-support-20260430
+
   - id: feat-ctx-monitor-fix
     name: "Context Monitor 非 Anthropic Provider 统计修复"
     priority: 80
@@ -475,7 +484,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-30T13:20:00+08:00"
+  last_updated: "2026-04-30T15:15:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"

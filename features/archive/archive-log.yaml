@@ -1,4 +1,31 @@
 archived:
+  - id: feat-cross-platform-support
+    name: "跨平台兼容性支持（Windows / macOS / Linux）"
+    priority: 88
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-04-30T15:15:00+08:00"
+    tag: feat-cross-platform-support-20260430
+    merge_commit: "d8bbbe2"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/cross-platform-support
+    worktree_deleted: true
+    worktree_path: ../EDITH-cross-platform-support
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 4
+      scenarios_passed: 4
+    stats:
+      started: "2026-04-30T15:00:00+08:00"
+      duration: "~15min"
+      commits: 2
+      files_changed: 4
+
   - id: feat-excavate-code-deep
     name: "代码细节深度分析（函数级知识提取）"
     priority: 92
