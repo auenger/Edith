@@ -44,11 +44,13 @@ export type MessageAction =
   | { type: "END_THINKING" }
   | { type: "TOGGLE_THINKING"; payload: string }
   | { type: "EXPAND_ALL_THINKING" }
-  | { type: "COLLAPSE_ALL_THINKING" };
+  | { type: "COLLAPSE_ALL_THINKING" }
+  | { type: "CLEAR_ALL" };
 
 export type ToolCallAction =
   | { type: "START_TOOL_CALL"; payload: { toolCallId: string; toolName: string; args?: string } }
-  | { type: "END_TOOL_CALL"; payload: { toolCallId: string; result: string; isError: boolean } };
+  | { type: "END_TOOL_CALL"; payload: { toolCallId: string; result: string; isError: boolean } }
+  | { type: "CLEAR_ALL" };
 
 let messageCounter = 0;
 
@@ -140,6 +142,9 @@ export function messageReducer(state: Message[], action: MessageAction): Message
         },
       ];
 
+    case "CLEAR_ALL":
+      return [];
+
     default:
       return state;
   }
@@ -187,6 +192,9 @@ export function thinkingReducer(state: ThinkingBlock[], action: MessageAction): 
     case "COLLAPSE_ALL_THINKING":
       return state.map((tb) => ({ ...tb, expanded: false }));
 
+    case "CLEAR_ALL":
+      return [];
+
     default:
       return state;
   }
@@ -218,6 +226,9 @@ export function toolCallReducer(state: ToolCallBlock[], action: ToolCallAction):
       };
       return updated;
     }
+
+    case "CLEAR_ALL":
+      return [];
 
     default:
       return state;
