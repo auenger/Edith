@@ -40,6 +40,9 @@ const ScanParams = Type.Object({
   mode: Type.Optional(
     Type.String({ description: "扫描模式: full | quick", enum: ["full", "quick"] })
   ),
+  depth: Type.Optional(
+    Type.String({ description: "手动指定扫描深度（覆盖自动选择）: quick | deep | exhaustive", enum: ["quick", "deep", "exhaustive"] })
+  ),
 });
 
 const DistillParams = Type.Object({
@@ -152,7 +155,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
           const config = loadConfig();
 
           const outcome = await executeScan(
-            { target: params.target, mode: params.mode as "full" | "quick" | undefined },
+            { target: params.target, mode: params.mode as "full" | "quick" | undefined, depth: params.depth as "quick" | "deep" | "exhaustive" | undefined },
             config.repos,
             config.workspace.root,
           );
