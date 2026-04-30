@@ -421,7 +421,7 @@ function loadLayer1(
         code: "CORRUPTED_FILE",
         service: entry.service,
         file: quickRefPath,
-        message: `${entry.service}/quick-ref.md 无法读取，已跳过`,
+        message: `${join(entry.service, "quick-ref.md")} 无法读取，已跳过`,
       },
     };
   }
@@ -433,7 +433,7 @@ function loadLayer1(
         code: "CORRUPTED_FILE",
         service: entry.service,
         file: quickRefPath,
-        message: `${entry.service}/quick-ref.md 为空，已跳过`,
+        message: `${join(entry.service, "quick-ref.md")} 为空，已跳过`,
       },
     };
   }
@@ -582,7 +582,7 @@ function loadLayer2(
       warning: {
         code: "CORRUPTED_FILE",
         service: entry.service,
-        message: `${entry.service}/distillates/ 目录无法读取，已跳过`,
+        message: `${join(entry.service, "distillates")} 目录无法读取，已跳过`,
       },
     };
   }
