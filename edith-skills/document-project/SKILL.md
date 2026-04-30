@@ -161,9 +161,36 @@ Mature Knowledge（EDITH 的组织记忆）
 
 **立即写入** `docs/tech-stack.md`
 
-### Step 3：条件扫描（根据项目类型）
+### Step 3：代码深度分析
 
-根据项目类型决定扫描内容：
+从"目录级条件扫描"升级为"函数级全量分析"，在深度策略控制下按语言提取代码知识。
+
+#### 签名提取（多语言支持）
+
+| 语言 | 提取内容 |
+|------|---------|
+| TypeScript/JS | export function 签名、interface/type/class/enum 定义 |
+| Go | func 签名（含方法接收器）、struct/interface 定义 |
+| Python | def 签名（含 type hints）、class 定义 |
+| Java | method 签名、class/interface/enum 定义 |
+
+#### 依赖图构建
+
+分析文件级 import/export 关系：
+- 构建有向依赖图（边 = import 关系）
+- 识别核心依赖节点（被最多文件依赖的）
+- 支持循环依赖检测
+
+#### 代码模式识别
+
+| 模式类型 | 识别方法 |
+|---------|---------|
+| 错误处理 | XxxError 类定义、throw/catch 模式 |
+| 设计模式 | Factory（create 方法）、Strategy（策略接口）、Observer（事件）、Middleware（use/next） |
+| 副作用 | HTTP 调用、数据库操作、文件 I/O |
+| 配置消费 | process.env、config.get、环境变量列表 |
+
+#### 条件扫描（根据项目类型）
 
 | 条件 | 扫描内容 |
 |------|---------|
