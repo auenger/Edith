@@ -180,9 +180,17 @@ export function useAgentSession(): AgentSessionState {
         } else {
           const result = event.result;
           if (result) {
+            // CompactionResult has tokensBefore but NOT tokensAfter.
+            // Read current context usage to get the after value.
             const before = result.tokensBefore?.toLocaleString() ?? "?";
-            const after = result.tokensAfter != null ? result.tokensAfter.toLocaleString() : "?";
-            dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `[System] Compacted: ${before} → ${after} tokens` });
+            let afterStr = "?";
+            try {
+              const ctxUsage = session.getContextUsage?.() as import("../theme/context-panel.js").ContextUsage | undefined;
+              if (ctxUsage?.tokens != null) {
+                afterStr = ctxUsage.tokens.toLocaleString();
+              }
+            } catch { /* best-effort */ }
+            dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `[System] Compacted: ${before} → ${afterStr} tokens` });
           } else {
             dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `[System] Compaction complete.` });
           }

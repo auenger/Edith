@@ -66,7 +66,9 @@ repos:
   - name: edith-repo
     path: /Users/ryan/mycode/EDITH-e2e-pilot
   - name: LiteMes
-    path: ./company-edith/LiteMes
+    path: /Users/ryan/mycode/LiteMes
+  - name: DoNetMes
+    path: /Users/ryan/DoNetMes
 
 agent:
   token_budget:

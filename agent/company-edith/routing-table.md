@@ -10,12 +10,14 @@ layer: 0
 
 | Service | Role | Stack | Owner | Key Constraints |
 |---------|------|-------|-------|-----------------|
-| LiteMes | LiteMes (PCB Lightweight MES System) is a manufacturing execution system designed for PCB (Printed Circuit Board) factories. It provides master data management, production tracking, equipment management, and supply chain capabilities through a modern web application. |  | TBD |  |
+| DoNetMes | 通用权限管理开发框架，适用于企业级后台管理系统、MES、ERP 等场景 | .NET 8/10 + Furion + SqlSugar + Vue3 + Element Plus | TBD | 四层架构严格分离；必须使用实体基类；动态 API 服务模式；雪花 ID 主键；软删除默认启用；多租户数据隔离 |
+| LiteMes | PCB 轻量级制造执行系统，面向 PCB 工厂的生产管理 | | TBD | |
 
 ## Quick-Ref Paths
 
 | Service | Quick-Ref (Layer 1) | Full Distillates (Layer 2) |
 |---------|---------------------|----------------------------|
+| DoNetMes | DoNetMes/quick-ref.md | DoNetMes/distillates/ |
 | LiteMes | LiteMes/quick-ref.md | LiteMes/distillates/ |
 
 ## Loading Rules
