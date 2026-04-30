@@ -2,6 +2,44 @@
 # 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
 pending:
+  # ═══ Phase 1.6: 挖掘与蒸馏深度增强 ═══
+
+  - id: feat-deep-excavation
+    name: "挖掘与蒸馏深度增强（scan + distill 深度提升）"
+    priority: 92
+    size: L
+    dependencies: []
+    parent: null
+    split: true
+    children:
+      - feat-excavate-smart-depth
+      - feat-excavate-md-mining
+      - feat-excavate-code-deep
+    description: |
+      将 scan 的默认行为从"表面扫描"提升为"智能深度挖掘"。
+      智能深度控制（根据项目规模自动选择深度）+ MD 文件分类分级挖掘 +
+      代码细节深度分析（函数级接口契约、依赖图、模式识别）。
+
+  - id: feat-excavate-md-mining
+    name: "MD 文件分类分级挖掘"
+    priority: 92
+    size: S
+    dependencies: [feat-excavate-smart-depth]
+    parent: feat-deep-excavation
+    description: |
+      将 MD 文件从"可选补充"提升为"一等知识源"。P0 必读（README/CHANGELOG）
+      全量提取，P1 高优按相关性评分，P2 标准建索引，与代码分析交叉验证。
+
+  - id: feat-excavate-code-deep
+    name: "代码细节深度分析（函数级知识提取）"
+    priority: 92
+    size: S
+    dependencies: [feat-excavate-md-mining]
+    parent: feat-deep-excavation
+    description: |
+      从目录级提升到函数级：提取接口签名、类型定义、依赖图、调用链、
+      错误处理模式、设计模式识别。多语言支持 TS/Go/Python/Java。
+
   # ═══ Phase 1.5: Skill 能力对齐 ═══
 
   - id: feat-skill-alignment
@@ -437,13 +475,20 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-30T11:46:00+08:00"
+  last_updated: "2026-04-30T13:20:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
     phase2: "EDITH 全栈升级（Agent 集成 + Board）"
     phase3: "增值功能（待规划）"
   parents:
+    - id: feat-deep-excavation
+      name: "挖掘与蒸馏深度增强"
+      split: true
+      children:
+        - feat-excavate-smart-depth
+        - feat-excavate-md-mining
+        - feat-excavate-code-deep
     - id: feat-skill-alignment
       name: "Skill 能力对齐"
       split: true

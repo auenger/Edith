@@ -1,4 +1,31 @@
 archived:
+  - id: feat-excavate-smart-depth
+    name: "智能深度控制（自动选择扫描深度）"
+    priority: 92
+    size: S
+    dependencies: []
+    parent: feat-deep-excavation
+    completed: "2026-04-30T13:20:00+08:00"
+    tag: feat-excavate-smart-depth-20260430
+    merge_commit: "a9b60f8"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/excavate-smart-depth
+    worktree_deleted: true
+    worktree_path: ../EDITH-excavate-smart-depth
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-30T13:00:00+08:00"
+      duration: "~20min"
+      commits: 1
+      files_changed: 3
+
   - id: feat-ctx-monitor-fix
     name: "Context Monitor 非 Anthropic Provider 统计修复"
     priority: 80
