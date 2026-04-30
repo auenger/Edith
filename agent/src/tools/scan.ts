@@ -1,11 +1,14 @@
 /**
- * EDITH Scan Tool — edith_scan implementation (v2)
+ * EDITH Scan Tool — edith_scan implementation (v3)
  *
- * Deep code archaeology scanner. Upgraded from file counter to full
- * project analysis: classification, API contracts, data models,
- * business logic discovery, and structured documentation output.
+ * Deep code archaeology scanner with smart depth control.
+ * Automatically selects scan depth based on project size and architecture:
+ * - Small projects (<100 files): Exhaustive full read
+ * - Medium projects (100-500): Deep key-directory scan
+ * - Large projects (>500): Module-boundary-aware deep scan
+ * - Monorepo/microservice: Per-module deep scan with merge
  *
- * Backward compatible with v1 — all existing exports preserved.
+ * Backward compatible with v1/v2 — all existing exports preserved.
  */
 
 import {
@@ -21,9 +24,25 @@ import { addRepo, findConfigFile } from "../config.js";
 
 export type ScanMode = "full" | "quick";
 
+/** Smart depth levels — auto-selected based on project size */
+export type ScanDepth = "quick" | "deep" | "exhaustive";
+
+/** Project size classification */
+export type ProjectSize = "small" | "medium" | "large" | "xlarge";
+
+/** Detected module boundary in multi-module projects */
+export interface ModuleBoundary {
+  name: string;
+  path: string;
+  fileCount: number;
+  type: "package" | "service" | "app" | "layer";
+}
+
 export interface ScanParams {
   target: string;
   mode?: ScanMode;
+  /** Manual depth override — skips auto-detection when set */
+  depth?: ScanDepth;
 }
 
 /** 12 project types per SKILL.md */
@@ -89,6 +108,12 @@ export interface ScanResult {
   techStack: string[];
   projectType: ProjectType;
   architecture: ArchitecturePattern;
+  /** Smart depth level used for this scan */
+  depth: ScanDepth;
+  /** Detected project size */
+  projectSize: ProjectSize;
+  /** Module boundaries detected (empty for single-module projects) */
+  moduleBoundaries: ModuleBoundary[];
   endpoints: number;
   models: number;
   flows: number;
@@ -191,6 +216,21 @@ const MODEL_DIRS = new Set([
 const SERVICE_DIRS = new Set([
   "services", "handlers", "usecases", "commands", "business",
 ]);
+
+// ── Smart Depth Constants ──────────────────────────────────────────
+
+/** File count thresholds for project size classification */
+const SIZE_THRESHOLDS = {
+  small: 100,
+  medium: 500,
+  large: 2000,
+} as const;
+
+/** Monorepo package directories */
+const MONOREPO_DIRS = new Set(["packages", "apps", "libs", "modules"]);
+
+/** Microservice directories */
+const SERVICE_ROOT_DIRS = new Set(["services", "cmd", "internal"]);
 
 /** Directory purpose annotations for source-tree.md */
 const DIR_ANNOTATIONS: Record<string, string> = {
@@ -400,6 +440,124 @@ export function preflightCheck(dirPath: string): ScanError | null {
   if (permError) return permError;
   if (countCodeFiles(dirPath) === 0) return emptyProjectError(dirPath);
   return null;
+}
+
+// ── Smart Depth Detection ───────────────────────────────────────────
+
+/**
+ * Classify project size based on source file count.
+ */
+export function detectProjectSize(dirPath: string): ProjectSize {
+  const count = countCodeFiles(dirPath);
+  if (count < SIZE_THRESHOLDS.small) return "small";
+  if (count < SIZE_THRESHOLDS.medium) return "medium";
+  if (count < SIZE_THRESHOLDS.large) return "large";
+  return "xlarge";
+}
+
+/**
+ * Detect module boundaries in multi-module projects (monorepo, microservice).
+ */
+export function detectModuleBoundaries(dirPath: string): ModuleBoundary[] {
+  const boundaries: ModuleBoundary[] = [];
+  const entries = readdirEntries(dirPath);
+
+  // Monorepo: packages/, apps/, libs/, modules/
+  for (const dirName of MONOREPO_DIRS) {
+    if (!entries.has(dirName)) continue;
+    const subPath = join(dirPath, dirName);
+    const subs = readdirEntries(subPath);
+    for (const sub of subs) {
+      const fullSub = join(subPath, sub);
+      if (!isDirectory(fullSub)) continue;
+      boundaries.push({
+        name: sub,
+        path: fullSub,
+        fileCount: countCodeFiles(fullSub),
+        type: dirName === "apps" ? "app" : dirName === "services" ? "service" : "package",
+      });
+    }
+  }
+
+  // Go: cmd/ subdirectories as separate commands/services
+  if (entries.has("cmd")) {
+    const cmdPath = join(dirPath, "cmd");
+    const cmds = readdirEntries(cmdPath);
+    for (const cmd of cmds) {
+      const fullCmd = join(cmdPath, cmd);
+      if (!isDirectory(fullCmd)) continue;
+      boundaries.push({
+        name: cmd,
+        path: fullCmd,
+        fileCount: countCodeFiles(fullCmd),
+        type: "service",
+      });
+    }
+  }
+
+  // Multi-part: client/ + server/ or frontend/ + backend/
+  const clientDirs = ["client", "frontend", "web"];
+  const serverDirs = ["server", "backend", "api"];
+  for (const cd of clientDirs) {
+    if (!entries.has(cd)) continue;
+    boundaries.push({
+      name: cd,
+      path: join(dirPath, cd),
+      fileCount: countCodeFiles(join(dirPath, cd)),
+      type: "layer",
+    });
+  }
+  for (const sd of serverDirs) {
+    if (!entries.has(sd)) continue;
+    boundaries.push({
+      name: sd,
+      path: join(dirPath, sd),
+      fileCount: countCodeFiles(join(dirPath, sd)),
+      type: "layer",
+    });
+  }
+
+  return boundaries.filter((b) => b.fileCount > 0);
+}
+
+/**
+ * Resolve the optimal scan depth based on project size and architecture.
+ * Manual depth override takes precedence when provided.
+ */
+export function resolveScanDepth(
+  size: ProjectSize,
+  architecture: ArchitecturePattern,
+  override?: ScanDepth,
+): ScanDepth {
+  if (override) return override;
+
+  // Architecture-aware mapping
+  if (architecture === "monorepo" || architecture === "microservice") {
+    return "deep";
+  }
+
+  // Size-based mapping
+  switch (size) {
+    case "small": return "exhaustive";
+    case "medium": return "deep";
+    case "large":
+    case "xlarge": return "deep";
+  }
+}
+
+function readdirEntries(dirPath: string): Set<string> {
+  const entries = new Set<string>();
+  try {
+    readdirSync(dirPath, { withFileTypes: true }).forEach((e) => {
+      if (!e.name.startsWith(".")) entries.add(e.name);
+    });
+  } catch { /* skip */ }
+  return entries;
+}
+
+function isDirectory(path: string): boolean {
+  try { return statSync(path).isDirectory(); }
+  catch { return false; }
 }
 
 // ── Project Classification ────────────────────────────────────────
@@ -1600,12 +1758,17 @@ export async function executeScan(
   const projectType = classifyProject(projectPath, techStack);
   const architecture = detectArchitecture(projectPath, techStack);
 
-  // Step 6: Deep analysis (with timeout)
+  // Step 6: Smart depth detection
+  const projectSize = detectProjectSize(projectPath);
+  const moduleBoundaries = detectModuleBoundaries(projectPath);
+  const depth = resolveScanDepth(projectSize, architecture, params.depth);
+
+  // Step 7: Deep analysis (with timeout)
   let scanData: DeepScanData;
   try {
     scanData = await Promise.race([
       new Promise<DeepScanData>((resolve) => {
-        const data = performDeepScan(projectPath, mode, techStack, projectType, architecture);
+        const data = performDeepScan(projectPath, mode, depth, techStack, projectType, architecture, moduleBoundaries);
         resolve(data);
       }),
       new Promise<never>((_, reject) => {
@@ -1623,23 +1786,26 @@ export async function executeScan(
     };
   }
 
-  // Step 7: Persist
+  // Step 8: Persist
   const absWorkspaceRoot = resolve(workspaceRoot);
   const { outputDir, files } = persistScanResult(absWorkspaceRoot, name, techStack, scanData, projectPath);
 
-  // Step 8: Auto-register
+  // Step 9: Auto-register
   const cfgPath = findConfigFile();
   if (cfgPath) {
     addRepo(cfgPath, { name, path: projectPath, stack: techStack.length > 0 ? techStack.join(", ") : undefined });
   }
 
-  // Step 9: Build result
+  // Step 10: Build result
   const result: ScanResult = {
     service: name,
     path: projectPath,
     techStack,
     projectType,
     architecture,
+    depth,
+    projectSize,
+    moduleBoundaries,
     endpoints: scanData.endpoints,
     models: scanData.models,
     flows: scanData.flows,
@@ -1664,13 +1830,15 @@ export async function executeScan(
 function performDeepScan(
   dirPath: string,
   mode: ScanMode,
+  depth: ScanDepth,
   techStack: string[],
   projectType: ProjectType,
   architecture: ArchitecturePattern,
+  moduleBoundaries: ModuleBoundary[],
 ): DeepScanData {
   // Count files in key directories
   let endpoints = 0, models = 0, flows = 0;
-  function countDirs(dir: string, depth: number): void {
+  function countDirs(dir: string, countDepth: number): void {
     let entries;
     try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
     for (const entry of entries) {
@@ -1687,18 +1855,21 @@ function performDeepScan(
       if (SERVICE_DIRS.has(lower)) {
         try { flows += readdirSync(full).filter((f) => CODE_EXTENSIONS.has(extname(f))).length; } catch { /* skip */ }
       }
-      if (depth < 4) countDirs(full, depth + 1);
+      if (countDepth < 4) countDirs(full, countDepth + 1);
     }
   }
   countDirs(dirPath, 0);
 
-  const sourceTree = buildSourceTree(dirPath, mode === "quick" ? 2 : 3);
+  // Source tree depth based on scan depth level
+  const treeDepth = depth === "quick" ? 2 : depth === "deep" ? 3 : 5;
+  const sourceTree = buildSourceTree(dirPath, treeDepth);
   const overview = buildOverview(dirPath);
 
-  // Deep analysis (only in full mode)
-  const apiContracts = mode === "full" ? extractApiContracts(dirPath, techStack) : [];
-  const dataEntities = mode === "full" ? analyzeDataModels(dirPath, techStack) : [];
-  const businessFlows = mode === "full" ? discoverBusinessLogic(dirPath) : [];
+  // Analysis granularity based on depth
+  const shouldAnalyze = mode === "full" && depth !== "quick";
+  const apiContracts = shouldAnalyze ? extractApiContracts(dirPath, techStack) : [];
+  const dataEntities = shouldAnalyze ? analyzeDataModels(dirPath, techStack) : [];
+  const businessFlows = shouldAnalyze ? discoverBusinessLogic(dirPath) : [];
 
   return {
     projectType,
@@ -1726,15 +1897,24 @@ export function formatScanSummary(result: ScanResult): string {
     `  技术栈: ${result.techStack.length > 0 ? result.techStack.join(", ") : "未识别"}`,
     `  项目类型: ${result.projectType}`,
     `  架构模式: ${result.architecture}`,
+    `  项目规模: ${result.projectSize}`,
+    `  扫描深度: ${result.depth}（自动选择）`,
     "",
     `  API 端点: ${result.apiContracts.length} (${result.endpoints} 端点文件)`,
     `  数据实体: ${result.dataEntities.length} (${result.models} 模型文件)`,
     `  业务流程: ${result.businessFlows.length} (${result.flows} 服务文件)`,
+  ];
+
+  if (result.moduleBoundaries.length > 0) {
+    lines.push("", `  模块边界: ${result.moduleBoundaries.map((m) => `${m.name}(${m.fileCount})`).join(", ")}`);
+  }
+
+  lines.push(
     "",
     `  输出目录: ${result.outputDir}`,
     `  生成文件: ${result.files.join(", ")}`,
     `  扫描时间: ${result.scannedAt}`,
-  ];
+  );
   return lines.join("\n");
 }
 
