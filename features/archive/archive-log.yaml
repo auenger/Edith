@@ -1,4 +1,31 @@
 archived:
+  - id: feat-excavate-code-deep
+    name: "代码细节深度分析（函数级知识提取）"
+    priority: 92
+    size: S
+    dependencies: [feat-excavate-md-mining]
+    parent: feat-deep-excavation
+    completed: "2026-04-30T14:05:00+08:00"
+    tag: feat-excavate-code-deep-20260430
+    merge_commit: "99de3a3"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/excavate-code-deep
+    worktree_deleted: true
+    worktree_path: ../EDITH-excavate-code-deep
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-30T13:45:00+08:00"
+      duration: "~20min"
+      commits: 1
+      files_changed: 2
+
   - id: feat-excavate-md-mining
     name: "MD 文件分类分级挖掘"
     priority: 92
