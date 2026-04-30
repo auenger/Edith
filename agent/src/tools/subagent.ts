@@ -10,6 +10,7 @@
 
 import { spawn, type ChildProcess } from "node:child_process";
 import { resolve, dirname, join } from "node:path";
+import { platform } from "node:process";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -43,6 +44,10 @@ interface RunningAgent {
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 const MAX_CONCURRENT = 3;
+
+function getPlatformCommand(cmd: string): string {
+  return platform === "win32" ? `${cmd}.cmd` : cmd;
+}
 
 // ── Agent Definition Loader ───────────────────────────────────────
 
@@ -150,12 +155,13 @@ function runSubProcess(
       args.push("--model", agentDef.model);
     }
 
-    const child = spawn("pi", args, {
+    const child = spawn(getPlatformCommand("pi"), args, {
       stdio: ["pipe", "pipe", "pipe"],
       env: {
         ...process.env,
         EDITH_AGENT_TASK: task,
       },
+      ...(platform === "win32" ? { shell: true } : {}),
     });
 
     const running: RunningAgent = { process: child, resolve };
