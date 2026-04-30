@@ -111,7 +111,11 @@ export function App() {
     config,
     sendUserMessage,
     sendSlashCommand,
+    handleNewSession,
+    resetSessionState,
     dispatch,
+    thinkingDispatch,
+    toolCallDispatch,
     toggleThinking,
     expandAllThinking,
     collapseAllThinking,
@@ -193,14 +197,24 @@ export function App() {
         handleLocalCommand(cmdDef, dispatch);
         break;
       case "session":
-        await sendSlashCommand(text);
-        dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `/${cmdDef.name} executed.` });
+        if (cmdDef.name === "new" || cmdDef.name === "clear") {
+          const withSteer = cmdDef.name === "clear";
+          await handleNewSession({ withSteer });
+          dispatch({ type: "CLEAR_ALL" });
+          thinkingDispatch({ type: "CLEAR_ALL" });
+          toolCallDispatch({ type: "CLEAR_ALL" });
+          resetSessionState();
+          dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `/${cmdDef.name} executed — new session started.` });
+        } else {
+          await sendSlashCommand(text);
+          dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `/${cmdDef.name} executed.` });
+        }
         break;
       case "agent":
         await sendUserMessage(text);
         break;
     }
-  }, [dispatch, handleLocalCommand, sendSlashCommand, sendUserMessage, switchProfile, config]);
+  }, [dispatch, handleLocalCommand, sendSlashCommand, sendUserMessage, switchProfile, config, handleNewSession, resetSessionState, thinkingDispatch, toolCallDispatch]);
 
   const handleSubmit = useCallback(
     async (text: string) => {
