@@ -1,4 +1,31 @@
 archived:
+  - id: feat-excavate-md-mining
+    name: "MD 文件分类分级挖掘"
+    priority: 92
+    size: S
+    dependencies: [feat-excavate-smart-depth]
+    parent: feat-deep-excavation
+    completed: "2026-04-30T13:40:00+08:00"
+    tag: feat-excavate-md-mining-20260430
+    merge_commit: "f2b2e0b"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/excavate-md-mining
+    worktree_deleted: true
+    worktree_path: ../EDITH-excavate-md-mining
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-30T13:25:00+08:00"
+      duration: "~15min"
+      commits: 1
+      files_changed: 2
+
   - id: feat-excavate-smart-depth
     name: "智能深度控制（自动选择扫描深度）"
     priority: 92
