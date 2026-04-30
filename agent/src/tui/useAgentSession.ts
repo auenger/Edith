@@ -18,6 +18,20 @@ import { ContextMonitor, type PressureState, type RoundData } from "../context-m
 import { setSharedStats } from "../shared-stats.js";
 import type { SessionStats } from "../theme/context-panel.js";
 
+/**
+ * Resolve context tokens: prefer exact API value → percent-based estimate → cumulative fallback.
+ * Fixes non-Anthropic providers where contextUsage.tokens is null but percent is available.
+ */
+function resolveContextTokens(
+  contextUsage: { tokens?: number | null; percent?: number | null } | undefined,
+  tokenTotal: number,
+  ctxWindow: number,
+): number {
+  if (contextUsage?.tokens != null) return contextUsage.tokens;
+  if (contextUsage?.percent != null) return Math.round(contextUsage.percent * ctxWindow);
+  return tokenTotal;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -152,8 +166,8 @@ export function useAgentSession(): AgentSessionState {
             const tokenTotal = sdkStats?.tokens?.total ?? 0;
 
             if (tokenTotal > 0) {
-              const ctxTokens = contextUsage?.tokens ?? tokenTotal;
               const ctxWindow = contextUsage?.contextWindow ?? profile.context_window ?? 128_000;
+              const ctxTokens = resolveContextTokens(contextUsage, tokenTotal, ctxWindow);
               const ctxPercent = contextUsage?.percent ?? (ctxTokens / ctxWindow);
 
               mon.record(
@@ -188,6 +202,9 @@ export function useAgentSession(): AgentSessionState {
               const ctxUsage = session.getContextUsage?.() as import("../theme/context-panel.js").ContextUsage | undefined;
               if (ctxUsage?.tokens != null) {
                 afterStr = ctxUsage.tokens.toLocaleString();
+              } else if (ctxUsage?.percent != null) {
+                const window = ctxUsage.contextWindow ?? profile.context_window ?? 128_000;
+                afterStr = `~${Math.round(ctxUsage.percent * window).toLocaleString()}`;
               }
             } catch { /* best-effort */ }
             dispatch({ type: "ADD_SYSTEM_MESSAGE", payload: `[System] Compacted: ${before} → ${afterStr} tokens` });
@@ -204,8 +221,8 @@ export function useAgentSession(): AgentSessionState {
             const contextUsage = session.getContextUsage?.() as import("../theme/context-panel.js").ContextUsage | undefined;
             const tokenTotal = sdkStats?.tokens?.total ?? 0;
             if (sdkStats || contextUsage) {
-              const ctxTokens = contextUsage?.tokens ?? tokenTotal;
               const ctxWindow = contextUsage?.contextWindow ?? profile.context_window ?? 128_000;
+              const ctxTokens = resolveContextTokens(contextUsage, tokenTotal, ctxWindow);
               const ctxPercent = contextUsage?.percent ?? (ctxTokens / ctxWindow);
 
               mon.record(
@@ -255,8 +272,8 @@ export function useAgentSession(): AgentSessionState {
         if (mon && cfg.context_monitor.enabled) {
           try {
             if (sdkStats || contextUsage) {
-              const ctxTokens = contextUsage?.tokens ?? tokenTotal;
               const ctxWindow = contextUsage?.contextWindow ?? profile.context_window ?? 128_000;
+              const ctxTokens = resolveContextTokens(contextUsage, tokenTotal, ctxWindow);
               const ctxPercent = contextUsage?.percent ?? (ctxTokens / ctxWindow);
 
               mon.record(
