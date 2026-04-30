@@ -1,4 +1,31 @@
 archived:
+  - id: feat-ctx-monitor-fix
+    name: "Context Monitor 非 Anthropic Provider 统计修复"
+    priority: 80
+    size: S
+    dependencies: []
+    parent: null
+    completed: "2026-04-30T11:46:00+08:00"
+    tag: feat-ctx-monitor-fix-20260430
+    merge_commit: "6b73af0"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/ctx-monitor-fix
+    worktree_deleted: true
+    worktree_path: ../EDITH-ctx-monitor-fix
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-04-30T11:15:00+08:00"
+      duration: "~31min"
+      commits: 1
+      files_changed: 1
+
   - id: feat-session-lifecycle
     name: "Session 生命周期命令修复（/new, /clear, /compact）"
     priority: 85

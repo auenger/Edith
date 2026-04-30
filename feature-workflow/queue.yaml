@@ -20,7 +20,6 @@ pending:
       scan 从"文件计数器"→"代码考古器"，distill 从基础过滤→无损压缩引擎，
       route 增加多服务路由和复杂度分析。
 
-
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
   - id: feat-phase2
@@ -131,6 +130,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-ctx-monitor-fix
+    name: "Context Monitor 非 Anthropic Provider 统计修复"
+    priority: 80
+    size: S
+    dependencies: []
+    parent: null
+    completed_at: "2026-04-30T11:46:00+08:00"
+    tag: feat-ctx-monitor-fix-20260430
+
   - id: feat-session-lifecycle
     name: "Session 生命周期命令修复（/new, /clear, /compact）"
     priority: 85
@@ -429,7 +437,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-30T10:35:00+08:00"
+  last_updated: "2026-04-30T11:46:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
