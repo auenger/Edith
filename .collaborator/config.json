@@ -21,9 +21,8 @@
     "/Users/ryan/mycode/HS_jarvis/agent/src/agents",
     "/Users/ryan/mycode/HS_jarvis/agent/src/tools",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/DoNetMes/distillates",
-    "/Users/ryan/mycode/HS_jarvis/agent/company-edith",
-    "/Users/ryan/mycode/HS_jarvis/features",
-    "/Users/ryan/mycode/HS_jarvis/features/pending-feat-skill-alignment"
+    "/Users/ryan/mycode/HS_jarvis/features/pending-feat-skill-alignment",
+    "/Users/ryan/mycode/HS_jarvis/agent"
   ],
   "agent_skip_permissions": false
 }

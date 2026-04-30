@@ -127,7 +127,6 @@ const FRIENDLY_ACTION: Record<string, string> = {
 // ── Extension Entry Point ──────────────────────────────────────────
 
 export default function edithExtension(pi: ExtensionAPI): void {
-  console.log("[EDITH] Extension core routing layer initializing...");
 
   // ═══ Tool Registration (with graceful degradation) ═════════════
 
@@ -464,7 +463,6 @@ export default function edithExtension(pi: ExtensionAPI): void {
         execute: tool.execute,
       });
       toolRegistry.push({ name: tool.name, registered: true });
-      console.log(`[EDITH] Tool registered: ${tool.name}`);
     } catch (err) {
       const errorMsg = (err as Error).message ?? String(err);
       toolRegistry.push({ name: tool.name, registered: false, error: errorMsg });
@@ -494,7 +492,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         // Return stub message
       },
     });
-    console.log("[EDITH] Command registered: edith-init");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "edith-init": ${(err as Error).message}`);
   }
@@ -548,7 +546,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         console.log(lines.join("\n"));
       },
     });
-    console.log("[EDITH] Command registered: edith-status");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "edith-status": ${(err as Error).message}`);
   }
@@ -583,7 +581,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         }
       },
     });
-    console.log("[EDITH] Command registered: /new");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "new": ${(err as Error).message}`);
   }
@@ -625,7 +623,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         }
       },
     });
-    console.log("[EDITH] Command registered: /clear");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "clear": ${(err as Error).message}`);
   }
@@ -660,7 +658,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         }
       },
     });
-    console.log("[EDITH] Command registered: /compact");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "compact": ${(err as Error).message}`);
   }
@@ -693,7 +691,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         console.log(renderContextPanel(stats, usage, support));
       },
     });
-    console.log("[EDITH] Command registered: /context");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "context": ${(err as Error).message}`);
   }
@@ -756,7 +754,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         }
       },
     });
-    console.log("[EDITH] Command registered: /delegate");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "delegate": ${(err as Error).message}`);
   }
@@ -791,7 +789,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
         }
       },
     });
-    console.log("[EDITH] Command registered: /explore");
+
   } catch (err) {
     console.error(`[EDITH] Failed to register command "explore": ${(err as Error).message}`);
   }
@@ -821,8 +819,4 @@ export default function edithExtension(pi: ExtensionAPI): void {
 
   const registeredCount = toolRegistry.filter((t) => t.registered).length;
   const totalCount = toolRegistry.length;
-  console.log(
-    `[EDITH] Extension core routing layer loaded: ` +
-    `${registeredCount}/${totalCount} tools, 9 commands.`
-  );
 }

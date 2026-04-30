@@ -94,7 +94,7 @@ EDITH> 这个需求要加载上下文吗：给用户表加 phone 字段
     → ThinkingBlock / ToolCallBlock 流式渲染
   → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册)
   → Skill 执行层 (document-project / distillator / requirement-router)
-  → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query / edith_explore)
+  → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query / edith_explore / edith_index / subagent)
   → pi SDK (AgentSession + 多 LLM Provider + Tool Calling + 流式输出)
   → 产出物 (纯 Markdown)
 ```
@@ -108,10 +108,16 @@ EDITH> 这个需求要加载上下文吗：给用户表加 phone 字段
 | Context Monitor   | Token 计数 + 压力检测 + Cache 命中率，实时显示                                  |
 | Workspace Context | System Prompt 自动注入 repos + routing-table (Layer 0)                |
 | Tool Call 渲染      | Claude Code 风格展开式 Tool Call 展示                                    |
-| Thinking Block    | 截断预览式思考过程展示                                                       |
+| Thinking Block    | 截断预览式思考过程展示 + ThinkingIndicator 动态指示                          |
 | Slash 命令          | /model /new /clear /compact /context /delegate /explore           |
-| Sub-agent         | 子代理委派执行复杂任务                                                       |
+| Sub-agent         | 子代理委派执行复杂任务（parallel / chain 模式）                               |
 | Config 热更新        | Model 切换持久化 + Scan 自动注册 Repo                                      |
+| Knowledge Index   | 便携式知识索引生成，供外部 Agent 路由消费                                         |
+| Multi-API Protocol | OpenAI / Anthropic / Ollama / 自定义协议统一接入                            |
+| Smart Depth Scan  | 按项目规模自动选择扫描深度（快速/标准/深度）                                        |
+| MD Mining         | MD 文档分类分级挖掘 + 代码交叉验证                                             |
+| Function-level Scan | 函数级深度分析：签名提取、依赖关系、设计模式识别                                      |
+| Session Lifecycle | /new /clear /compact 命令完整修复，Session 状态管理                             |
 
 ## 仓库结构
 
@@ -134,7 +140,7 @@ Edith/
 │   │   ├── query.ts           ← edith_query 工具实现
 │   │   ├── shared-stats.ts    ← 跨组件共享状态
 │   │   ├── theme/             ← TUI 品牌化（Banner、渐变色、主题配置）
-│   │   ├── tools/             ← edith_scan / edith_distill / edith_route / edith_explore / subagent
+│   │   ├── tools/             ← edith_scan / edith_distill / edith_route / edith_index / edith_explore / subagent
 │   │   ├── tui/               ← React + Ink TUI 组件
 │   │   │   ├── App.tsx        ← 主应用组件
 │   │   │   ├── BannerArea.tsx ← 欢迎横幅
@@ -143,11 +149,13 @@ Edith/
 │   │   │   ├── StatusBarMetrics.tsx ← 状态栏指标
 │   │   │   ├── ThinkingBlock.tsx    ← 思考过程展示
 │   │   │   ├── ToolCallBlock.tsx    ← Tool Call 渲染
+│   │   │   ├── ThinkingIndicator.tsx← 思考动态指示器
 │   │   │   ├── MarkdownRenderer.tsx ← Markdown 渲染
 │   │   │   ├── CodeBlock.tsx        ← 代码块渲染
 │   │   │   ├── CommandPalette.tsx   ← 命令面板
 │   │   │   ├── command-registry.ts  ← 命令注册表
 │   │   │   ├── WarningBar.tsx       ← 压力警告条
+│   │   │   ├── types.ts            ← 消息/ToolCall/Thinking 类型定义 + Reducer
 │   │   │   └── useAgentSession.ts   ← Session 管理 Hook
 │   │   └── bin/edith.ts      ← CLI 入口（edith 命令）
 │   ├── edith.yaml            ← Agent 运行配置
@@ -194,18 +202,18 @@ Edith/
 | --------------- | ---------------------------------------- | ---------------------------------------------------- |
 | Agent 框架        | pi SDK (`@mariozechner/pi-coding-agent`) | AgentSession + Tool Calling + 流式输出                   |
 | TUI             | React + Ink                              | 组件化终端界面                                              |
-| LLM 层           | pi AI                                    | DeepSeek / Xiaomi MiMo / Anthropic / OpenAI / Ollama |
-| 扩展层             | TypeScript Extension                     | 消息路由 + 工具注册                                          |
+| LLM 层           | 多协议统一接入                                  | DeepSeek / Xiaomi MiMo / Anthropic / OpenAI / Ollama / 自定义 |
+| 扩展层             | TypeScript Extension                     | 消息路由 + 工具注册 + 命令注册                                    |
 | 技能层             | Markdown SKILL.md                        | 知识提取逻辑                                               |
-| 配置              | edith.yaml (YAML)                        | 用户定制，支持环境变量                                          |
-| Context 监控      | context-monitor.ts                       | Token 计数 + 压力等级 + Cache 命中率                          |
+| 配置              | edith.yaml (YAML)                        | 多 Profile + 环境变量 + context_window                    |
+| Context 监控      | context-monitor.ts                       | Token 计数 + 压力等级 + Cache 命中率（兼容非 Anthropic Provider） |
 | Board (Phase 2) | React + Next.js                          | Web 看板                                               |
 
 ## 开发路线图
 
 | 阶段      | 内容                             | 状态      |
 | ------- | ------------------------------ | ------- |
-| Phase 1 | EDITH Agent MVP — 终端对话式知识生产    | **开发中** |
+| Phase 1 | EDITH Agent MVP — 终端对话式知识生产    | **开发中** — 核心框架 + 6 工具 + TUI 已完成，34 个 Feature 已归档 |
 | Phase 2 | EDITH Board — Web 看板，知识可视化与管理  | 待开发     |
 | Phase 3 | 增值功能 — 增量更新、团队协作、行业模板、CI/CD 集成 | 待规划     |
 

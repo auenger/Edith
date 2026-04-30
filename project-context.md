@@ -1,7 +1,7 @@
 ---
-last_updated: '2026-04-29'
-version: 3
-features_completed: 6
+last_updated: '2026-04-30'
+version: 4
+features_completed: 34
 ---
 
 # Project Context: EDITH
@@ -17,13 +17,13 @@ features_completed: 6
 | 核心产出物 | Markdown | 所有知识产物为纯 Markdown，Agent 无关 |
 | Agent 框架 | pi SDK (`@mariozechner/pi-coding-agent`) v0.70+ | 不 fork，跟随上游 |
 | Agent 应用 | TypeScript (`agent/`) | `@edith/agent` package，npm start 启动 |
-| TUI | React + Ink | 组件化终端界面，Banner / Content / Status / Input |
+| TUI | React + Ink | 组件化终端界面，15 个组件（含 ThinkingIndicator、types.ts） |
 | Extension | TypeScript | 消息路由 + 工具注册 + 命令注册 |
-| Context 监控 | context-monitor.ts | Token 计数 + 压力检测 + Cache 命中率 |
+| Context 监控 | context-monitor.ts | Token 计数 + 压力检测 + Cache 命中率（兼容非 Anthropic Provider） |
 | 技能定义 | SKILL.md (Markdown) | 知识提取逻辑，编译后分发 |
-| 配置 | edith.yaml (YAML) | 多 Profile + 环境变量 + context_window |
+| 配置 | edith.yaml (YAML) | 多 Profile + 环境变量 + context_window + edith-init 向导 |
+| LLM 接入 | 多协议统一 | DeepSeek / MiMo / Anthropic / OpenAI / Ollama / 自定义协议 |
 | Web 看板 | React + Next.js | Phase 2，Board 只读 |
-| 辅助脚本 | Python (`distillator/scripts/analyze_sources.py`) | 代码分析辅助 |
 
 ## Directory Structure
 
@@ -47,7 +47,7 @@ HS_edith/
 │   │   ├── query.ts           ← edith_query 工具
 │   │   ├── shared-stats.ts    ← 跨组件共享状态
 │   │   ├── theme/             ← TUI 品牌化（Banner、渐变色、主题配置）
-│   │   ├── tools/             ← edith_scan / edith_distill / edith_route / edith_explore / subagent
+│   │   ├── tools/             ← edith_scan / edith_distill / edith_route / edith_index / edith_explore / subagent
 │   │   ├── tui/               ← React + Ink TUI 组件
 │   │   │   ├── App.tsx        ← 主应用组件
 │   │   │   ├── BannerArea.tsx ← 欢迎横幅
@@ -56,11 +56,13 @@ HS_edith/
 │   │   │   ├── StatusBarMetrics.tsx ← 状态栏指标
 │   │   │   ├── ThinkingBlock.tsx    ← 截断预览式思考展示
 │   │   │   ├── ToolCallBlock.tsx    ← Claude Code 风格 Tool Call 渲染
+│   │   │   ├── ThinkingIndicator.tsx← 思考动态指示器
 │   │   │   ├── MarkdownRenderer.tsx ← Markdown 渲染
 │   │   │   ├── CodeBlock.tsx        ← 代码块渲染
 │   │   │   ├── CommandPalette.tsx   ← 命令面板
 │   │   │   ├── command-registry.ts  ← 命令注册表
 │   │   │   ├── WarningBar.tsx       ← 压力警告条
+│   │   │   ├── types.ts            ← 消息/ToolCall/Thinking 类型定义 + Reducer
 │   │   │   └── useAgentSession.ts   ← Session 管理 Hook
 │   │   └── bin/edith.ts      ← CLI 入口
 │   ├── edith.yaml            ← Agent 运行配置
@@ -141,7 +143,7 @@ Agent 分层架构：
     → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册)
     → System Prompt (Workspace Context 注入 + routing-table Layer 0)
     → Skill 执行层 (document-project / distillator / requirement-router)
-    → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query / edith_explore / subagent)
+    → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query / edith_explore / edith_index / subagent)
     → pi SDK (AgentSession + 多 LLM Provider + Tool Calling + 流式输出)
     → 产出物 (纯 Markdown)
 ```
@@ -150,7 +152,7 @@ Agent 分层架构：
 
 | Type | Convention | Example |
 |------|-----------|---------|
-| 工具名 | snake_case, `edith_` 前缀 | `edith_scan`, `edith_distill`, `edith_explore` |
+| 工具名 | snake_case, `edith_` 前缀 | `edith_scan`, `edith_distill`, `edith_explore`, `edith_index` |
 | Skill 目录 | kebab-case | `document-project/`, `requirement-router/` |
 | 模板文件 | kebab-case | `routing-table.md`, `quick-ref-card.md` |
 | 产出物 | kebab-case + 数字前缀 | `01-overview.md`, `02-api-contracts.md` |
@@ -161,8 +163,18 @@ Agent 分层架构：
 
 | Date | Feature | Notes |
 |------|---------|-------|
+| 2026-04-30 | feat-excavate-code-deep | 函数级代码深度分析 — 签名提取、依赖关系、设计模式识别 |
+| 2026-04-30 | feat-excavate-md-mining | MD 文档分类分级挖掘 + 代码交叉验证 |
+| 2026-04-30 | feat-excavate-smart-depth | 智能深度控制 — 按项目规模自动选择扫描深度 |
+| 2026-04-30 | feat-ctx-monitor-fix | Context Monitor 非 Anthropic Provider 统计修复（百分比回退） |
+| 2026-04-30 | feat-session-lifecycle | Session 生命周期命令修复 (/new, /clear, /compact) |
+| 2026-04-29 | feat-knowledge-index-skill | edith_index 工具 — 生成便携式知识索引 |
+| 2026-04-29 | feat-skill-align-route | Route 精准路由增强 — 多服务路由、复杂度分析、紧急事件检测 |
+| 2026-04-29 | feat-skill-align-distill | Distill 无损压缩引擎 — 5 步流水线、冲突检测、验证 |
+| 2026-04-29 | feat-skill-align-scan | Scan 深度代码考古 — 分类、API 契约、数据模型、业务逻辑 |
+| 2026-04-29 | feat-multi-api-protocol | 多 API 协议 Provider 支持（OpenAI/Anthropic/Ollama/自定义） |
 | 2026-04-29 | workspace-context-injection | System Prompt 自动注入 repos + routing-table (Layer 0) |
-| 2026-04-29 | tui-rendering-improvements | ThinkingBlock 截断预览 + assistant 消息分段修复 + suppress 初始 prompt 事件 |
+| 2026-04-29 | tui-rendering-improvements | ThinkingBlock 截断预览 + ThinkingIndicator + suppress 初始 prompt |
 | 2026-04-28 | feat-tui-ctx-refresh | CTX 动态刷新 + Token 计数修复 |
 | 2026-04-28 | feat-tui-tool-rendering | Claude Code 风格 Tool Call 展开式渲染 |
 | 2026-04-28 | fix-agent-repl | 修复 Agent 启动后立即退出：添加 readline REPL 交互循环 |
@@ -176,12 +188,13 @@ Agent 分层架构：
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| Phase 1 | EDITH Agent MVP（终端 Agent） | **开发中** — 核心框架已完成，持续完善 TUI 和工具链 |
+| Phase 1 | EDITH Agent MVP（终端 Agent） | **开发中** — 6 工具 + TUI 15 组件已实现，34 Feature 归档，进入深度挖掘阶段 |
 | Phase 2 | EDITH Board 基础版（Web 看板） | 待开发 |
 | Phase 3 | 增值功能（增量更新、团队协作、行业模板） | 待规划 |
 
 ## Update Log
 
+- 2026-04-30: Updated for smart depth scan, MD mining, function-level deep analysis, knowledge index, skill alignment (scan/route/distill), multi-API protocol, session lifecycle, ctx-monitor fix — 34 features completed
 - 2026-04-29: Updated for workspace context injection, TUI rendering improvements, React+Ink TUI, context monitor, updated directory structure
 - 2026-04-28: Updated for agent REPL fix, agent/ directory documentation, tech stack update
 - 2026-04-27: Initial project context created from full project analysis

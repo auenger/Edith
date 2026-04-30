@@ -11,7 +11,7 @@
     "start": "tsx src/index.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "postinstall": "node dist/scripts/post-install.js 2>/dev/null || true"
+    "postinstall": "node dist/scripts/post-install.js || exit 0"
   },
   "files": [
     "dist/",

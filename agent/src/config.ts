@@ -739,16 +739,53 @@ export function addRepo(configPath: string, repo: RepoConfig): void {
 
 // ── edith-init Interactive Wizard ────────────────────────────────
 
-const PROVIDER_MODEL_HINTS: Record<string, string[]> = {
-  openai: ["gpt-4", "gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
-  anthropic: ["claude-sonnet-4-6", "claude-3.5-sonnet", "claude-3-opus", "claude-3-haiku"],
-  deepseek: ["deepseek-v4-pro", "deepseek-chat", "deepseek-coder"],
-  ollama: ["llama3", "mistral", "codellama", "qwen2"],
-  xiaomi: ["MiMo-V2.5-Pro", "MiMo-V2.5"],
-  minimax: ["MiniMax-M2.7", "MiniMax-M1"],
-  zhipu: ["GLM-5.1", "GLM-4-Plus", "GLM-4"],
-  moonshot: ["moonshot-v1-128k", "moonshot-v1-32k"],
-  other: [],
+interface ProviderPreset {
+  models: string[];
+  base_url?: string;
+  context_window?: number;
+  api_type?: string;
+}
+
+const PROVIDER_PRESETS: Record<string, ProviderPreset> = {
+  xiaomi: {
+    models: ["MiMo-V2.5-Pro", "MiMo-V2.5"],
+    base_url: "https://token-plan-cn.xiaomimimo.com/v1",
+    context_window: 131072,
+  },
+  deepseek: {
+    models: ["deepseek-v4-pro", "deepseek-chat", "deepseek-coder"],
+    context_window: 1000000,
+  },
+  openai: {
+    models: ["gpt-4", "gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
+    context_window: 128000,
+  },
+  anthropic: {
+    models: ["claude-sonnet-4-6", "claude-opus-4-7", "claude-3.5-sonnet", "claude-3-haiku"],
+    context_window: 200000,
+  },
+  minimax: {
+    models: ["MiniMax-M2.7", "MiniMax-M1"],
+    base_url: "https://api.minimaxi.com/anthropic",
+    api_type: "anthropic",
+    context_window: 1000000,
+  },
+  zhipu: {
+    models: ["GLM-5.1", "GLM-4-Plus", "GLM-4"],
+    base_url: "https://open.bigmodel.cn/api/anthropic",
+    api_type: "anthropic",
+    context_window: 128000,
+  },
+  moonshot: {
+    models: ["moonshot-v1-128k", "moonshot-v1-32k"],
+    base_url: "https://api.moonshot.cn/v1",
+    context_window: 128000,
+  },
+  ollama: {
+    models: ["qwen3:32b", "llama3", "mistral", "codellama"],
+    base_url: "http://localhost:11434/v1",
+  },
+  other: { models: [] },
 };
 
 function createReadlineInterface(): readline.ReadLine {
@@ -823,47 +860,102 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
     console.log("║   edith-init                            ║");
     console.log("╚══════════════════════════════════════════╝\n");
 
-    // Step 1: LLM Provider
-    console.log("Step 1: LLM Provider");
-    console.log("  Options: openai / anthropic / ollama / other");
-    const provider = await question(rl, "  Provider: ");
-    if (!provider) {
-      console.log("Provider cannot be empty. Configuration cancelled.");
-      return;
+    const providerList = Object.keys(PROVIDER_PRESETS).join(" / ");
+    const profiles: Record<string, LlmProfile> = {};
+    const profileOrder: string[] = [];
+
+    // Step 1: Add LLM Profiles (loop)
+    console.log("Step 1: LLM Profiles");
+    console.log(`  Providers: ${providerList}\n`);
+
+    let profileIndex = 1;
+    while (true) {
+      const profileLabel = profileIndex === 1 ? "first" : "next";
+      console.log(`  ── Profile #${profileIndex} ──`);
+
+      // Profile name
+      const defaultName = profileIndex === 1 ? "default" : "";
+      const profileName = await questionWithDefault(rl, "  Profile name", defaultName);
+      if (!profileName) {
+        if (profileIndex === 1) {
+          console.log("  At least one profile is required.");
+          continue;
+        }
+        break;
+      }
+      if (profileName in profiles) {
+        console.log(`  Profile '${profileName}' already exists. Skipping.`);
+        continue;
+      }
+
+      // Provider
+      const provider = await question(rl, `  Provider [${providerList}]: `);
+      if (!provider) {
+        console.log("  Provider cannot be empty. Skipping this profile.");
+        continue;
+      }
+      const preset = PROVIDER_PRESETS[provider] ?? PROVIDER_PRESETS.other;
+
+      // Model
+      if (preset.models.length > 0) {
+        console.log(`  Suggested: ${preset.models.join(", ")}`);
+      }
+      const model = await question(rl, "  Model: ");
+      if (!model) {
+        console.log("  Model cannot be empty. Skipping this profile.");
+        continue;
+      }
+
+      // API Key
+      const apiKeyInput = await question(rl, "  API Key (Enter to skip): ");
+
+      // Base URL
+      const baseUrlInput = preset.base_url
+        ? await questionWithDefault(rl, "  Base URL", preset.base_url)
+        : await question(rl, "  Base URL (Enter to skip): ");
+
+      // Context Window
+      const cwDefault = preset.context_window ? String(preset.context_window) : "128000";
+      const cwInput = await questionWithDefault(rl, "  Context window (tokens)", cwDefault);
+
+      profiles[profileName] = {
+        provider,
+        model,
+        ...(apiKeyInput ? { api_key: apiKeyInput } : {}),
+        ...(baseUrlInput ? { base_url: baseUrlInput } : {}),
+        ...(preset.api_type ? { api_type: preset.api_type as ApiType } : {}),
+        context_window: parseInt(cwInput, 10) || 128000,
+      };
+      profileOrder.push(profileName);
+
+      console.log("");
+      const addMore = await question(rl, "  Add another profile? (y/N): ");
+      if (addMore.toLowerCase() !== "y") break;
+      console.log("");
+      profileIndex++;
     }
 
-    const hints = PROVIDER_MODEL_HINTS[provider] ?? [];
-    if (hints.length > 0) {
-      console.log(`  Suggested models: ${hints.join(", ")}`);
-    }
+    // Step 2: Select active profile
+    console.log("\nStep 2: Active Profile");
+    const profileNames = Object.keys(profiles);
+    console.log(`  Available: ${profileNames.join(", ")}`);
+    const activeInput = await questionWithDefault(rl, "  Active profile", profileNames[0]);
+    const activeProfile = profileNames.includes(activeInput) ? activeInput : profileNames[0];
 
-    // Step 2: Model
-    console.log("\nStep 2: Model");
-    const model = await question(rl, "  Model name: ");
-    if (!model) {
-      console.log("Model cannot be empty. Configuration cancelled.");
-      return;
-    }
-
-    // Step 3: API Key (optional)
-    console.log("\nStep 3: API Key (optional, press Enter to skip)");
-    const apiKeyInput = await question(rl, "  API Key: ");
-    const apiKey = apiKeyInput || undefined;
-
-    // Step 4: Workspace Root
-    console.log("\nStep 4: Workspace");
+    // Step 3: Workspace
+    console.log("\nStep 3: Workspace");
     const workspaceRoot = await questionWithDefault(rl, "  Workspace root path", "./company-edith");
 
-    // Step 5: Language
-    console.log("\nStep 5: Language");
+    // Step 4: Language
+    console.log("\nStep 4: Language");
     const language = await questionWithDefault(rl, "  Language (zh/en)", "zh");
     if (language !== "zh" && language !== "en") {
       console.log("Invalid language. Must be 'zh' or 'en'. Configuration cancelled.");
       return;
     }
 
-    // Step 6: Repos
-    console.log("\nStep 6: Repositories (press Enter with empty name to finish)");
+    // Step 5: Repos
+    console.log("\nStep 5: Repositories (press Enter with empty name to finish)");
     const repos: RepoConfig[] = [];
     let repoIndex = 1;
     while (true) {
@@ -883,13 +975,14 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
       repoIndex++;
     }
 
-    // Step 7: Confirm and generate
+    // Step 6: Confirm and generate
     console.log("\n── Configuration Preview ──────────────────");
     const yamlContent = generateConfigYaml({
       llm: {
-        provider,
-        model,
-        ...(apiKey ? { api_key: apiKey.startsWith("sk-") ? `\${${provider.toUpperCase()}_API_KEY}` : apiKey } : {}),
+        active: activeProfile,
+        profiles,
+        provider: "",
+        model: "",
       },
       workspace: {
         root: workspaceRoot,
@@ -909,7 +1002,7 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
     // Write the file
     writeFileSync(targetPath, yamlContent, "utf-8");
     console.log(`\nConfiguration written to: ${targetPath}`);
-    console.log("You can now start EDITH with: npm start");
+    console.log("You can now start EDITH with: edith");
   } finally {
     rl.close();
   }
@@ -922,15 +1015,32 @@ export async function initConfigWizard(outputPath?: string): Promise<void> {
 function generateConfigYaml(config: Partial<EdithConfig>): string {
   const lines: string[] = [];
 
-  // LLM section
+  // LLM section — multi-profile format
   lines.push("llm:");
-  lines.push(`  provider: ${config.llm?.provider ?? "openai"}`);
-  lines.push(`  model: ${config.llm?.model ?? "gpt-4"}`);
-  if (config.llm?.api_key) {
-    lines.push(`  api_key: ${config.llm.api_key}`);
-  }
-  if (config.llm?.base_url) {
-    lines.push(`  base_url: ${config.llm.base_url}`);
+  lines.push(`  active: ${config.llm?.active ?? "default"}`);
+  lines.push("  profiles:");
+  if (config.llm?.profiles) {
+    for (const [name, profile] of Object.entries(config.llm.profiles)) {
+      lines.push(`    ${name}:`);
+      lines.push(`      provider: ${profile.provider}`);
+      lines.push(`      model: ${profile.model}`);
+      if (profile.api_key) {
+        lines.push(`      api_key: ${profile.api_key}`);
+      }
+      if (profile.base_url) {
+        lines.push(`      base_url: ${profile.base_url}`);
+      }
+      if (profile.api_type) {
+        lines.push(`      api_type: ${profile.api_type}`);
+      }
+      if (profile.context_window) {
+        lines.push(`      context_window: ${profile.context_window}`);
+      }
+    }
+  } else {
+    lines.push("    default:");
+    lines.push("      provider: openai");
+    lines.push("      model: gpt-4");
   }
 
   // Workspace section
@@ -954,7 +1064,7 @@ function generateConfigYaml(config: Partial<EdithConfig>): string {
     lines.push("repos: []");
   }
 
-  // Agent section (use defaults)
+  // Agent section
   lines.push("");
   lines.push("agent:");
   lines.push("  context_budget:");
@@ -964,6 +1074,15 @@ function generateConfigYaml(config: Partial<EdithConfig>): string {
   lines.push("    max_fragments_per_route: 5");
   lines.push("  auto_refresh: true");
   lines.push("  refresh_interval: 24h");
+
+  // Context monitor section
+  lines.push("");
+  lines.push("context_monitor:");
+  lines.push("  enabled: true");
+  lines.push("  thresholds:");
+  lines.push("    warning: 70");
+  lines.push("    critical: 85");
+  lines.push("    emergency: 95");
 
   return lines.join("\n") + "\n";
 }

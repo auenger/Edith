@@ -386,7 +386,6 @@ export function useAgentSession(): AgentSessionState {
                   maxTokens: 8192,
                 }],
               });
-              console.log(`[EDITH] Registered custom provider: ${profile.provider} (${name})`);
             } catch (err) {
               console.warn(`[EDITH] Failed to register provider '${profile.provider}': ${(err as Error).message}`);
             }
@@ -411,7 +410,6 @@ export function useAgentSession(): AgentSessionState {
               maxTokens: 8192,
             }],
           });
-          console.log(`[EDITH] Registered custom provider: ${loadedConfig.llm.provider}`);
         } catch (err) {
           console.warn(`[EDITH] Failed to register provider '${loadedConfig.llm.provider}': ${(err as Error).message}`);
         }
