@@ -45,6 +45,31 @@ export interface ScanParams {
   depth?: ScanDepth;
 }
 
+/** MD document priority level */
+export type MdPriority = "P0" | "P1" | "P2" | "P3";
+
+/** Discovered MD file with classification */
+export interface DiscoveredMd {
+  path: string;
+  relativePath: string;
+  priority: MdPriority;
+  relevanceScore: number;
+  size: number;
+  modifiedAt: string;
+  title: string;
+  firstParagraph: string;
+  /** Full content — only populated for P0 and high-score P1 */
+  content?: string;
+}
+
+/** Cross-validation discrepancy between doc and code */
+export interface DocCodeDiscrepancy {
+  source: string;
+  docClaim: string;
+  codeFact: string;
+  field: string;
+}
+
 /** 12 project types per SKILL.md */
 export type ProjectType =
   | "web" | "mobile" | "backend" | "cli" | "library"
@@ -114,6 +139,10 @@ export interface ScanResult {
   projectSize: ProjectSize;
   /** Module boundaries detected (empty for single-module projects) */
   moduleBoundaries: ModuleBoundary[];
+  /** MD documents discovered and classified */
+  mdDocuments: DiscoveredMd[];
+  /** Cross-validation discrepancies between docs and code */
+  docCodeDiscrepancies: DocCodeDiscrepancy[];
   endpoints: number;
   models: number;
   flows: number;
@@ -558,6 +587,220 @@ function readdirEntries(dirPath: string): Set<string> {
 function isDirectory(path: string): boolean {
   try { return statSync(path).isDirectory(); }
   catch { return false; }
+}
+
+// ── MD Document Mining ─────────────────────────────────────────────
+
+/** P0 filenames — always fully read */
+const P0_FILENAMES = new Set([
+  "readme.md", "readme.markdown", "readme.txt", "readme",
+  "changelog.md", "changes.md", "history.md", "release-notes.md",
+  "contributing.md", "contribution.md",
+]);
+
+/** P1 directory names — high priority */
+const P1_DIRS = new Set(["docs", "doc", "documentation"]);
+
+/** High-relevance filename keywords */
+const HIGH_RELEVANCE_KEYWORDS = [
+  "architecture", "api", "design", "guide", "config", "setup",
+  "deploy", "install", "model", "schema", "contract", "interface",
+];
+
+/**
+ * Discover and classify all MD files in a project.
+ */
+export function discoverMdFiles(dirPath: string): DiscoveredMd[] {
+  const files: DiscoveredMd[] = [];
+  walkMd(dirPath, dirPath, files);
+  return files;
+}
+
+function walkMd(basePath: string, dir: string, results: DiscoveredMd[]): void {
+  let entries;
+  try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+
+  for (const entry of entries) {
+    if (SKIP_DIRECTORIES.has(entry.name)) continue;
+    if (entry.name.startsWith(".") && entry.name !== ".github") continue;
+
+    const fullPath = join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      walkMd(basePath, fullPath, results);
+    } else if (entry.isFile() && isMdFile(entry.name)) {
+      const relPath = relative(basePath, fullPath);
+      const stat = statSync(fullPath);
+      const priority = classifyMdPriority(relPath, entry.name, dir);
+      const relevanceScore = computeMdRelevance(relPath, entry.name);
+
+      let title = "";
+      let firstParagraph = "";
+      const content = readFileText(fullPath);
+      if (content) {
+        const parsed = extractMdHeader(content);
+        title = parsed.title;
+        firstParagraph = parsed.firstParagraph;
+      }
+
+      const doc: DiscoveredMd = {
+        path: fullPath,
+        relativePath: relPath,
+        priority,
+        relevanceScore,
+        size: stat.size,
+        modifiedAt: stat.mtime.toISOString(),
+        title,
+        firstParagraph,
+      };
+
+      // Full content for P0 and high-score P1
+      if (priority === "P0" || (priority === "P1" && relevanceScore >= 70)) {
+        doc.content = content ?? undefined;
+      }
+
+      results.push(doc);
+    }
+  }
+}
+
+function isMdFile(name: string): boolean {
+  const lower = name.toLowerCase();
+  return lower.endsWith(".md") || lower.endsWith(".markdown") || lower.endsWith(".mdx");
+}
+
+function classifyMdPriority(relPath: string, filename: string, dirPath: string): MdPriority {
+  const lowerFilename = filename.toLowerCase();
+  const parts = relPath.split(/[/\\]/).map((p) => p.toLowerCase());
+
+  // P0: root-level key files
+  if (P0_FILENAMES.has(lowerFilename) && parts.length <= 2) return "P0";
+
+  // P0: .github/ contribution docs
+  if (parts.includes(".github") && (lowerFilename.startsWith("contributing") || lowerFilename.startsWith("readme"))) return "P0";
+
+  // P1: docs/ directory
+  if (parts.some((p) => P1_DIRS.has(p))) return "P1";
+
+  // P2: any other MD file in project
+  return "P2";
+}
+
+function computeMdRelevance(relPath: string, filename: string): number {
+  let score = 50;
+  const lower = filename.toLowerCase();
+  const parts = relPath.split(/[/\\]/);
+
+  // Path depth bonus (shallower = more important)
+  if (parts.length <= 1) score += 30;
+  else if (parts.length <= 2) score += 20;
+  else if (parts.length <= 3) score += 10;
+
+  // Filename keyword bonus
+  for (const kw of HIGH_RELEVANCE_KEYWORDS) {
+    if (lower.includes(kw)) {
+      score += 15;
+      break;
+    }
+  }
+
+  // Directory bonus
+  if (parts.some((p) => P1_DIRS.has(p.toLowerCase()))) score += 10;
+
+  return Math.min(score, 100);
+}
+
+function extractMdHeader(content: string): { title: string; firstParagraph: string } {
+  let title = "";
+  let firstParagraph = "";
+  const lines = content.split("\n");
+  let foundTitle = false;
+  const paragraphLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!foundTitle && trimmed.startsWith("# ")) {
+      title = trimmed.slice(2).trim();
+      foundTitle = true;
+      continue;
+    }
+    if (foundTitle) {
+      if (trimmed.length > 0 && !trimmed.startsWith("#")) {
+        paragraphLines.push(trimmed);
+        if (paragraphLines.length >= 3) break;
+      } else if (paragraphLines.length > 0) {
+        break;
+      }
+    }
+  }
+
+  firstParagraph = paragraphLines.join(" ").slice(0, 300);
+  return { title, firstParagraph };
+}
+
+/**
+ * Cross-validate MD document claims against code analysis results.
+ */
+export function crossValidateDocWithCode(
+  mdDocs: DiscoveredMd[],
+  techStack: string[],
+  apiContracts: ApiEndpoint[],
+  dataEntities: DataEntity[],
+): DocCodeDiscrepancy[] {
+  const discrepancies: DocCodeDiscrepancy[] = [];
+
+  for (const doc of mdDocs) {
+    if (!doc.content) continue;
+    const lower = doc.content.toLowerCase();
+
+    // Check tech stack claims
+    const stackClaims: Record<string, string[]> = {
+      "postgresql": ["postgres", "postgresql", "pg"],
+      "mysql": ["mysql"],
+      "mongodb": ["mongo", "mongodb", "mongoose"],
+      "redis": ["redis", "ioredis"],
+      "sqlite": ["sqlite"],
+    };
+
+    for (const [db, keywords] of Object.entries(stackClaims)) {
+      const docClaimsDb = keywords.some((kw) => lower.includes(kw));
+      const codeUsesDb = techStack.some((s) => s.toLowerCase().includes(db.toLowerCase()));
+      if (docClaimsDb && !codeUsesDb) {
+        const otherDb = Object.keys(stackClaims).find((other) =>
+          other !== db && techStack.some((s) => s.toLowerCase().includes(other.toLowerCase()))
+        );
+        discrepancies.push({
+          source: doc.relativePath,
+          docClaim: `文档提到 ${db}`,
+          codeFact: otherDb ? `代码实际使用 ${otherDb}` : "代码中未发现对应依赖",
+          field: "tech_stack",
+        });
+        break;
+      }
+    }
+
+    // Check API claims
+    const apiPattern = /`((?:GET|POST|PUT|DELETE|PATCH)\s+[^`\s]+)`/gi;
+    let match;
+    while ((match = apiPattern.exec(doc.content)) !== null) {
+      const docEndpoint = match[1];
+      const [docMethod] = docEndpoint.split(/\s+/);
+      const normalizedPath = docEndpoint.replace(/^(GET|POST|PUT|DELETE|PATCH)\s+/i, "");
+      const found = apiContracts.some(
+        (ep) => ep.method === docMethod.toUpperCase() && ep.path === normalizedPath
+      );
+      if (!found) {
+        discrepancies.push({
+          source: doc.relativePath,
+          docClaim: `文档声明 API: ${docEndpoint}`,
+          codeFact: "代码中未发现对应路由",
+          field: "api",
+        });
+      }
+    }
+  }
+
+  return discrepancies;
 }
 
 // ── Project Classification ────────────────────────────────────────
@@ -1322,6 +1565,8 @@ interface DeepScanData {
   apiContracts: ApiEndpoint[];
   dataEntities: DataEntity[];
   businessFlows: BusinessFlow[];
+  mdDocuments: DiscoveredMd[];
+  docCodeDiscrepancies: DocCodeDiscrepancy[];
   endpoints: number;
   models: number;
   flows: number;
@@ -1806,6 +2051,8 @@ export async function executeScan(
     depth,
     projectSize,
     moduleBoundaries,
+    mdDocuments: scanData.mdDocuments,
+    docCodeDiscrepancies: scanData.docCodeDiscrepancies,
     endpoints: scanData.endpoints,
     models: scanData.models,
     flows: scanData.flows,
@@ -1871,6 +2118,12 @@ function performDeepScan(
   const dataEntities = shouldAnalyze ? analyzeDataModels(dirPath, techStack) : [];
   const businessFlows = shouldAnalyze ? discoverBusinessLogic(dirPath) : [];
 
+  // MD document mining
+  const mdDocuments = discoverMdFiles(dirPath);
+  const docCodeDiscrepancies = shouldAnalyze
+    ? crossValidateDocWithCode(mdDocuments, techStack, apiContracts, dataEntities)
+    : [];
+
   return {
     projectType,
     architecture,
@@ -1880,6 +2133,8 @@ function performDeepScan(
     apiContracts,
     dataEntities,
     businessFlows,
+    mdDocuments,
+    docCodeDiscrepancies,
     endpoints,
     models,
     flows,
@@ -1907,6 +2162,14 @@ export function formatScanSummary(result: ScanResult): string {
 
   if (result.moduleBoundaries.length > 0) {
     lines.push("", `  模块边界: ${result.moduleBoundaries.map((m) => `${m.name}(${m.fileCount})`).join(", ")}`);
+  }
+
+  const p0 = result.mdDocuments.filter((d) => d.priority === "P0").length;
+  const p1 = result.mdDocuments.filter((d) => d.priority === "P1").length;
+  const p2 = result.mdDocuments.filter((d) => d.priority === "P2").length;
+  lines.push("", `  MD 文档: ${result.mdDocuments.length} (P0:${p0} P1:${p1} P2:${p2})`);
+  if (result.docCodeDiscrepancies.length > 0) {
+    lines.push(`  文档-代码不一致: ${result.docCodeDiscrepancies.length} 处`);
   }
 
   lines.push(
