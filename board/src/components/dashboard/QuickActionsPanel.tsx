@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 interface QuickActionsPanelProps {
   servicesCount: number;
   onRefresh: () => void;
@@ -9,9 +11,9 @@ export function QuickActionsPanel({ servicesCount, onRefresh }: QuickActionsPane
   const isEmpty = servicesCount === 0;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
+    <div className="bento-card bento-card-hover">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
           Quick Actions
         </h3>
       </div>
@@ -23,7 +25,6 @@ export function QuickActionsPanel({ servicesCount, onRefresh }: QuickActionsPane
           icon={<ScanIcon />}
           primary={isEmpty}
           onClick={() => {
-            // In a real implementation, this would trigger edith_scan via Agent API
             alert("This action requires EDITH Agent running. Run 'edith_scan' in your terminal.");
           }}
         />
@@ -74,18 +75,18 @@ function ActionButton({
       onClick={onClick}
       className={`w-full flex items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors ${
         primary
-          ? "bg-blue-600 text-white hover:bg-blue-700 border border-blue-600"
-          : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-200"
+          ? "bg-primary text-primary-foreground hover:bg-primary/90 border border-primary"
+          : "bg-muted text-foreground hover:bg-accent border border-border"
       }`}
     >
-      <span className={`flex-shrink-0 ${primary ? "text-white" : "text-gray-500"}`}>
+      <span className={`flex-shrink-0 ${primary ? "text-primary-foreground" : "text-muted-foreground"}`}>
         {icon}
       </span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${primary ? "text-white" : "text-gray-900"}`}>
+        <p className={`text-sm font-medium ${primary ? "text-primary-foreground" : "text-foreground"}`}>
           {label}
         </p>
-        <p className={`text-xs mt-0.5 ${primary ? "text-blue-100" : "text-gray-500"}`}>
+        <p className={`text-xs mt-0.5 ${primary ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
           {description}
         </p>
       </div>

@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import type { ServiceInfo } from "@/lib/api";
 import { getServiceStatus } from "@/lib/service-status";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ServiceCoveragePanelProps {
   services: ServiceInfo[];
@@ -10,12 +12,12 @@ interface ServiceCoveragePanelProps {
 
 export function ServiceCoveragePanel({ services, loading }: ServiceCoveragePanelProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
+    <div className="bento-card bento-card-hover">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
           Service Coverage
         </h3>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">
           {services.length} service{services.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -24,8 +26,8 @@ export function ServiceCoveragePanel({ services, loading }: ServiceCoveragePanel
       {loading && (
         <div className="space-y-2.5">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse flex items-center gap-3">
-              <div className="h-8 w-full rounded bg-gray-100" />
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-8 w-full" />
             </div>
           ))}
         </div>
@@ -34,8 +36,8 @@ export function ServiceCoveragePanel({ services, loading }: ServiceCoveragePanel
       {/* Empty State */}
       {!loading && services.length === 0 && (
         <div className="py-6 text-center">
-          <p className="text-sm text-gray-500">No services discovered</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground">No services discovered</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
             Run edith_scan to discover services
           </p>
         </div>
@@ -52,19 +54,31 @@ export function ServiceCoveragePanel({ services, loading }: ServiceCoveragePanel
 
       {/* Legend */}
       {!loading && services.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-500">
+        <div className="mt-4 pt-3 border-t border-border flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+            <span className="inline-block h-2 w-2 rounded-full bg-success" />
             Complete
           </span>
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-yellow-500" />
+            <span className="inline-block h-2 w-2 rounded-full bg-warning" />
             Partial
           </span>
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
+            <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/40" />
             Minimal
           </span>
+        </div>
+      )}
+
+      {/* Footer Link */}
+      {!loading && services.length > 0 && (
+        <div className="mt-3">
+          <Link
+            href="/services"
+            className="text-xs text-primary hover:text-primary/80 transition-colors"
+          >
+            View all services →
+          </Link>
         </div>
       )}
     </div>
@@ -77,7 +91,7 @@ function ServiceRow({ service }: { service: ServiceInfo }) {
   const status = getServiceStatus(service);
 
   return (
-    <div className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-50 transition-colors group">
+    <div className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent transition-colors">
       {/* Status Indicator */}
       <span
         className={`inline-block h-2.5 w-2.5 rounded-full flex-shrink-0 ${status.dotColor}`}
@@ -86,10 +100,10 @@ function ServiceRow({ service }: { service: ServiceInfo }) {
 
       {/* Service Name */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">
+        <p className="text-sm font-medium text-foreground truncate">
           {service.name}
         </p>
-        <p className="text-xs text-gray-500 truncate">
+        <p className="text-xs text-muted-foreground truncate">
           {service.role}
         </p>
       </div>
@@ -109,8 +123,8 @@ function LayerPill({ present, label }: { present: boolean; label: string }) {
     <span
       className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${
         present
-          ? "bg-green-50 text-green-700"
-          : "bg-gray-100 text-gray-400"
+          ? "bg-success-light text-success"
+          : "bg-muted text-muted-foreground/50"
       }`}
     >
       {label}

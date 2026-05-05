@@ -12,6 +12,8 @@ import { ServiceCoveragePanel } from "@/components/dashboard/ServiceCoveragePane
 import { RecentChangesPanel } from "@/components/dashboard/RecentChangesPanel";
 import { ArtifactStatsPanel } from "@/components/dashboard/ArtifactStatsPanel";
 import { QuickActionsPanel } from "@/components/dashboard/QuickActionsPanel";
+import { formatTimeAgo } from "@/lib/format";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Dashboard Data ──────────────────────────────────────────────
 
@@ -25,22 +27,6 @@ interface DashboardData {
   timelineLoading: boolean;
   wsStatus: WsStatus;
   lastRefreshed: string | null;
-}
-
-// ── Time ago formatter ──────────────────────────────────────────
-
-function formatTimeAgo(dateStr: string | null): string | null {
-  if (!dateStr) return null;
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHours = Math.floor(diffMin / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
 }
 
 // ── Dashboard Page ──────────────────────────────────────────────
@@ -130,7 +116,6 @@ export default function DashboardPage() {
     });
 
     const unsubChange = ws.on("change", () => {
-      // Refresh all data on file change
       fetchAll();
     });
 
@@ -158,11 +143,11 @@ export default function DashboardPage() {
     <div className="p-6 space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-        <div className="flex items-center gap-3 text-sm text-gray-500">
+        <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
           {data.wsStatus === "connected" && (
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+              <span className="inline-block h-2 w-2 rounded-full bg-success status-dot-live" />
               Live
             </span>
           )}
@@ -172,28 +157,55 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Initial Loading State */}
+      {data.healthLoading && !data.health && (
+        <div className="bento-grid">
+          <div className="bento-card bento-span-2">
+            <Skeleton className="h-5 w-40 mb-4" />
+            <Skeleton className="h-10 w-full mb-3" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+          <div className="bento-card">
+            <Skeleton className="h-5 w-32 mb-4" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <div className="bento-card">
+            <Skeleton className="h-5 w-36 mb-4" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <div className="bento-card">
+            <Skeleton className="h-5 w-32 mb-4" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <div className="bento-card">
+            <Skeleton className="h-5 w-28 mb-4" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </div>
+      )}
+
       {/* Empty State */}
       {isEmpty && (
-        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center">
+        <div className="bento-card text-center py-16">
           <div className="mx-auto max-w-md">
-            <div className="text-4xl mb-4">&#x1f4da;</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="text-4xl mb-4">📚</div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               No knowledge base found
             </h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Run <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">edith_scan</code> on your project to start building the knowledge base.
+            <p className="text-sm text-muted-foreground mb-6">
+              Run <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">edith_scan</code> on your project to start building the knowledge base.
             </p>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+            <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
               Scan New Service
             </button>
           </div>
         </div>
       )}
 
-      {/* Dashboard Grid */}
-      {!isEmpty && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Row 1: Health + Service Coverage */}
+      {/* Bento Grid Dashboard */}
+      {!isEmpty && data.health && (
+        <div className="bento-grid">
+          {/* Row 1: Health Panel (span 2) + Service Coverage (span 1) */}
           <HealthPanel
             health={data.health}
             loading={data.healthLoading}
@@ -205,32 +217,22 @@ export default function DashboardPage() {
             loading={data.servicesLoading}
           />
 
-          {/* Row 2: Recent Changes (full width) */}
-          <div className="lg:col-span-2">
-            <RecentChangesPanel
-              timeline={data.timeline}
-              loading={data.timelineLoading}
-            />
-          </div>
-
-          {/* Row 3: Artifact Stats + Quick Actions */}
+          {/* Row 2: Artifact Stats (span 1) + Recent Changes (span 1) */}
           <ArtifactStatsPanel
             stats={artifactStats}
             servicesCount={data.health?.servicesCount ?? 0}
             loading={data.healthLoading}
           />
+          <RecentChangesPanel
+            timeline={data.timeline}
+            loading={data.timelineLoading}
+          />
+
+          {/* Row 3: Quick Actions (span 1) */}
           <QuickActionsPanel
             servicesCount={data.health?.servicesCount ?? 0}
             onRefresh={fetchAll}
           />
-        </div>
-      )}
-
-      {/* Loading State (initial) */}
-      {data.healthLoading && !data.health && (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-          <p className="mt-3 text-sm text-gray-500">Loading knowledge base status...</p>
         </div>
       )}
     </div>
@@ -262,7 +264,6 @@ function computeArtifactStats(services: ServiceInfo[]): ArtifactCounts {
     if (svc.layers.quickRef) quickRefs++;
     distillateFragments += svc.layers.distillates;
 
-    // Determine service status
     if (svc.layers.routingTable && svc.layers.quickRef && svc.layers.distillates > 0) {
       complete++;
     } else if (svc.layers.routingTable || svc.layers.quickRef || svc.layers.distillates > 0) {

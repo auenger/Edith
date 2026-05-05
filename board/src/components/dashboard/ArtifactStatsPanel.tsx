@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+
 interface ArtifactCounts {
   routingTables: number;
   quickRefs: number;
@@ -18,9 +21,9 @@ interface ArtifactStatsPanelProps {
 
 export function ArtifactStatsPanel({ stats, servicesCount, loading }: ArtifactStatsPanelProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
+    <div className="bento-card bento-card-hover">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
           Artifact Statistics
         </h3>
       </div>
@@ -29,9 +32,9 @@ export function ArtifactStatsPanel({ stats, servicesCount, loading }: ArtifactSt
       {loading && (
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="animate-pulse rounded-md bg-gray-50 p-3">
-              <div className="h-3 w-12 rounded bg-gray-200 mb-2" />
-              <div className="h-6 w-8 rounded bg-gray-200" />
+            <div key={i} className="rounded-md bg-muted p-3">
+              <Skeleton className="h-3 w-12 mb-2" />
+              <Skeleton className="h-6 w-8" />
             </div>
           ))}
         </div>
@@ -43,25 +46,25 @@ export function ArtifactStatsPanel({ stats, servicesCount, loading }: ArtifactSt
           <StatCard
             label="Routing Tables"
             value={stats.routingTables}
-            icon="\u{1F4CB}"
+            icon="📋"
             color="blue"
           />
           <StatCard
             label="Quick Refs"
             value={stats.quickRefs}
-            icon="\u{26A1}"
+            icon="⚡"
             color="yellow"
           />
           <StatCard
             label="Distillates"
             value={stats.distillateFragments}
-            icon="\u{1F9EA}"
+            icon="🧪"
             color="purple"
           />
           <StatCard
             label="Total Services"
             value={servicesCount}
-            icon="\u{1F3D7}"
+            icon="🏗"
             color="green"
           />
         </div>
@@ -69,30 +72,42 @@ export function ArtifactStatsPanel({ stats, servicesCount, loading }: ArtifactSt
 
       {/* Service Breakdown */}
       {!loading && servicesCount > 0 && (
-        <div className="mt-4 pt-3 border-t border-gray-100">
+        <div className="mt-4 pt-3 border-t border-border">
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-green-600 font-medium">{stats.completeServices} complete</span>
-            <span className="text-gray-300">|</span>
-            <span className="text-yellow-600 font-medium">{stats.partialServices} partial</span>
-            <span className="text-gray-300">|</span>
-            <span className="text-gray-400 font-medium">{stats.unscannedServices} minimal</span>
+            <span className="text-success font-medium">{stats.completeServices} complete</span>
+            <span className="text-border">|</span>
+            <span className="text-warning font-medium">{stats.partialServices} partial</span>
+            <span className="text-border">|</span>
+            <span className="text-muted-foreground font-medium">{stats.unscannedServices} minimal</span>
           </div>
 
           {/* Mini progress bar */}
-          <div className="mt-2 flex h-1.5 w-full rounded-full overflow-hidden bg-gray-100">
+          <div className="mt-2 flex h-1.5 w-full rounded-full overflow-hidden bg-muted">
             {stats.completeServices > 0 && (
               <div
-                className="bg-green-500"
+                className="bg-success"
                 style={{ width: `${(stats.completeServices / servicesCount) * 100}%` }}
               />
             )}
             {stats.partialServices > 0 && (
               <div
-                className="bg-yellow-400"
+                className="bg-warning"
                 style={{ width: `${(stats.partialServices / servicesCount) * 100}%` }}
               />
             )}
           </div>
+        </div>
+      )}
+
+      {/* Footer Link */}
+      {!loading && servicesCount > 0 && (
+        <div className="mt-3">
+          <Link
+            href="/artifacts"
+            className="text-xs text-primary hover:text-primary/80 transition-colors"
+          >
+            Browse artifacts →
+          </Link>
         </div>
       )}
     </div>
@@ -113,10 +128,10 @@ function StatCard({
   color: "blue" | "yellow" | "purple" | "green";
 }) {
   const colorMap = {
-    blue: "bg-blue-50 text-blue-700",
-    yellow: "bg-yellow-50 text-yellow-700",
-    purple: "bg-purple-50 text-purple-700",
-    green: "bg-green-50 text-green-700",
+    blue: "bg-info-light text-info",
+    yellow: "bg-warning-light text-warning",
+    purple: "bg-chart-4/10 text-chart-4",
+    green: "bg-success-light text-success",
   };
 
   return (
