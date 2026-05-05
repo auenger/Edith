@@ -1,5 +1,16 @@
 "use client";
 
+import { SearchBar } from "@/components/shared/SearchBar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CheckIcon, AlertTriangleIcon, CircleIcon } from "lucide-react";
+
 type StackFilter = "all" | string;
 type StatusFilter = "all" | "complete" | "partial" | "minimal";
 
@@ -30,69 +41,73 @@ export function ServiceFilters({
     filters.search !== "";
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="bento-card bento-span-full">
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
-        <div className="relative flex-1 min-w-[200px]">
-          <svg
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search services..."
-            value={filters.search}
-            onChange={(e) =>
-              onFiltersChange({ ...filters, search: e.target.value })
-            }
-            className="w-full rounded-md border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-300"
-          />
-        </div>
+        <SearchBar
+          value={filters.search}
+          onChange={(search) => onFiltersChange({ ...filters, search })}
+          placeholder="Search services..."
+        />
 
         {/* Stack Filter */}
-        <select
+        <Select
           value={filters.stack}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, stack: e.target.value })
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, stack: value as StackFilter })
           }
-          className="rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 focus:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-300"
         >
-          <option value="all">All Stacks</option>
-          {stacks.map((stack) => (
-            <option key={stack} value={stack}>
-              {stack}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="All Stacks" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Stacks</SelectItem>
+            {stacks.map((stack) => (
+              <SelectItem key={stack} value={stack}>
+                {stack}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Status Filter */}
-        <select
+        <Select
           value={filters.status}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, status: e.target.value as StatusFilter })
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, status: value as StatusFilter })
           }
-          className="rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 focus:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-300"
         >
-          <option value="all">All Status</option>
-          <option value="complete">✓ Complete</option>
-          <option value="partial">⚠ Partial</option>
-          <option value="minimal">○ Minimal</option>
-        </select>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="complete">
+              <span className="flex items-center gap-1.5">
+                <CheckIcon className="size-3 text-success" />
+                Complete
+              </span>
+            </SelectItem>
+            <SelectItem value="partial">
+              <span className="flex items-center gap-1.5">
+                <AlertTriangleIcon className="size-3 text-warning" />
+                Partial
+              </span>
+            </SelectItem>
+            <SelectItem value="minimal">
+              <span className="flex items-center gap-1.5">
+                <CircleIcon className="size-3 text-muted-foreground" />
+                Minimal
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* Result Count */}
         {hasActiveFilters && (
-          <span className="text-xs text-gray-500">
+          <Badge variant="secondary" className="text-xs">
             {resultCount}/{totalCount} shown
-          </span>
+          </Badge>
         )}
 
         {/* Clear Button */}
@@ -101,9 +116,9 @@ export function ServiceFilters({
             onClick={() =>
               onFiltersChange({ stack: "all", status: "all", search: "" })
             }
-            className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+            className="text-xs text-primary hover:underline"
           >
-            Clear
+            Clear all
           </button>
         )}
       </div>

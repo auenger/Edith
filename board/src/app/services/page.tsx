@@ -3,11 +3,16 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { api, getBoardWebSocket, type WsStatus } from "@/lib/api";
 import type { ServiceInfo } from "@/lib/api";
+import { getServiceStatus } from "@/lib/service-status";
 import { ServiceCard } from "@/components/services/ServiceCard";
-import { ServiceDetailModal } from "@/components/services/ServiceDetailModal";
+import { ServiceDetailSheet } from "@/components/services/ServiceDetailModal";
 import { ServiceFilters } from "@/components/services/ServiceFilters";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { CardGridSkeleton } from "@/components/shared/CardGridSkeleton";
+import { Badge } from "@/components/ui/badge";
+import { ActivityIcon } from "lucide-react";
 
-// ── Filter Types ─────────────────────────────────────────────────
+// -- Filter Types --
 
 type StackFilter = "all" | string;
 type StatusFilter = "all" | "complete" | "partial" | "minimal";
@@ -18,7 +23,7 @@ interface Filters {
   search: string;
 }
 
-// ── Services Page ────────────────────────────────────────────────
+// -- Services Page --
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceInfo[]>([]);
@@ -32,7 +37,7 @@ export default function ServicesPage() {
   });
   const [selectedService, setSelectedService] = useState<string | null>(null);
 
-  // ── Data Fetching ─────────────────────────────────────────────
+  // -- Data Fetching --
 
   const fetchServices = useCallback(async () => {
     setLoading(true);
@@ -50,7 +55,7 @@ export default function ServicesPage() {
     fetchServices();
   }, [fetchServices]);
 
-  // ── WebSocket ─────────────────────────────────────────────────
+  // -- WebSocket --
 
   useEffect(() => {
     const ws = getBoardWebSocket();
@@ -65,13 +70,12 @@ export default function ServicesPage() {
     };
   }, [fetchServices]);
 
-  // ── Derived Data ──────────────────────────────────────────────
+  // -- Derived Data --
 
   const availableStacks = useMemo(() => {
     const stacks = new Set<string>();
     for (const svc of services) {
       if (svc.stack) {
-        // Split compound stacks like "Spring Boot + PostgreSQL"
         svc.stack.split("+").forEach((s) => {
           const trimmed = s.trim();
           if (trimmed) stacks.add(trimmed);
@@ -92,7 +96,7 @@ export default function ServicesPage() {
           svc.name.toLowerCase().includes(query) ||
           svc.role.toLowerCase().includes(query) ||
           svc.owner.toLowerCase().includes(query) ||
-          svc.stack.toLowerCase().includes(query),
+          svc.stack.toLowerCase().includes(query)
       );
     }
 
@@ -101,7 +105,7 @@ export default function ServicesPage() {
       result = result.filter((svc) => svc.stack.includes(filters.stack));
     }
 
-    // Status filter
+    // Status filter (using shared utility from service-status.ts)
     if (filters.status !== "all") {
       result = result.filter((svc) => {
         const status = getServiceStatus(svc);
@@ -112,50 +116,50 @@ export default function ServicesPage() {
     return result;
   }, [services, filters]);
 
-  // ── Empty State ───────────────────────────────────────────────
+  // -- States --
 
   const isEmpty = !loading && services.length === 0;
+  const isFilteredEmpty =
+    !isEmpty && !loading && !error && filteredServices.length === 0;
 
-  // ── Render ────────────────────────────────────────────────────
+  // -- Render --
 
   return (
     <div className="p-6 space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Services</h2>
-        <div className="flex items-center gap-3 text-sm text-gray-500">
+        <h2 className="text-2xl font-bold text-foreground">Services</h2>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
           {wsStatus === "connected" && (
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+              <ActivityIcon className="size-3 text-success status-dot-live" />
               Live
             </span>
           )}
-          <span>
+          <Badge variant="secondary">
             {services.length} service{services.length !== 1 ? "s" : ""}
-          </span>
+          </Badge>
         </div>
       </div>
 
       {/* Empty State */}
       {isEmpty && (
-        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center">
-          <div className="mx-auto max-w-md">
-            <div className="text-4xl mb-4">&#x1f50d;</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No services discovered
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">
+        <EmptyState
+          icon={<ActivityIcon className="size-10 text-muted-foreground" />}
+          title="No services discovered"
+          description={
+            <>
               Run{" "}
-              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">
+              <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
                 edith_scan
               </code>{" "}
               on your project to discover and register services.
-            </p>
-          </div>
-        </div>
+            </>
+          }
+        />
       )}
 
-      {/* Filters (only show when services exist) */}
+      {/* Filters */}
       {!isEmpty && (
         <ServiceFilters
           stacks={availableStacks}
@@ -168,11 +172,11 @@ export default function ServicesPage() {
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="bento-card border-danger/30 bg-danger-light/30">
+          <p className="text-sm text-danger">{error}</p>
           <button
             onClick={fetchServices}
-            className="mt-2 text-sm text-red-600 underline hover:text-red-800"
+            className="mt-2 text-sm text-danger underline hover:no-underline"
           >
             Retry
           </button>
@@ -180,24 +184,11 @@ export default function ServicesPage() {
       )}
 
       {/* Loading State */}
-      {loading && services.length === 0 && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="animate-pulse rounded-lg border border-gray-200 bg-white p-5"
-            >
-              <div className="h-4 w-32 rounded bg-gray-200 mb-3" />
-              <div className="h-3 w-48 rounded bg-gray-100 mb-2" />
-              <div className="h-3 w-24 rounded bg-gray-100" />
-            </div>
-          ))}
-        </div>
-      )}
+      {loading && services.length === 0 && <CardGridSkeleton count={4} />}
 
-      {/* Service Cards Grid */}
+      {/* Service Cards Grid (Bento Grid) */}
       {!isEmpty && !error && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="bento-grid">
           {filteredServices.map((svc) => (
             <ServiceCard
               key={svc.name}
@@ -209,55 +200,32 @@ export default function ServicesPage() {
       )}
 
       {/* No Results (after filtering) */}
-      {!isEmpty &&
-        !loading &&
-        !error &&
-        filteredServices.length === 0 &&
-        services.length > 0 && (
-          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-            <p className="text-sm text-gray-500">
-              No services match the current filters.
-            </p>
+      {isFilteredEmpty && (
+        <EmptyState
+          icon="\u{1F50D}"
+          title="No matching services"
+          description="No services match the current filters."
+          action={
             <button
               onClick={() =>
                 setFilters({ stack: "all", status: "all", search: "" })
               }
-              className="mt-2 text-sm text-blue-600 underline hover:text-blue-800"
+              className="text-sm text-primary hover:underline"
             >
               Clear filters
             </button>
-          </div>
-        )}
-
-      {/* Service Detail Modal */}
-      {selectedService && (
-        <ServiceDetailModal
-          serviceName={selectedService}
-          onClose={() => setSelectedService(null)}
+          }
         />
       )}
+
+      {/* Service Detail Sheet */}
+      <ServiceDetailSheet
+        serviceName={selectedService || ""}
+        open={!!selectedService}
+        onOpenChange={(open) => {
+          if (!open) setSelectedService(null);
+        }}
+      />
     </div>
   );
-}
-
-// ── Status Logic (shared with ServiceCard) ──────────────────────
-
-type ServiceStatus = "complete" | "partial" | "minimal";
-
-function getServiceStatus(svc: ServiceInfo): {
-  status: ServiceStatus;
-  label: string;
-  dotColor: string;
-} {
-  const hasRouting = svc.layers.routingTable;
-  const hasQuickRef = svc.layers.quickRef;
-  const hasDistillates = svc.layers.distillates > 0;
-
-  if (hasRouting && hasQuickRef && hasDistillates) {
-    return { status: "complete", label: "Complete", dotColor: "bg-green-500" };
-  }
-  if (hasRouting || hasQuickRef || hasDistillates) {
-    return { status: "partial", label: "Partial", dotColor: "bg-yellow-500" };
-  }
-  return { status: "minimal", label: "Minimal", dotColor: "bg-gray-300" };
 }

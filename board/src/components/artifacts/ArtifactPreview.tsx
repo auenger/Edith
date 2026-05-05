@@ -2,118 +2,158 @@
 
 import { useMemo } from "react";
 import type { ArtifactContent } from "@/lib/api";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  FileTextIcon,
+  CodeIcon,
+  HashIcon,
+} from "lucide-react";
 
 interface ArtifactPreviewProps {
   content: ArtifactContent;
   viewMode: "markdown" | "raw" | "tokens";
+  onViewModeChange: (mode: "markdown" | "raw" | "tokens") => void;
 }
 
-// ── Token Budget Constants ───────────────────────────────────────
+// -- Token Budget Constants --
 const DEFAULT_TOKEN_BUDGET = 2000;
 
-export function ArtifactPreview({ content, viewMode }: ArtifactPreviewProps) {
-  if (viewMode === "raw") {
-    return <RawView content={content.content} />;
-  }
+export function ArtifactPreview({
+  content,
+  viewMode,
+  onViewModeChange,
+}: ArtifactPreviewProps) {
+  return (
+    <Tabs
+      value={viewMode}
+      onValueChange={(v: string) => onViewModeChange(v as "markdown" | "raw" | "tokens")}
+      className="flex flex-col h-full"
+    >
+      {/* View Mode Tabs */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs text-muted-foreground">File:</span>
+          <span className="text-xs font-mono text-foreground truncate">
+            {content.path}
+          </span>
+        </div>
+        <TabsList className="h-7">
+          <TabsTrigger value="markdown" className="px-2 py-0.5 text-xs gap-1">
+            <FileTextIcon className="size-3" />
+            Markdown
+          </TabsTrigger>
+          <TabsTrigger value="raw" className="px-2 py-0.5 text-xs gap-1">
+            <CodeIcon className="size-3" />
+            Raw
+          </TabsTrigger>
+          <TabsTrigger value="tokens" className="px-2 py-0.5 text-xs gap-1">
+            <HashIcon className="size-3" />
+            Tokens
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
-  if (viewMode === "tokens") {
-    return <TokenCountView content={content.content} />;
-  }
-
-  return <MarkdownView content={content.content} />;
+      {/* Content Area */}
+      <TabsContent value="markdown" className="flex-1 overflow-y-auto mt-0">
+        <MarkdownView content={content.content} />
+      </TabsContent>
+      <TabsContent value="raw" className="flex-1 overflow-y-auto mt-0">
+        <RawView content={content.content} />
+      </TabsContent>
+      <TabsContent value="tokens" className="flex-1 overflow-y-auto mt-0">
+        <TokenCountView content={content.content} />
+      </TabsContent>
+    </Tabs>
+  );
 }
 
-// ── Markdown View ────────────────────────────────────────────────
+// -- Markdown View --
 
 function MarkdownView({ content }: { content: string }) {
   const html = useMemo(() => renderMarkdown(content), [content]);
 
   return (
-    <div className="p-6 prose prose-sm prose-gray max-w-none">
+    <div className="p-6 prose prose-sm max-w-none">
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }
 
-// ── Raw View ─────────────────────────────────────────────────────
+// -- Raw View --
 
 function RawView({ content }: { content: string }) {
   return (
     <div className="p-4">
-      <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap break-words leading-relaxed bg-gray-50 rounded-lg p-4 border border-gray-200 overflow-x-auto">
+      <pre className="text-xs font-mono text-foreground whitespace-pre-wrap break-words leading-relaxed bg-muted rounded-lg p-4 border border-border overflow-x-auto">
         {content}
       </pre>
     </div>
   );
 }
 
-// ── Token Count View ─────────────────────────────────────────────
+// -- Token Count View --
 
 function TokenCountView({ content }: { content: string }) {
   const stats = useMemo(() => computeTokenStats(content), [content]);
   const budgetPercent = Math.min(
     (stats.estimatedTokens / DEFAULT_TOKEN_BUDGET) * 100,
-    100,
+    100
   );
   const isOverBudget = stats.estimatedTokens > DEFAULT_TOKEN_BUDGET;
 
   return (
     <div className="p-6 space-y-6">
       {/* Summary Card */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3">
-          Token Estimation
-        </h4>
+      <div className="bento-card">
+        <h4 className="text-sm font-semibold mb-3">Token Estimation</h4>
         <div className="grid grid-cols-3 gap-4 text-center">
           <StatItem
             label="Estimated Tokens"
             value={stats.estimatedTokens.toLocaleString()}
-            color={isOverBudget ? "text-amber-600" : "text-blue-600"}
+            color={isOverBudget ? "text-warning" : "text-primary"}
           />
           <StatItem
             label="Token Budget"
             value={DEFAULT_TOKEN_BUDGET.toLocaleString()}
-            color="text-gray-600"
+            color="text-muted-foreground"
           />
           <StatItem
             label="Characters"
             value={stats.chars.toLocaleString()}
-            color="text-gray-600"
+            color="text-muted-foreground"
           />
         </div>
       </div>
 
       {/* Budget Progress Bar */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <div className="bento-card">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-gray-700">
+          <span className="text-xs font-medium text-muted-foreground">
             Budget Usage
           </span>
           <span
-            className={`text-xs font-medium ${isOverBudget ? "text-amber-600" : "text-green-600"}`}
+            className={`text-xs font-medium ${isOverBudget ? "text-warning" : "text-success"}`}
           >
             {budgetPercent.toFixed(1)}%
           </span>
         </div>
-        <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
-              isOverBudget ? "bg-amber-500" : "bg-green-500"
+              isOverBudget ? "bg-warning" : "bg-success"
             }`}
             style={{ width: `${Math.min(budgetPercent, 100)}%` }}
           />
         </div>
-        <div className="flex items-center justify-between mt-1.5 text-[10px] text-gray-400">
+        <div className="flex items-center justify-between mt-1.5 text-[10px] text-muted-foreground">
           <span>0</span>
           <span>{DEFAULT_TOKEN_BUDGET.toLocaleString()} tokens</span>
         </div>
       </div>
 
       {/* Detailed Stats */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3">
-          Content Breakdown
-        </h4>
+      <div className="bento-card">
+        <h4 className="text-sm font-semibold mb-3">Content Breakdown</h4>
         <div className="space-y-2 text-sm">
           <DetailRow label="Lines" value={stats.lines.toLocaleString()} />
           <DetailRow label="Words" value={stats.words.toLocaleString()} />
@@ -127,7 +167,7 @@ function TokenCountView({ content }: { content: string }) {
   );
 }
 
-// ── Stat Item ────────────────────────────────────────────────────
+// -- Helper Components --
 
 function StatItem({
   label,
@@ -141,23 +181,21 @@ function StatItem({
   return (
     <div>
       <p className={`text-lg font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
     </div>
   );
 }
-
-// ── Detail Row ───────────────────────────────────────────────────
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-1">
-      <span className="text-gray-600">{label}</span>
-      <span className="font-mono text-gray-900">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono">{value}</span>
     </div>
   );
 }
 
-// ── Markdown Renderer (lightweight, no external deps) ────────────
+// -- Markdown Renderer (lightweight, no external deps) --
 
 function renderMarkdown(md: string): string {
   let html = md;
@@ -172,19 +210,19 @@ function renderMarkdown(md: string): string {
   html = html.replace(
     /```(\w*)\n([\s\S]*?)```/g,
     (_match, lang, code) =>
-      `<pre class="bg-gray-800 text-gray-100 rounded-lg p-4 my-3 overflow-x-auto"><code class="language-${lang || "text"}">${code.trim()}</code></pre>`,
+      `<pre class="bg-neutral-800 text-neutral-100 rounded-lg p-4 my-3 overflow-x-auto"><code class="language-${lang || "text"}">${code.trim()}</code></pre>`
   );
 
   // Inline code
   html = html.replace(
     /`([^`]+)`/g,
-    '<code class="bg-gray-100 text-pink-600 rounded px-1.5 py-0.5 text-xs font-mono">$1</code>',
+    '<code class="bg-muted text-primary rounded px-1.5 py-0.5 text-xs font-mono">$1</code>'
   );
 
   // Headings
   html = html.replace(/^#### (.+)$/gm, '<h4 class="text-base font-semibold mt-4 mb-2">$1</h4>');
   html = html.replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-5 mb-2">$1</h3>');
-  html = html.replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3 pb-2 border-b border-gray-200">$1</h2>');
+  html = html.replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3 pb-2 border-b border-border">$1</h2>');
   html = html.replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mt-6 mb-4">$1</h1>');
 
   // Bold and italic
@@ -194,7 +232,7 @@ function renderMarkdown(md: string): string {
   // Links
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="text-blue-600 hover:underline">$1</a>',
+    '<a href="$2" class="text-primary hover:underline">$1</a>'
   );
 
   // Unordered lists
@@ -204,22 +242,17 @@ function renderMarkdown(md: string): string {
   html = html.replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal">$1</li>');
 
   // Horizontal rules
-  html = html.replace(/^---$/gm, '<hr class="my-4 border-gray-200" />');
+  html = html.replace(/^---$/gm, '<hr class="my-4 border-border" />');
 
-  // Paragraphs (wrap remaining lines)
+  // Paragraphs
   html = html.replace(/\n{2,}/g, "</p><p>");
   html = `<p>${html}</p>`;
-
-  // Clean up empty paragraphs
   html = html.replace(/<p>\s*<\/p>/g, "");
 
   return html;
 }
 
-// ── Token Estimation ─────────────────────────────────────────────
-
-// Token estimation helper
-
+// -- Token Estimation --
 
 function computeTokenStats(content: string) {
   const chars = content.length;
@@ -229,12 +262,11 @@ function computeTokenStats(content: string) {
     .split(/\s+/)
     .filter((w) => w.length > 0).length;
 
-  // Rough token estimation: ~4 chars per token for English, ~2 chars per token for CJK
+  // Rough token estimation: ~4 chars/token English, ~2 chars/token CJK
   const cjkChars = (content.match(/[一-鿿㐀-䶿]/g) || []).length;
   const nonCjkChars = chars - cjkChars;
   const estimatedTokens = Math.ceil(cjkChars / 2 + nonCjkChars / 4);
 
-  // Count markdown features
   const codeBlocks = (content.match(/```[\s\S]*?```/g) || []).length;
   const headings = (content.match(/^#{1,6}\s/m) || []).length;
   const links = (content.match(/\[([^\]]+)\]\(([^)]+)\)/g) || []).length;

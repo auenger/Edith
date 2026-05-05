@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from "react";
 import type { FileTreeNode } from "@/lib/api";
+import { ChevronRightIcon, FolderIcon, FolderOpenIcon, FileIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface FileTreeProps {
   nodes: FileTreeNode[];
@@ -25,7 +27,7 @@ export function FileTree({ nodes, selectedPath, onSelect }: FileTreeProps) {
   );
 }
 
-// ── Tree Node ───────────────────────────────────────────────────
+// -- Tree Node --
 
 interface TreeNodeProps {
   node: FileTreeNode;
@@ -47,44 +49,47 @@ function TreeNode({ node, depth, selectedPath, onSelect }: TreeNodeProps) {
     }
   }, [isDir, node.path, onSelect]);
 
-  // Choose icon based on file extension
-  const icon = isDir
-    ? expanded
-      ? "📂"
-      : "📁"
-    : getFileIcon(node.name);
-
   return (
     <div>
       <div
         onClick={handleClick}
-        className={`flex items-center gap-1.5 rounded-md px-2 py-1 cursor-pointer text-sm transition-colors ${
+        className={cn(
+          "flex items-center gap-1.5 rounded-md px-2 py-1.5 cursor-pointer text-sm transition-colors",
           isSelected
-            ? "bg-blue-50 text-blue-700"
-            : "text-gray-700 hover:bg-gray-100"
-        }`}
+            ? "bg-primary/10 text-primary"
+            : "text-foreground hover:bg-muted"
+        )}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
         title={node.path}
       >
         {/* Expand/Collapse Arrow for Directories */}
-        {isDir && (
-          <svg
-            className={`h-3 w-3 flex-shrink-0 transition-transform ${
-              expanded ? "rotate-90" : ""
-            }`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-              clipRule="evenodd"
-            />
-          </svg>
+        {isDir ? (
+          <ChevronRightIcon
+            className={cn(
+              "size-3 flex-shrink-0 transition-transform duration-150",
+              expanded && "rotate-90"
+            )}
+          />
+        ) : (
+          <span className="w-3 flex-shrink-0" />
         )}
-        {!isDir && <span className="w-3 flex-shrink-0" />}
 
-        <span className="flex-shrink-0 text-sm">{icon}</span>
+        {/* Icon */}
+        {isDir ? (
+          expanded ? (
+            <FolderOpenIcon className="size-4 flex-shrink-0 text-warning" />
+          ) : (
+            <FolderIcon className="size-4 flex-shrink-0 text-warning" />
+          )
+        ) : (
+          <FileIcon
+            className={cn(
+              "size-4 flex-shrink-0",
+              getFileIconColor(node.name)
+            )}
+          />
+        )}
+
         <span className="truncate">{node.name}</span>
       </div>
 
@@ -106,16 +111,14 @@ function TreeNode({ node, depth, selectedPath, onSelect }: TreeNodeProps) {
   );
 }
 
-// ── File Icon Helper ────────────────────────────────────────────
+// -- File Icon Color Helper --
 
-function getFileIcon(name: string): string {
-  if (name.endsWith(".md")) return "📄";
-  if (name.endsWith(".json")) return "📋";
-  if (name.endsWith(".yaml") || name.endsWith(".yml")) return "⚙️";
-  if (name.endsWith(".ts") || name.endsWith(".tsx")) return "🔷";
-  if (name.endsWith(".js") || name.endsWith(".jsx")) return "🟨";
-  if (name.endsWith(".py")) return "🐍";
-  if (name.endsWith(".go")) return "🔵";
-  if (name.endsWith(".java")) return "☕";
-  return "📄";
+function getFileIconColor(name: string): string {
+  if (name.endsWith(".md")) return "text-primary";
+  if (name.endsWith(".json")) return "text-warning";
+  if (name.endsWith(".yaml") || name.endsWith(".yml")) return "text-info";
+  if (name.endsWith(".ts") || name.endsWith(".tsx")) return "text-primary";
+  if (name.endsWith(".js") || name.endsWith(".jsx")) return "text-warning";
+  if (name.endsWith(".py")) return "text-success";
+  return "text-muted-foreground";
 }

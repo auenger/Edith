@@ -2,6 +2,14 @@
 
 import type { ServiceInfo } from "@/lib/api";
 import { getServiceStatus } from "@/lib/service-status";
+import { Badge } from "@/components/ui/badge";
+import {
+  CheckIcon,
+  AlertTriangleIcon,
+  CircleIcon,
+  ChevronRightIcon,
+  FileTextIcon,
+} from "lucide-react";
 
 interface ServiceCardProps {
   service: ServiceInfo;
@@ -11,26 +19,21 @@ interface ServiceCardProps {
 export function ServiceCard({ service, onViewDetail }: ServiceCardProps) {
   const status = getServiceStatus(service);
 
-  const hasAllLayers =
-    service.layers.routingTable &&
-    service.layers.quickRef &&
-    service.layers.distillates > 0;
-
   const missingL2 =
     service.layers.routingTable &&
     service.layers.quickRef &&
     service.layers.distillates === 0;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition-all">
+    <div
+      className="bento-card bento-card-hover cursor-pointer flex flex-col"
+      onClick={onViewDetail}
+    >
       {/* Header Row */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2.5">
-          <span
-            className={`inline-block h-2.5 w-2.5 rounded-full flex-shrink-0 ${status.dotColor}`}
-            title={status.label}
-          />
-          <h3 className="text-base font-semibold text-gray-900">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <StatusDot status={status.status} />
+          <h3 className="text-base font-semibold text-foreground truncate">
             {service.name}
           </h3>
         </div>
@@ -38,47 +41,27 @@ export function ServiceCard({ service, onViewDetail }: ServiceCardProps) {
       </div>
 
       {/* Description */}
-      <p className="text-sm text-gray-600 mb-3">{service.role}</p>
+      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+        {service.role}
+      </p>
 
-      {/* Meta Row */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">
-        {service.stack && (
-          <span className="flex items-center gap-1">
-            <span className="text-gray-400">Stack:</span>
-            {service.stack}
-          </span>
-        )}
-        {service.owner && (
-          <span className="flex items-center gap-1">
-            <span className="text-gray-400">Owner:</span>
-            {service.owner}
-          </span>
-        )}
-      </div>
-
-      {/* Constraints */}
-      {service.constraints && service.constraints.length > 0 && (
-        <div className="mb-3">
-          <div className="flex flex-wrap gap-1">
-            {service.constraints.slice(0, 3).map((c, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600"
-              >
-                {c.length > 40 ? c.slice(0, 40) + "..." : c}
-              </span>
-            ))}
-            {service.constraints.length > 3 && (
-              <span className="text-[10px] text-gray-400">
-                +{service.constraints.length - 3} more
-              </span>
-            )}
-          </div>
+      {/* Meta: Tech Stack */}
+      {service.stack && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          {service.stack.split("+").map((s, i) => {
+            const trimmed = s.trim();
+            if (!trimmed) return null;
+            return (
+              <Badge key={i} variant="secondary" className="text-[10px]">
+                {trimmed}
+              </Badge>
+            );
+          })}
         </div>
       )}
 
-      {/* Layer Status */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+      {/* Layer Status + Action Row */}
+      <div className="flex items-center justify-between pt-3 mt-auto border-t border-border">
         <div className="flex items-center gap-1.5">
           <LayerPill present={service.layers.routingTable} label="L0" />
           <LayerPill present={service.layers.quickRef} label="L1" />
@@ -94,43 +77,40 @@ export function ServiceCard({ service, onViewDetail }: ServiceCardProps) {
 
         <div className="flex items-center gap-2">
           {missingL2 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // Layer completion will be handled by the detail modal
-                onViewDetail();
-              }}
-              className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors"
+            <Badge
+              variant="outline"
+              className="text-[10px] border-warning text-warning"
             >
               Complete L2
-            </button>
+            </Badge>
           )}
-          <button
-            onClick={onViewDetail}
-            className="inline-flex items-center gap-1 rounded-md bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            Detail
-            <svg
-              className="h-3 w-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <FileTextIcon className="size-3" />
+            <span>{service.layers.distillates}</span>
+          </div>
+          <ChevronRightIcon className="size-4 text-muted-foreground" />
         </div>
       </div>
     </div>
   );
 }
 
-// ── Sub-components ──────────────────────────────────────────────
+// -- Sub-components --
+
+function StatusDot({ status }: { status: string }) {
+  const colorMap: Record<string, string> = {
+    complete: "bg-success",
+    partial: "bg-warning",
+    minimal: "bg-muted-foreground",
+  };
+
+  return (
+    <span
+      className={`inline-block h-2.5 w-2.5 rounded-full flex-shrink-0 ${colorMap[status] || colorMap.minimal}`}
+      aria-label={status}
+    />
+  );
+}
 
 function StatusBadge({
   status,
@@ -139,18 +119,28 @@ function StatusBadge({
   status: string;
   label: string;
 }) {
-  const styles: Record<string, string> = {
-    complete: "bg-green-50 text-green-700 border-green-200",
-    partial: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    minimal: "bg-gray-50 text-gray-500 border-gray-200",
+  const config: Record<string, { icon: React.ReactNode; className: string }> = {
+    complete: {
+      icon: <CheckIcon className="size-3" />,
+      className: "bg-success-light text-success border-success/20",
+    },
+    partial: {
+      icon: <AlertTriangleIcon className="size-3" />,
+      className: "bg-warning-light text-warning border-warning/20",
+    },
+    minimal: {
+      icon: <CircleIcon className="size-3" />,
+      className: "bg-muted text-muted-foreground border-border",
+    },
   };
+
+  const { icon, className } = config[status] || config.minimal;
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${styles[status] || styles.minimal}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${className}`}
     >
-      {status === "complete" && "✓ "}
-      {status === "partial" && "⚠ "}
+      {icon}
       {label}
     </span>
   );
@@ -167,8 +157,8 @@ function LayerPill({
     <span
       className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${
         present
-          ? "bg-green-50 text-green-700"
-          : "bg-gray-100 text-gray-400 line-through"
+          ? "bg-success-light text-success"
+          : "bg-muted text-muted-foreground line-through"
       }`}
     >
       {label}
