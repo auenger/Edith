@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p2-multimodal-ingestion
+    name: "MarkItDown 多模态摄入"
+    priority: 85
+    size: S
+    dependencies: []
+    parent: feat-phase2
+    completed: "2026-05-05T10:50:00+08:00"
+    tag: feat-p2-multimodal-ingestion-20260505
+    merge_commit: "9753be6"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p2-multimodal-ingestion
+    worktree_deleted: true
+    worktree_path: ../EDITH-p2-multimodal-ingestion
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-05-05T10:35:00+08:00"
+      duration: "~15min"
+      commits: 1
+      files_changed: 5
+
   - id: feat-cross-platform-support
     name: "跨平台兼容性支持（Windows / macOS / Linux）"
     priority: 88

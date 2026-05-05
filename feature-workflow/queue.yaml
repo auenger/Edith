@@ -24,16 +24,6 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-  - id: feat-p2-multimodal-ingestion
-    name: "MarkItDown 多模态摄入"
-    priority: 85
-    size: S
-    dependencies: []
-    parent: feat-phase2
-    description: |
-      扩展 edith_scan 输入范围：PDF/Office/图片/音频 → 结构化 Markdown。
-      支持 LLM Vision 图表理解和隐私模式本地化处理。
-
   - id: feat-p2-graphify-index
     name: "Graphify 认知图谱索引"
     priority: 80
@@ -112,6 +102,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-p2-multimodal-ingestion
+    name: "MarkItDown 多模态摄入"
+    priority: 85
+    size: S
+    dependencies: []
+    parent: feat-phase2
+    completed_at: "2026-05-05T10:50:00+08:00"
+    tag: feat-p2-multimodal-ingestion-20260505
+
   - id: feat-deep-excavation
     name: "挖掘与蒸馏深度增强（scan + distill 深度提升）"
     priority: 92
@@ -483,7 +482,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-04-30T15:15:00+08:00"
+  last_updated: "2026-05-05T10:50:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
