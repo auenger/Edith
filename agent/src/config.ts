@@ -177,6 +177,20 @@ export interface ObsidianConfig {
   human_edit_detection: boolean;
 }
 
+/** Knowledge governance configuration */
+export interface GovernanceConfig {
+  /** Enable knowledge governance engine */
+  enabled: boolean;
+  /** Automatically confirm scaffold artifacts (default: false — require human review) */
+  auto_confirm_scaffold: boolean;
+  /** Time threshold for marking artifacts as stale (e.g., "168h" = 7 days) */
+  stale_threshold: string;
+  /** Conflict resolution policy: preserve_human | overwrite | notify */
+  conflict_policy: "preserve_human" | "overwrite" | "notify";
+  /** Enable knowledge health scoring */
+  quality_scoring: boolean;
+}
+
 export interface EdithConfig {
   llm: LlmConfig;
   workspace: WorkspaceConfig;
@@ -189,6 +203,8 @@ export interface EdithConfig {
   ingestion?: IngestionConfig;
   /** Obsidian Vault bidirectional mapping (optional, backward compat) */
   obsidian?: ObsidianConfig;
+  /** Knowledge governance engine (optional, backward compat) */
+  governance?: GovernanceConfig;
 }
 
 // ── Default Values ────────────────────────────────────────────────
@@ -249,6 +265,14 @@ const DEFAULT_OBSIDIAN: ObsidianConfig = {
   graph_view: true,
   frontmatter: true,
   human_edit_detection: true,
+};
+
+const DEFAULT_GOVERNANCE: GovernanceConfig = {
+  enabled: false,
+  auto_confirm_scaffold: false,
+  stale_threshold: "168h",
+  conflict_policy: "preserve_human",
+  quality_scoring: true,
 };
 
 const DEFAULT_INGESTION: IngestionConfig = {
@@ -633,6 +657,37 @@ export function validateConfig(raw: unknown): void {
       );
     }
   }
+
+  // Validate governance section if present
+  if (config.governance && typeof config.governance === "object") {
+    const gov = config.governance as Record<string, unknown>;
+    if (gov.enabled !== undefined && typeof gov.enabled !== "boolean") {
+      throw new ConfigValidationError(
+        `governance.enabled 必须为布尔值，当前值: ${JSON.stringify(gov.enabled)}`
+      );
+    }
+    if (gov.auto_confirm_scaffold !== undefined && typeof gov.auto_confirm_scaffold !== "boolean") {
+      throw new ConfigValidationError(
+        `governance.auto_confirm_scaffold 必须为布尔值，当前值: ${JSON.stringify(gov.auto_confirm_scaffold)}`
+      );
+    }
+    if (gov.stale_threshold !== undefined && typeof gov.stale_threshold !== "string") {
+      throw new ConfigValidationError(
+        `governance.stale_threshold 必须为字符串，当前值: ${JSON.stringify(gov.stale_threshold)}`
+      );
+    }
+    const validConflictPolicies = ["preserve_human", "overwrite", "notify"];
+    if (gov.conflict_policy !== undefined && !validConflictPolicies.includes(gov.conflict_policy as string)) {
+      throw new ConfigValidationError(
+        `governance.conflict_policy 必须为 ${validConflictPolicies.join(" / ")}，当前值: ${JSON.stringify(gov.conflict_policy)}`
+      );
+    }
+    if (gov.quality_scoring !== undefined && typeof gov.quality_scoring !== "boolean") {
+      throw new ConfigValidationError(
+        `governance.quality_scoring 必须为布尔值，当前值: ${JSON.stringify(gov.quality_scoring)}`
+      );
+    }
+  }
 }
 
 // ── Default Value Application ─────────────────────────────────────
@@ -786,6 +841,15 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
         graph_view: (config.obsidian as unknown as Record<string, unknown>).graph_view as boolean ?? DEFAULT_OBSIDIAN.graph_view,
         frontmatter: (config.obsidian as unknown as Record<string, unknown>).frontmatter as boolean ?? DEFAULT_OBSIDIAN.frontmatter,
         human_edit_detection: (config.obsidian as unknown as Record<string, unknown>).human_edit_detection as boolean ?? DEFAULT_OBSIDIAN.human_edit_detection,
+      },
+    } : {}),
+    ...(config.governance ? {
+      governance: {
+        enabled: (config.governance as unknown as Record<string, unknown>).enabled as boolean ?? DEFAULT_GOVERNANCE.enabled,
+        auto_confirm_scaffold: (config.governance as unknown as Record<string, unknown>).auto_confirm_scaffold as boolean ?? DEFAULT_GOVERNANCE.auto_confirm_scaffold,
+        stale_threshold: (config.governance as unknown as Record<string, unknown>).stale_threshold as string ?? DEFAULT_GOVERNANCE.stale_threshold,
+        conflict_policy: (config.governance as unknown as Record<string, unknown>).conflict_policy as GovernanceConfig["conflict_policy"] ?? DEFAULT_GOVERNANCE.conflict_policy,
+        quality_scoring: (config.governance as unknown as Record<string, unknown>).quality_scoring as boolean ?? DEFAULT_GOVERNANCE.quality_scoring,
       },
     } : {}),
   };
