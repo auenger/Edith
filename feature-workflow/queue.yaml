@@ -101,16 +101,7 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-active:
-  - id: feat-p3-governance-engine
-    name: "知识治理引擎（Agent 侧）"
-    priority: 85
-    size: M
-    dependencies: [feat-p3-obsidian-vault]
-    parent: feat-phase3
-    branch: feature/p3-governance-engine
-    worktree: ../EDITH-p3-governance-engine
-    started_at: "2026-05-06T00:00:00+08:00"
+active: []
 
 blocked:
   - id: feat-workflow-orchestrator
@@ -126,6 +117,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-p3-governance-engine
+    name: "知识治理引擎（Agent 侧）"
+    priority: 85
+    size: M
+    dependencies: [feat-p3-obsidian-vault]
+    parent: feat-phase3
+    completed_at: "2026-05-06T01:00:00+08:00"
+    tag: feat-p3-governance-engine-20260506
+
   - id: feat-redesign-layout
     name: "全局布局 & 导航（Sidebar + Header + 响应式框架）"
     priority: 85
@@ -596,7 +596,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-06T00:00:00+08:00"
+  last_updated: "2026-05-06T01:00:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"

@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p3-governance-engine
+    name: "知识治理引擎（Agent 侧）"
+    priority: 85
+    size: M
+    dependencies: [feat-p3-obsidian-vault]
+    parent: feat-phase3
+    completed: "2026-05-06T01:00:00+08:00"
+    tag: feat-p3-governance-engine-20260506
+    merge_commit: "179b1ae"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p3-governance-engine
+    worktree_deleted: true
+    worktree_path: ../EDITH-p3-governance-engine
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 7
+      scenarios_passed: 7
+    stats:
+      started: "2026-05-06T00:00:00+08:00"
+      duration: "~60min"
+      commits: 1
+      files_changed: 9
+
   - id: feat-redesign-layout
     name: "全局布局 & 导航（Sidebar + Header + 响应式框架）"
     priority: 85
