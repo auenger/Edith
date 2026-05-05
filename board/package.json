@@ -12,7 +12,11 @@
     "start": "next start",
     "start:server": "node dist/server/index.js",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:e2e:api": "playwright test --project=api",
+    "test:e2e:pages": "playwright test --project=pages",
+    "test:e2e:ws": "playwright test --project=ws"
   },
   "dependencies": {
     "@fastify/cors": "^11.0.0",
@@ -29,6 +33,7 @@
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/d3": "^7.4.3",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
