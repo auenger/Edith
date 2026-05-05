@@ -1,6 +1,15 @@
 "use client";
 
 import type { HealthStatus } from "@/lib/api";
+import { formatTimeAgo } from "@/lib/format";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardAction,
+  CardContent,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface HealthPanelProps {
   health: HealthStatus | null;
@@ -11,9 +20,9 @@ interface HealthPanelProps {
 
 export function HealthPanel({ health, loading, error, onRetry }: HealthPanelProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
+    <div className="bento-card bento-card-hover bento-span-2">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
           Knowledge Base Health
         </h3>
         <StatusBadge status={health?.status} loading={loading} error={error} />
@@ -31,10 +40,10 @@ export function HealthPanel({ health, loading, error, onRetry }: HealthPanelProp
       {/* Error State */}
       {error && (
         <div className="text-center py-4">
-          <p className="text-sm text-red-600 mb-3">Failed to load health data</p>
+          <p className="text-sm text-destructive mb-3">Failed to load health data</p>
           <button
             onClick={onRetry}
-            className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
           >
             <RetryIcon />
             Retry
@@ -45,21 +54,27 @@ export function HealthPanel({ health, loading, error, onRetry }: HealthPanelProp
       {/* Data State */}
       {health && !error && (
         <div className="space-y-4">
-          {/* Distillation Progress */}
-          <div>
-            <div className="flex items-baseline justify-between mb-1.5">
-              <span className="text-2xl font-bold text-gray-900">
-                {health.servicesCount > 0 ? "Active" : "0%"}
-              </span>
-              <span className="text-xs text-gray-500">
-                {health.servicesCount} service{health.servicesCount !== 1 ? "s" : ""}
-              </span>
+          {/* Health Status Bar */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-baseline justify-between mb-1.5">
+                <span className="text-2xl font-bold text-foreground">
+                  {health.servicesCount > 0 ? "Active" : "Idle"}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {health.servicesCount} service{health.servicesCount !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <HealthProgressBar health={health} />
             </div>
-            <HealthProgressBar health={health} />
           </div>
 
-          {/* Stats Row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatItem
+              label="Services"
+              value={String(health.servicesCount)}
+            />
             <StatItem
               label="Artifacts"
               value={String(health.artifactsCount)}
@@ -68,12 +83,16 @@ export function HealthPanel({ health, loading, error, onRetry }: HealthPanelProp
               label="Last Updated"
               value={formatTimeAgo(health.lastUpdated) || "Never"}
             />
+            <StatItem
+              label="Status"
+              value={health.status.charAt(0).toUpperCase() + health.status.slice(1)}
+            />
           </div>
 
           {/* Errors */}
           {health.errors.length > 0 && (
-            <div className="rounded-md bg-yellow-50 border border-yellow-200 p-2.5">
-              <p className="text-xs text-yellow-800">
+            <div className="rounded-md bg-warning-light border border-warning/20 p-2.5">
+              <p className="text-xs text-warning">
                 {health.errors[0]}
               </p>
             </div>
@@ -95,10 +114,10 @@ function HealthProgressBar({ health }: { health: HealthStatus }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-gray-500">Coverage</span>
-        <span className="text-xs font-medium text-gray-700">{percent}%</span>
+        <span className="text-xs text-muted-foreground">Coverage</span>
+        <span className="text-xs font-medium text-foreground">{percent}%</span>
       </div>
-      <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+      <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{
@@ -122,8 +141,8 @@ function StatusBadge({
 }) {
   if (loading) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-gray-400 animate-pulse" />
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50 animate-pulse" />
         Loading
       </span>
     );
@@ -131,24 +150,24 @@ function StatusBadge({
 
   if (error) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500" />
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-danger-light px-2.5 py-0.5 text-xs font-medium text-destructive">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
         Error
       </span>
     );
   }
 
   const config: Record<string, { bg: string; dot: string; label: string }> = {
-    healthy: { bg: "bg-green-50", dot: "bg-green-500", label: "Healthy" },
-    degraded: { bg: "bg-yellow-50", dot: "bg-yellow-500", label: "Degraded" },
-    error: { bg: "bg-red-50", dot: "bg-red-500", label: "Error" },
+    healthy: { bg: "bg-success-light", dot: "bg-success", label: "Healthy" },
+    degraded: { bg: "bg-warning-light", dot: "bg-warning", label: "Degraded" },
+    error: { bg: "bg-danger-light", dot: "bg-destructive", label: "Error" },
   };
 
   const c = config[status || "error"] || config.error;
 
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full ${c.bg} px-2.5 py-0.5 text-xs font-medium`}>
-      <span className={`inline-block h-1.5 w-1.5 rounded-full ${c.dot}`} />
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${c.dot} ${status === "healthy" ? "status-dot-live" : ""}`} />
       {c.label}
     </span>
   );
@@ -156,9 +175,9 @@ function StatusBadge({
 
 function StatItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-gray-50 px-3 py-2">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm font-semibold text-gray-900 truncate">{value}</p>
+    <div className="rounded-md bg-muted px-3 py-2">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold text-foreground truncate">{value}</p>
     </div>
   );
 }
@@ -175,25 +194,7 @@ function RetryIcon() {
 // ── Helpers ─────────────────────────────────────────────────────
 
 function getProgressColor(percent: number): string {
-  if (percent >= 75) return "#16a34a";
-  if (percent >= 40) return "#d97706";
-  return "#dc2626";
-}
-
-function formatTimeAgo(dateStr: string | null): string | null {
-  if (!dateStr) return null;
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHours = Math.floor(diffMin / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
-}
-
-function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded bg-gray-100 ${className ?? ""}`} />;
+  if (percent >= 75) return "var(--semantic-success)";
+  if (percent >= 40) return "var(--semantic-warning)";
+  return "var(--semantic-danger)";
 }
