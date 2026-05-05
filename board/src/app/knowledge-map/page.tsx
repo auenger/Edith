@@ -86,7 +86,7 @@ export default function KnowledgeMapPage() {
   // ── Render ─────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-full -m-6">
+    <div className="flex flex-col h-full">
       {/* Top Bar */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-3">
