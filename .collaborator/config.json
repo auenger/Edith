@@ -21,7 +21,8 @@
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes",
     "/Users/ryan/mycode/HS_jarvis/.claude",
-    "/Users/ryan/mycode/HS_jarvis/.claude/skills"
+    "/Users/ryan/mycode/HS_jarvis/.claude/skills",
+    "/Users/ryan/mycode/HS_jarvis"
   ],
   "agent_skip_permissions": false
 }
