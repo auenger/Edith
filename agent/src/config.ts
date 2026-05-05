@@ -161,6 +161,22 @@ export interface IngestionConfig {
   graphify?: GraphifyConfig;
 }
 
+/** Obsidian Vault bidirectional mapping configuration */
+export interface ObsidianConfig {
+  /** Enable Obsidian Vault integration */
+  enabled: boolean;
+  /** Vault root directory path (relative to workspace root) */
+  vault_path: string;
+  /** Auto-generate [[wikilink]] cross-references */
+  wikilinks: boolean;
+  /** Generate .obsidian config for Graph View support */
+  graph_view: boolean;
+  /** Add YAML frontmatter metadata to distillates */
+  frontmatter: boolean;
+  /** Detect and preserve human edits on refresh */
+  human_edit_detection: boolean;
+}
+
 export interface EdithConfig {
   llm: LlmConfig;
   workspace: WorkspaceConfig;
@@ -171,6 +187,8 @@ export interface EdithConfig {
   multimodal?: MultimodalConfig;
   /** Document ingestion pipeline configuration (optional, backward compat) */
   ingestion?: IngestionConfig;
+  /** Obsidian Vault bidirectional mapping (optional, backward compat) */
+  obsidian?: ObsidianConfig;
 }
 
 // ── Default Values ────────────────────────────────────────────────
@@ -222,6 +240,15 @@ const DEFAULT_GRAPHIFY: GraphifyConfig = {
   obsidian_integration: false,
   cache_dir: ".edith/graphify-cache",
   rescan_interval: "24h",
+};
+
+const DEFAULT_OBSIDIAN: ObsidianConfig = {
+  enabled: false,
+  vault_path: "./obsidian-vault",
+  wikilinks: true,
+  graph_view: true,
+  frontmatter: true,
+  human_edit_detection: true,
 };
 
 const DEFAULT_INGESTION: IngestionConfig = {
@@ -571,6 +598,41 @@ export function validateConfig(raw: unknown): void {
       }
     }
   }
+
+  // Validate obsidian section if present
+  if (config.obsidian && typeof config.obsidian === "object") {
+    const obs = config.obsidian as Record<string, unknown>;
+    if (obs.enabled !== undefined && typeof obs.enabled !== "boolean") {
+      throw new ConfigValidationError(
+        `obsidian.enabled 必须为布尔值，当前值: ${JSON.stringify(obs.enabled)}`
+      );
+    }
+    if (obs.vault_path !== undefined && typeof obs.vault_path !== "string") {
+      throw new ConfigValidationError(
+        `obsidian.vault_path 必须为字符串，当前值: ${JSON.stringify(obs.vault_path)}`
+      );
+    }
+    if (obs.wikilinks !== undefined && typeof obs.wikilinks !== "boolean") {
+      throw new ConfigValidationError(
+        `obsidian.wikilinks 必须为布尔值，当前值: ${JSON.stringify(obs.wikilinks)}`
+      );
+    }
+    if (obs.graph_view !== undefined && typeof obs.graph_view !== "boolean") {
+      throw new ConfigValidationError(
+        `obsidian.graph_view 必须为布尔值，当前值: ${JSON.stringify(obs.graph_view)}`
+      );
+    }
+    if (obs.frontmatter !== undefined && typeof obs.frontmatter !== "boolean") {
+      throw new ConfigValidationError(
+        `obsidian.frontmatter 必须为布尔值，当前值: ${JSON.stringify(obs.frontmatter)}`
+      );
+    }
+    if (obs.human_edit_detection !== undefined && typeof obs.human_edit_detection !== "boolean") {
+      throw new ConfigValidationError(
+        `obsidian.human_edit_detection 必须为布尔值，当前值: ${JSON.stringify(obs.human_edit_detection)}`
+      );
+    }
+  }
 }
 
 // ── Default Value Application ─────────────────────────────────────
@@ -716,6 +778,16 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
     context_monitor,
     ...(multimodal ? { multimodal } : {}),
     ...(ingestion ? { ingestion } : {}),
+    ...(config.obsidian ? {
+      obsidian: {
+        enabled: (config.obsidian as unknown as Record<string, unknown>).enabled as boolean ?? DEFAULT_OBSIDIAN.enabled,
+        vault_path: (config.obsidian as unknown as Record<string, unknown>).vault_path as string ?? DEFAULT_OBSIDIAN.vault_path,
+        wikilinks: (config.obsidian as unknown as Record<string, unknown>).wikilinks as boolean ?? DEFAULT_OBSIDIAN.wikilinks,
+        graph_view: (config.obsidian as unknown as Record<string, unknown>).graph_view as boolean ?? DEFAULT_OBSIDIAN.graph_view,
+        frontmatter: (config.obsidian as unknown as Record<string, unknown>).frontmatter as boolean ?? DEFAULT_OBSIDIAN.frontmatter,
+        human_edit_detection: (config.obsidian as unknown as Record<string, unknown>).human_edit_detection as boolean ?? DEFAULT_OBSIDIAN.human_edit_detection,
+      },
+    } : {}),
   };
 }
 
