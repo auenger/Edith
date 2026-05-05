@@ -51,13 +51,6 @@ pending:
       使用 /ui-ux-pro-max 对 EDITH Board 全部前端页面进行完全重构。
       Bento Grid 模块化布局 + shadcn/ui 组件库 + 更换可视化方案。
 
-  - id: feat-redesign-dashboard
-    name: "Dashboard Bento Grid 重设计"
-    priority: 80
-    size: M
-    dependencies: [feat-redesign-layout]
-    parent: feat-board-redesign
-
   - id: feat-redesign-explorer
     name: "Services + Artifacts 浏览器重设计"
     priority: 75
@@ -101,7 +94,16 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-active: []
+active:
+  - id: feat-redesign-dashboard
+    name: "Dashboard Bento Grid 重设计"
+    priority: 80
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+    branch: feature/redesign-dashboard
+    worktree: ../EDITH-redesign-dashboard
+    started: "2026-05-05T22:30:00+08:00"
 
 blocked:
   - id: feat-workflow-orchestrator
@@ -596,7 +598,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-06T01:00:00+08:00"
+  last_updated: "2026-05-05T22:30:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
