@@ -1,5 +1,5 @@
 {
-  "selected_file": "/Users/ryan/mycode/HS_jarvis/CLAUDE.md",
+  "selected_file": null,
   "expanded_dirs": [
     "/Users/ryan/mycode/HS_jarvis/jarvis-skills/document-project/agents",
     "/Users/ryan/mycode/HS_jarvis/jarvis-skills/document-project/resources",
@@ -20,8 +20,6 @@
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/DoNetMes/distillates",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes",
-    "/Users/ryan/mycode/HS_jarvis/.claude",
-    "/Users/ryan/mycode/HS_jarvis/.claude/skills",
     "/Users/ryan/mycode/HS_jarvis"
   ],
   "agent_skip_permissions": false

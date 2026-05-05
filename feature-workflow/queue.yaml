@@ -15,6 +15,61 @@ pending:
       人工审阅工作流 + 矛盾检测（新蒸馏 vs 人工修改）+
       知识健康度四维评分（freshness / confidence / completeness / humanReviewed）。
 
+  # ═══ Board 前端全部页面重构（Bento Grid + shadcn/ui） ═══
+
+  - id: feat-board-redesign
+    name: "Board 前端全部页面重构（Bento Grid + shadcn/ui）"
+    priority: 80
+    size: L
+    dependencies: []
+    parent: null
+    split: true
+    children:
+      - feat-redesign-system
+      - feat-redesign-layout
+      - feat-redesign-dashboard
+      - feat-redesign-explorer
+      - feat-redesign-knowledge-map
+      - feat-redesign-timeline
+    description: |
+      使用 /ui-ux-pro-max 对 EDITH Board 全部前端页面进行完全重构。
+      Bento Grid 模块化布局 + shadcn/ui 组件库 + 更换可视化方案。
+
+  - id: feat-redesign-layout
+    name: "全局布局 & 导航（Sidebar + Header + 响应式框架）"
+    priority: 85
+    size: S
+    dependencies: [feat-redesign-system]
+    parent: feat-board-redesign
+
+  - id: feat-redesign-dashboard
+    name: "Dashboard Bento Grid 重设计"
+    priority: 80
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+
+  - id: feat-redesign-explorer
+    name: "Services + Artifacts 浏览器重设计"
+    priority: 75
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+
+  - id: feat-redesign-knowledge-map
+    name: "Knowledge Map 可视化重设计（D3.js → 现代方案）"
+    priority: 70
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+
+  - id: feat-redesign-timeline
+    name: "Timeline 时间线 Bento Grid 重设计"
+    priority: 65
+    size: S
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
   - id: feat-phase2
