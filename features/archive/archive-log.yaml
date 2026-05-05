@@ -1,4 +1,31 @@
 archived:
+  - id: feat-redesign-layout
+    name: "全局布局 & 导航（Sidebar + Header + 响应式框架）"
+    priority: 85
+    size: S
+    dependencies: [feat-redesign-system]
+    parent: feat-board-redesign
+    completed: "2026-05-05T22:00:00+08:00"
+    tag: feat-redesign-layout-20260505
+    merge_commit: "15096eb"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/redesign-layout
+    worktree_deleted: true
+    worktree_path: ../EDITH-redesign-layout
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-05-05T21:50:00+08:00"
+      duration: "~10min"
+      commits: 1
+      files_changed: 17
+
   - id: feat-p3-obsidian-vault
     name: "Obsidian Vault 双向映射"
     priority: 90

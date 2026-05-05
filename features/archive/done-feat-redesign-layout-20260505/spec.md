@@ -114,3 +114,17 @@ Then Sidebar 以抽屉形式从左侧滑出
 - [ ] 折叠/展开动画流畅
 - [ ] 响应式在桌面/平板/手机正常
 - [ ] 当前页面高亮状态正确
+
+## Merge Record
+
+- **completed_at**: 2026-05-05T22:00:00+08:00
+- **merged_branch**: feature/redesign-layout
+- **merge_commit**: 15096eb3f94a2456c70b2fe424da23883caf1911
+- **archive_tag**: feat-redesign-layout-20260505
+- **conflicts**: none
+- **verification_status**: passed
+- **development_stats**:
+  - started: 2026-05-05T21:50:00+08:00
+  - duration: ~10min
+  - commits: 1
+  - files_changed: 17 (4 new, 6 modified, 7 doc/config)
