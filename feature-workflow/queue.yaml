@@ -2,18 +2,47 @@
 # 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 3: 知识持久化与治理（Obsidian + HITL） ═══
+  # ═══ Phase 3: 知识生态飞轮（Vault ✅ + 治理引擎 + Board 闭环） ═══
 
-  - id: feat-p3-knowledge-governance
-    name: "HITL 人工审阅与知识治理"
+  - id: feat-phase3
+    name: "EDITH Phase 3 知识生态"
+    priority: 85
+    size: L
+    dependencies: []
+    parent: null
+    split: true
+    children:
+      - feat-p3-obsidian-vault
+      - feat-p3-governance-engine
+      - feat-p3-board-ecosystem
+    description: |
+      将 EDITH 从"知识生产工具"升级为"知识生态飞轮"。
+      以已完成的 Obsidian Vault 为基础，构建 Agent 治理引擎 + Board 生态可视化，
+      形成"Agent 生产 → Vault 存储 → 治理追踪 → Board 可视化 → 人类决策 → Agent 更好上下文"闭环。
+
+  - id: feat-p3-governance-engine
+    name: "知识治理引擎（Agent 侧）"
     priority: 85
     size: M
     dependencies: [feat-p3-obsidian-vault]
-    parent: null
+    parent: feat-phase3
     description: |
-      知识生命周期管理（scaffold → reviewed → mature → stale）+
-      人工审阅工作流 + 矛盾检测（新蒸馏 vs 人工修改）+
-      知识健康度四维评分（freshness / confidence / completeness / humanReviewed）。
+      在 Obsidian Vault 基础设施之上构建知识治理引擎。
+      生命周期状态机（scaffold → reviewed → mature → stale）+
+      矛盾检测（复用 edit-detector.ts）+
+      知识健康度四维评分 +
+      治理 JSON 数据输出（.edith/governance/，供 Board 消费）。
+
+  - id: feat-p3-board-ecosystem
+    name: "Board 知识生态集成"
+    priority: 80
+    size: M
+    dependencies: [feat-p3-governance-engine, feat-board-redesign]
+    parent: feat-phase3
+    description: |
+      Board 从"知识浏览器"升级为"知识生态中枢"。
+      Dashboard 治理面板（Bento Grid）+ Explorer Vault 视图 +
+      治理 API（4 端点）+ WebSocket 治理事件推送 + 生态飞轮可视化。
 
   # ═══ Board 前端全部页面重构（Bento Grid + shadcn/ui） ═══
 
@@ -131,7 +160,7 @@ completed:
     priority: 90
     size: M
     dependencies: []
-    parent: null
+    parent: feat-phase3
     completed_at: "2026-05-05T23:30:00+08:00"
     tag: feat-p3-obsidian-vault-20260505
 
@@ -569,12 +598,12 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-05T23:30:00+08:00"
+  last_updated: "2026-05-06T00:00:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
     phase2: "EDITH 全栈升级（Agent 集成 + Board）"
-    phase3: "知识持久化与治理（Obsidian + HITL）"
+    phase3: "知识生态飞轮（Vault + 治理引擎 + Board 闭环）"
   parents:
     - id: feat-deep-excavation
       name: "挖掘与蒸馏深度增强"
@@ -633,6 +662,13 @@ meta:
         - feat-p2-board-explorer
         - feat-p2-knowledge-map
         - feat-p2-timeline
+    - id: feat-phase3
+      name: "EDITH Phase 3 知识生态"
+      split: true
+      children:
+        - feat-p3-obsidian-vault
+        - feat-p3-governance-engine
+        - feat-p3-board-ecosystem
     # deprecated — 被 feat-phase2 替代
     - id: feat-board-base
       name: "EDITH Board 基础版（已替代）"
