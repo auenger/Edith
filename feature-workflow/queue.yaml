@@ -24,8 +24,6 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-
-
 active: []
 
 blocked:
@@ -42,6 +40,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-p2-e2e-playwright
+    name: "Playwright E2E Browser Testing"
+    priority: 75
+    size: M
+    dependencies: [feat-p2-timeline, feat-p2-knowledge-map, feat-p2-board-explorer, feat-p2-board-dashboard]
+    parent: feat-phase2
+    completed_at: "2026-05-05T20:00:00+08:00"
+    tag: feat-p2-e2e-playwright-20260505
+
   - id: feat-p2-timeline
     name: "Timeline 知识时间线"
     priority: 55
@@ -476,7 +483,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-05T18:00:00+08:00"
+  last_updated: "2026-05-05T20:00:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"

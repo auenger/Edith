@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p2-e2e-playwright
+    name: "Playwright E2E Browser Testing"
+    priority: 75
+    size: M
+    dependencies: [feat-p2-timeline, feat-p2-knowledge-map, feat-p2-board-explorer, feat-p2-board-dashboard]
+    parent: feat-phase2
+    completed: "2026-05-05T20:00:00+08:00"
+    tag: feat-p2-e2e-playwright-20260505
+    merge_commit: "a2272e9"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p2-e2e-playwright
+    worktree_deleted: true
+    worktree_path: ../EDITH-p2-e2e-playwright
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 22
+      scenarios_passed: 22
+    stats:
+      started: "2026-05-05T19:30:00+08:00"
+      duration: "~30min"
+      commits: 1
+      files_changed: 15
+
   - id: feat-p2-timeline
     name: "Timeline 知识时间线"
     priority: 55
