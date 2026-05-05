@@ -4,17 +4,6 @@
 pending:
   # ═══ Phase 3: 知识持久化与治理（Obsidian + HITL） ═══
 
-  - id: feat-p3-obsidian-vault
-    name: "Obsidian Vault 双向映射"
-    priority: 90
-    size: M
-    dependencies: []
-    parent: null
-    description: |
-      EDITH 三层知识产物自动映射为 Obsidian Vault 目录结构。
-      零适配双向集成：Vault 结构生成 + Wikilinks 交叉引用 + Graph View 可视化 +
-      人工编辑检测与保留 + 决策记录目录。
-
   - id: feat-p3-knowledge-governance
     name: "HITL 人工审阅与知识治理"
     priority: 85
@@ -81,6 +70,15 @@ completed:
     parent: feat-phase2
     completed_at: "2026-05-05T20:00:00+08:00"
     tag: feat-p2-e2e-playwright-20260505
+
+  - id: feat-p3-obsidian-vault
+    name: "Obsidian Vault 双向映射"
+    priority: 90
+    size: M
+    dependencies: []
+    parent: null
+    completed_at: "2026-05-05T23:30:00+08:00"
+    tag: feat-p3-obsidian-vault-20260505
 
   - id: feat-p2-timeline
     name: "Timeline 知识时间线"
@@ -516,7 +514,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-05T21:45:00+08:00"
+  last_updated: "2026-05-05T23:30:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"

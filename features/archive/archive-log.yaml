@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p3-obsidian-vault
+    name: "Obsidian Vault 双向映射"
+    priority: 90
+    size: M
+    dependencies: []
+    parent: null
+    completed: "2026-05-05T23:30:00+08:00"
+    tag: feat-p3-obsidian-vault-20260505
+    merge_commit: "fd789d9"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p3-obsidian-vault
+    worktree_deleted: true
+    worktree_path: ../EDITH-p3-obsidian-vault
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-05-05T22:00:00+08:00"
+      duration: "~90min"
+      commits: 2
+      files_changed: 6
+
   - id: feat-redesign-system
     name: "Design System 基础（Bento Grid + shadcn/ui + 配色/字体/间距）"
     priority: 90
