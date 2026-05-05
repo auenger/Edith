@@ -1,8 +1,354 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ═══════════════════════════════════════════════════════════════════
+   EDITH Board — Design System Tokens (Bento Grid)
+   ═══════════════════════════════════════════════════════════════════
+   Layer 0: shadcn/ui base variables (light + dark)
+   Layer 1: EDITH brand tokens (brand gradient, semantic colors)
+   Layer 2: Bento Grid layout utilities
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Light Theme ──────────────────────────────────────────────────── */
 :root {
+  /* ── shadcn/ui Core ────────────────────────────────────────────── */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0.005 264);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.005 264);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0.005 264);
+  --primary: oklch(0.488 0.243 264);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.968 0.007 264);
+  --secondary-foreground: oklch(0.205 0.005 264);
+  --muted: oklch(0.968 0.007 264);
+  --muted-foreground: oklch(0.556 0.01 264);
+  --accent: oklch(0.968 0.007 264);
+  --accent-foreground: oklch(0.205 0.005 264);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0.005 264);
+  --input: oklch(0.922 0.005 264);
+  --ring: oklch(0.488 0.243 264);
+  --radius: 0.625rem;
+
+  /* ── Chart Colors ──────────────────────────────────────────────── */
+  --chart-1: oklch(0.488 0.243 264);
+  --chart-2: oklch(0.556 0.18 150);
+  --chart-3: oklch(0.637 0.2 30);
+  --chart-4: oklch(0.708 0.16 290);
+  --chart-5: oklch(0.556 0.14 60);
+
+  /* ── Sidebar Tokens ────────────────────────────────────────────── */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0.005 264);
+  --sidebar-primary: oklch(0.488 0.243 264);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.968 0.007 264);
+  --sidebar-accent-foreground: oklch(0.205 0.005 264);
+  --sidebar-border: oklch(0.922 0.005 264);
+  --sidebar-ring: oklch(0.488 0.243 264);
+
+  /* ── EDITH Brand Colors ────────────────────────────────────────── */
   --color-primary: #2563eb;
+  --color-primary-light: #3b82f6;
+  --color-primary-dark: #1d4ed8;
   --color-success: #16a34a;
   --color-warning: #d97706;
   --color-danger: #dc2626;
+
+  /* Brand gradient endpoints */
+  --brand-start: #1e40af;
+  --brand-end: #7c3aed;
+
+  /* Brand scale (blue-800 → violet-600) */
+  --brand-50: #eff6ff;
+  --brand-100: #dbeafe;
+  --brand-200: #bfdbfe;
+  --brand-300: #93c5fd;
+  --brand-400: #60a5fa;
+  --brand-500: #3b82f6;
+  --brand-600: #2563eb;
+  --brand-700: #1d4ed8;
+  --brand-800: #1e40af;
+  --brand-900: #1e3a8a;
+  --brand-950: #172554;
+
+  /* Semantic scale */
+  --semantic-success: #16a34a;
+  --semantic-success-light: #bbf7d0;
+  --semantic-warning: #d97706;
+  --semantic-warning-light: #fef08a;
+  --semantic-danger: #dc2626;
+  --semantic-danger-light: #fecaca;
+  --semantic-info: #2563eb;
+  --semantic-info-light: #bfdbfe;
+
+  /* Neutral scale (slate) */
+  --neutral-50: #f8fafc;
+  --neutral-100: #f1f5f9;
+  --neutral-200: #e2e8f0;
+  --neutral-300: #cbd5e1;
+  --neutral-400: #94a3b8;
+  --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1e293b;
+  --neutral-900: #0f172a;
+  --neutral-950: #020617;
+
+  /* ── Typography Tokens ─────────────────────────────────────────── */
+  --font-heading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* ── Spacing Tokens (4px base) ─────────────────────────────────── */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-12: 3rem;     /* 48px */
+
+  /* ── Border Radius Tokens ──────────────────────────────────────── */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.25rem;  /* 20px */
+
+  /* ── Shadow Tokens ─────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.06), 0 1px 3px -1px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+
+  /* ── Bento Grid Tokens ─────────────────────────────────────────── */
+  --bento-min-width: 280px;
+  --bento-gap: 1.5rem;
+  --bento-card-radius: var(--radius-lg);
+  --bento-card-padding: 1.5rem;
+  --bento-card-shadow: var(--shadow-sm);
+  --bento-card-hover-shadow: var(--shadow-md);
+  --bento-card-hover-translate-y: -1px;
+
+  /* Sidebar legacy (used by layout.tsx) */
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #e2e8f0;
+  --sidebar-hover: #1e293b;
+  --sidebar-active: #1e40af;
+}
+
+/* ── Dark Theme ───────────────────────────────────────────────────── */
+.dark {
+  --background: oklch(0.145 0.005 264);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.185 0.005 264);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.185 0.005 264);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.62 0.22 264);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.269 0.01 264);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0.01 264);
+  --muted-foreground: oklch(0.708 0.01 264);
+  --accent: oklch(0.269 0.01 264);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.62 0.22 264);
+
+  --chart-1: oklch(0.62 0.22 264);
+  --chart-2: oklch(0.65 0.16 150);
+  --chart-3: oklch(0.70 0.18 30);
+  --chart-4: oklch(0.72 0.14 290);
+  --chart-5: oklch(0.65 0.12 60);
+
+  --sidebar: oklch(0.185 0.005 264);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.62 0.22 264);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0.01 264);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.62 0.22 264);
+
+  /* Dark semantic overrides */
+  --semantic-success-light: oklch(0.269 0.08 150);
+  --semantic-warning-light: oklch(0.269 0.08 90);
+  --semantic-danger-light: oklch(0.269 0.1 25);
+  --semantic-info-light: oklch(0.269 0.08 264);
+
+  /* Dark shadow */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.3), 0 1px 3px -1px rgb(0 0 0 / 0.2);
+  --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.4), 0 2px 6px -2px rgb(0 0 0 / 0.2);
+
+  --bento-card-shadow: var(--shadow-sm);
+  --bento-card-hover-shadow: var(--shadow-lg);
+}
+
+/* ── Tailwind v4 Theme Registration ──────────────────────────────── */
+@theme inline {
+  /* shadcn/ui mappings */
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+
+  /* EDITH brand colors */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+
+  /* Semantic colors */
+  --color-success: var(--semantic-success);
+  --color-success-light: var(--semantic-success-light);
+  --color-warning: var(--semantic-warning);
+  --color-warning-light: var(--semantic-warning-light);
+  --color-danger: var(--semantic-danger);
+  --color-danger-light: var(--semantic-danger-light);
+  --color-info: var(--semantic-info);
+  --color-info-light: var(--semantic-info-light);
+
+  /* Shadows */
+  --shadow-bento-sm: var(--shadow-sm);
+  --shadow-bento-md: var(--shadow-md);
+  --shadow-bento-lg: var(--shadow-lg);
+}
+
+/* ── Base Layer ───────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Bento Grid Layout Utilities
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Bento Grid container — responsive auto-fill grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--bento-min-width), 1fr));
+  gap: var(--bento-gap);
+}
+
+/* Bento Card — base card with radius, shadow, padding, transition */
+.bento-card {
+  border-radius: var(--bento-card-radius);
+  box-shadow: var(--bento-card-shadow);
+  padding: var(--bento-card-padding);
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+/* Bento Card hover — elevated with enhanced shadow */
+.bento-card-hover:hover {
+  box-shadow: var(--bento-card-hover-shadow);
+  transform: translateY(var(--bento-card-hover-translate-y));
+}
+
+/* Bento span utilities — multi-column spanning */
+.bento-span-2 { grid-column: span 2; }
+.bento-span-3 { grid-column: span 3; }
+.bento-span-4 { grid-column: span 4; }
+
+/* Full-width span (all columns) */
+.bento-span-full { grid-column: 1 / -1; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Legacy Compatibility (preserved from feat-p2-board-scaffold)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Sidebar brand gradient */
+.sidebar-brand {
+  background: linear-gradient(135deg, var(--brand-start) 0%, var(--brand-end) 100%);
+}
+
+/* Card hover effect (legacy — use bento-card-hover for new code) */
+.card-hover {
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.card-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Status dot pulse */
+.status-dot-live {
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Smooth scrollbar */
+.overflow-auto::-webkit-scrollbar {
+  width: 6px;
+}
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
