@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p2-timeline
+    name: "Timeline 知识时间线"
+    priority: 55
+    size: S
+    dependencies: [feat-p2-board-scaffold]
+    parent: feat-phase2
+    completed: "2026-05-05T18:00:00+08:00"
+    tag: feat-p2-timeline-20260505
+    merge_commit: "1945f8a"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p2-timeline
+    worktree_deleted: true
+    worktree_path: ../EDITH-p2-timeline
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-05-05T17:30:00+08:00"
+      duration: "~30min"
+      commits: 1
+      files_changed: 12
+
   - id: feat-p2-knowledge-map
     name: "Knowledge Map 知识图谱可视化"
     priority: 60

@@ -135,8 +135,17 @@ Scenario: API 请求失败
 ```
 
 ### General Checklist
-- [ ] 时间线组件（按月份分组，事件流布局）
-- [ ] 事件类型图标和颜色区分
-- [ ] 按服务/类型筛选
-- [ ] 分页或无限滚动加载
-- [ ] 事件详情展开
+- [x] 时间线组件（按月份分组，事件流布局）
+- [x] 事件类型图标和颜色区分
+- [x] 按服务/类型筛选
+- [x] 分页或无限滚动加载
+- [x] 事件详情展开
+
+## Merge Record
+- **Completed**: 2026-05-05T18:00:00+08:00
+- **Merged Branch**: feature/p2-timeline
+- **Merge Commit**: 1945f8a
+- **Archive Tag**: feat-p2-timeline-20260505
+- **Conflicts**: None (fast-forward merge)
+- **Verification**: 6/6 Gherkin scenarios PASS, build PASS
+- **Stats**: 12 files changed, 747 insertions, 29 deletions, 6 new files
