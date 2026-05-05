@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { api, getBoardWebSocket, type WsStatus } from "@/lib/api";
 import type { TimelineEvent, ServiceInfo } from "@/lib/api";
 import { TimelineFilters, type TimelineFilterState } from "@/components/timeline/TimelineFilters";
 import { TimelineEventItem } from "@/components/timeline/TimelineEventItem";
 import { MonthGroupHeader } from "@/components/timeline/MonthGroupHeader";
 import { groupByMonth } from "@/components/timeline/timeline-helpers";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2, CalendarRange, ArrowDown } from "lucide-react";
 
-// ── Page State ────────────────────────────────────────────────────
+// -- Page State -----------------------------------------------------------
 
 const PAGE_SIZE = 20;
 
-// ── Timeline Page ─────────────────────────────────────────────────
+// -- Timeline Page --------------------------------------------------------
 
 export default function TimelinePage() {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
@@ -28,8 +32,9 @@ export default function TimelinePage() {
   });
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // ── Data Fetching ─────────────────────────────────────────────
+  // -- Data Fetching ------------------------------------------------------
 
   const fetchTimeline = useCallback(
     async (newOffset: number, append: boolean) => {
@@ -74,14 +79,14 @@ export default function TimelinePage() {
     }
   }, []);
 
-  // ── Initial Load ─────────────────────────────────────────────
+  // -- Initial Load -------------------------------------------------------
 
   useEffect(() => {
     fetchTimeline(0, false);
     fetchServices();
   }, [fetchTimeline, fetchServices]);
 
-  // ── Refetch when filters change ──────────────────────────────
+  // -- Refetch when filters change ----------------------------------------
 
   useEffect(() => {
     setOffset(0);
@@ -89,7 +94,7 @@ export default function TimelinePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
-  // ── WebSocket ────────────────────────────────────────────────
+  // -- WebSocket ----------------------------------------------------------
 
   useEffect(() => {
     const ws = getBoardWebSocket();
@@ -107,7 +112,7 @@ export default function TimelinePage() {
     };
   }, [fetchTimeline]);
 
-  // ── Load More ────────────────────────────────────────────────
+  // -- Load More ----------------------------------------------------------
 
   const handleLoadMore = useCallback(() => {
     const newOffset = offset + PAGE_SIZE;
@@ -115,7 +120,25 @@ export default function TimelinePage() {
     fetchTimeline(newOffset, true);
   }, [offset, fetchTimeline]);
 
-  // ── Derived Data ─────────────────────────────────────────────
+  // -- Infinite scroll via IntersectionObserver ---------------------------
+
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || loading || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          handleLoadMore();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, handleLoadMore]);
+
+  // -- Derived Data -------------------------------------------------------
 
   const availableServiceNames = useMemo(
     () => services.map((s) => s.name).sort(),
@@ -126,24 +149,24 @@ export default function TimelinePage() {
 
   const isEmpty = !loading && events.length === 0 && !error;
 
-  // ── Render ───────────────────────────────────────────────────
+  // -- Render -------------------------------------------------------------
 
   return (
     <div className="p-6 space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-foreground">
             Knowledge Timeline
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Trace the evolution of organizational knowledge
           </p>
         </div>
-        <div className="flex items-center gap-3 text-sm text-gray-500">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
           {wsStatus === "connected" && (
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+              <span className="inline-block h-2 w-2 rounded-full bg-success status-dot-live" />
               Live
             </span>
           )}
@@ -155,43 +178,7 @@ export default function TimelinePage() {
         </div>
       </div>
 
-      {/* Error State */}
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
-          <button
-            onClick={() => fetchTimeline(0, false)}
-            className="mt-2 text-sm text-red-600 underline hover:text-red-800"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {isEmpty && (
-        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center">
-          <div className="mx-auto max-w-md">
-            <div className="text-4xl mb-4">{"\u{1F4C5}"}</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No knowledge change records yet
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Run{" "}
-              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">
-                edith_scan
-              </code>{" "}
-              or{" "}
-              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">
-                edith_distill
-              </code>{" "}
-              to start building the knowledge timeline.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Filters (only show when events exist or services available) */}
+      {/* Filters */}
       {!isEmpty && (
         <TimelineFilters
           filters={filters}
@@ -202,15 +189,59 @@ export default function TimelinePage() {
         />
       )}
 
+      {/* Error State */}
+      {error && (
+        <Card className="border-danger/30 bg-danger-light/30">
+          <CardContent className="p-4">
+            <p className="text-sm text-danger">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2 text-danger border-danger/30 hover:bg-danger-light/50"
+              onClick={() => fetchTimeline(0, false)}
+            >
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {isEmpty && (
+        <Card className="border-dashed border-2">
+          <CardContent className="py-16 text-center">
+            <div className="mx-auto max-w-md">
+              <CalendarRange className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No knowledge change records yet
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Run{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
+                  edith_scan
+                </code>{" "}
+                or{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
+                  edith_distill
+                </code>{" "}
+                to start building the knowledge timeline.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Loading State (initial) */}
       {loading && events.length === 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
+        <div className="bento-card p-6 space-y-6">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-full bg-gray-100 animate-pulse flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 w-3/4 rounded bg-gray-100 animate-pulse" />
-                <div className="h-3 w-1/2 rounded bg-gray-50 animate-pulse" />
+            <div key={i} className="flex items-start gap-0">
+              <div className="w-10 flex flex-col items-center">
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </div>
+              <div className="flex-1 pl-2 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
               </div>
             </div>
           ))}
@@ -219,15 +250,25 @@ export default function TimelinePage() {
 
       {/* Timeline Content */}
       {!loading && !error && events.length > 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="relative">
+          {/* Vertical gradient timeline axis (background) */}
+          <div
+            className="absolute left-[19px] top-0 bottom-0 w-0.5 opacity-20"
+            style={{
+              background:
+                "linear-gradient(to bottom, var(--brand-start), var(--brand-end))",
+            }}
+          />
+
+          {/* Monthly groups */}
           {Array.from(monthlyGroups.entries()).map(
             ([monthKey, monthEvents]) => (
-              <div key={monthKey} className="mb-6 last:mb-0">
-                <MonthGroupHeader
-                  monthKey={monthKey}
-                  eventCount={monthEvents.length}
-                />
-                <div className="ml-1 mt-2">
+              <MonthGroupHeader
+                key={monthKey}
+                monthKey={monthKey}
+                eventCount={monthEvents.length}
+              >
+                <div className="mt-2">
                   {monthEvents.map((event, idx) => (
                     <TimelineEventItem
                       key={`${event.hash}-${idx}`}
@@ -236,38 +277,41 @@ export default function TimelinePage() {
                     />
                   ))}
                 </div>
-              </div>
+              </MonthGroupHeader>
             ),
           )}
 
-          {/* Load More */}
+          {/* Load More Trigger (IntersectionObserver sentinel) */}
           {hasMore && (
-            <div className="pt-4 border-t border-gray-100 text-center">
-              <button
+            <div ref={loadMoreRef} className="pt-4 text-center">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="gap-2"
               >
                 {loadingMore ? (
                   <>
-                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Loading...
                   </>
                 ) : (
                   <>
+                    <ArrowDown className="h-4 w-4" />
                     Load earlier events
-                    <span className="text-gray-400">
+                    <span className="text-muted-foreground">
                       ({totalAvailable - events.length} remaining)
                     </span>
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           )}
 
           {/* All Loaded */}
           {!hasMore && totalAvailable > 0 && (
-            <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-400">
+            <div className="pt-4 text-center text-xs text-muted-foreground">
               All {events.length} events loaded
             </div>
           )}
@@ -280,17 +324,21 @@ export default function TimelinePage() {
         events.length === 0 &&
         totalAvailable === 0 &&
         (filters.type !== "all" || filters.service !== "all") && (
-          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-            <p className="text-sm text-gray-500">
-              No events match the current filters.
-            </p>
-            <button
-              onClick={() => setFilters({ type: "all", service: "all" })}
-              className="mt-2 text-sm text-blue-600 underline hover:text-blue-800"
-            >
-              Clear filters
-            </button>
-          </div>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No events match the current filters.
+              </p>
+              <Button
+                variant="link"
+                size="sm"
+                className="mt-2"
+                onClick={() => setFilters({ type: "all", service: "all" })}
+              >
+                Clear filters
+              </Button>
+            </CardContent>
+          </Card>
         )}
     </div>
   );

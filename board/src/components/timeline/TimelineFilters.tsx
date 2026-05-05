@@ -4,8 +4,17 @@ import {
   ALL_EVENT_TYPES,
   getEventConfig,
 } from "./timeline-helpers";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
-// ── Filter Types ──────────────────────────────────────────────────
+// -- Filter Types ---------------------------------------------------------
 
 export interface TimelineFilterState {
   type: string;
@@ -20,7 +29,7 @@ interface TimelineFiltersProps {
   totalCount: number;
 }
 
-// ── TimelineFilters Component ─────────────────────────────────────
+// -- TimelineFilters Component --------------------------------------------
 
 export function TimelineFilters({
   filters,
@@ -33,60 +42,74 @@ export function TimelineFilters({
     filters.type !== "all" || filters.service !== "all";
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="bento-card p-4">
       <div className="flex flex-wrap items-center gap-3">
         {/* Event Type Filter */}
-        <select
+        <Select
           value={filters.type}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, type: e.target.value })
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, type: value })
           }
-          className="rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 focus:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-300"
         >
-          <option value="all">All Types</option>
-          {ALL_EVENT_TYPES.map((type) => {
-            const cfg = getEventConfig(type);
-            return (
-              <option key={type} value={type}>
-                {cfg.icon} {cfg.label}
-              </option>
-            );
-          })}
-        </select>
+          <SelectTrigger size="sm" className="w-[160px]">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {ALL_EVENT_TYPES.map((type) => {
+              const cfg = getEventConfig(type);
+              return (
+                <SelectItem key={type} value={type}>
+                  <span className="flex items-center gap-1.5">
+                    <span>{cfg.icon}</span>
+                    <span>{cfg.label}</span>
+                  </span>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
 
         {/* Service Filter */}
-        <select
+        <Select
           value={filters.service}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, service: e.target.value })
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, service: value })
           }
-          className="rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 focus:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-300"
         >
-          <option value="all">All Services</option>
-          {availableServices.map((svc) => (
-            <option key={svc} value={svc}>
-              {svc}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger size="sm" className="w-[180px]">
+            <SelectValue placeholder="All Services" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Services</SelectItem>
+            {availableServices.map((svc) => (
+              <SelectItem key={svc} value={svc}>
+                {svc}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Result Count */}
         {hasActiveFilters && (
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {resultCount}/{totalCount} shown
           </span>
         )}
 
         {/* Clear Button */}
         {hasActiveFilters && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
             onClick={() =>
               onFiltersChange({ type: "all", service: "all" })
             }
-            className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
           >
+            <X className="mr-1 h-3 w-3" />
             Clear
-          </button>
+          </Button>
         )}
       </div>
     </div>
