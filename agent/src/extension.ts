@@ -157,6 +157,9 @@ export default function edithExtension(pi: ExtensionAPI): void {
             { target: params.target, mode: params.mode as "full" | "quick" | undefined, depth: params.depth as "quick" | "deep" | "exhaustive" | undefined },
             config.repos,
             config.workspace.root,
+            undefined, // timeout default
+            config.multimodal,
+            config.ingestion,
           );
 
           if (outcome.ok) {
