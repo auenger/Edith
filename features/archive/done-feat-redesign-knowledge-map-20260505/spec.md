@@ -130,9 +130,18 @@ Then 节点位置跟随移动
 ```
 
 ### General Checklist
-- [ ] 新可视化库安装并正常工作
-- [ ] D3.js 依赖可安全移除
-- [ ] 节点渲染和交互正确
-- [ ] 详情面板正常
-- [ ] 缩放/拖拽/平移流畅
-- [ ] 图例和控件正确
+- [x] 新可视化库安装并正常工作
+- [x] D3.js 依赖可安全移除
+- [x] 节点渲染和交互正确
+- [x] 详情面板正常
+- [x] 缩放/拖拽/平移流畅
+- [x] 图例和控件正确
+
+## Merge Record
+- **Completed**: 2026-05-05T21:48:00+08:00
+- **Merged Branch**: feature/redesign-knowledge-map
+- **Merge Commit**: b951e3f
+- **Archive Tag**: feat-redesign-knowledge-map-20260505
+- **Conflicts**: None
+- **Verification**: PASS (16/16 tasks, 3/3 Gherkin scenarios, TypeScript clean)
+- **Stats**: 921 insertions, 1318 deletions, 15 files changed, D3 removed (54 packages freed)

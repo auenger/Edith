@@ -1,4 +1,31 @@
 archived:
+  - id: feat-redesign-knowledge-map
+    name: "Knowledge Map 可视化重设计（D3.js → 现代方案）"
+    priority: 70
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+    completed: "2026-05-05T21:48:00+08:00"
+    tag: feat-redesign-knowledge-map-20260505
+    merge_commit: "b951e3f"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/redesign-knowledge-map
+    worktree_deleted: true
+    worktree_path: ../EDITH-redesign-knowledge-map
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-05-05T10:00:00+08:00"
+      duration: ~12h
+      commits: 2
+      files_changed: 15
+
   - id: feat-redesign-explorer
     name: "Services + Artifacts 浏览器重设计"
     priority: 75

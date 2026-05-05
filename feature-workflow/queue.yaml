@@ -51,13 +51,6 @@ pending:
       使用 /ui-ux-pro-max 对 EDITH Board 全部前端页面进行完全重构。
       Bento Grid 模块化布局 + shadcn/ui 组件库 + 更换可视化方案。
 
-  - id: feat-redesign-knowledge-map
-    name: "Knowledge Map 可视化重设计（D3.js → 现代方案）"
-    priority: 70
-    size: M
-    dependencies: [feat-redesign-layout]
-    parent: feat-board-redesign
-
   - id: feat-redesign-timeline
     name: "Timeline 时间线 Bento Grid 重设计"
     priority: 65
@@ -103,6 +96,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-redesign-knowledge-map
+    name: "Knowledge Map 可视化重设计（D3.js → 现代方案）"
+    priority: 70
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+    completed_at: "2026-05-05T21:48:00+08:00"
+    tag: feat-redesign-knowledge-map-20260505
+
   - id: feat-redesign-explorer
     name: "Services + Artifacts 浏览器重设计"
     priority: 75
@@ -600,7 +602,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-06T23:45:00+08:00"
+  last_updated: "2026-05-05T21:48:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
