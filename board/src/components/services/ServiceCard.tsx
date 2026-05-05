@@ -1,7 +1,7 @@
 "use client";
 
 import type { ServiceInfo } from "@/lib/api";
-import { getServiceStatus } from "@/app/services/page";
+import { getServiceStatus } from "@/lib/service-status";
 
 interface ServiceCardProps {
   service: ServiceInfo;

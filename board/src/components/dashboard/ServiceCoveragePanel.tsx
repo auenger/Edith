@@ -1,6 +1,7 @@
 "use client";
 
 import type { ServiceInfo } from "@/lib/api";
+import { getServiceStatus } from "@/lib/service-status";
 
 interface ServiceCoveragePanelProps {
   services: ServiceInfo[];
@@ -115,26 +116,4 @@ function LayerPill({ present, label }: { present: boolean; label: string }) {
       {label}
     </span>
   );
-}
-
-// ── Status Logic ────────────────────────────────────────────────
-
-type ServiceStatus = "complete" | "partial" | "minimal";
-
-function getServiceStatus(svc: ServiceInfo): {
-  status: ServiceStatus;
-  label: string;
-  dotColor: string;
-} {
-  const hasRouting = svc.layers.routingTable;
-  const hasQuickRef = svc.layers.quickRef;
-  const hasDistillates = svc.layers.distillates > 0;
-
-  if (hasRouting && hasQuickRef && hasDistillates) {
-    return { status: "complete", label: "Complete", dotColor: "bg-green-500" };
-  }
-  if (hasRouting || hasQuickRef || hasDistillates) {
-    return { status: "partial", label: "Partial", dotColor: "bg-yellow-500" };
-  }
-  return { status: "minimal", label: "Minimal", dotColor: "bg-gray-300" };
 }

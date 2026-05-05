@@ -138,6 +138,13 @@ async function request<T>(path: string): Promise<ApiResponse<T>> {
   }
 }
 
+export interface TimelineResponse {
+  events: TimelineEvent[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
 export const api = {
   health: () => request<HealthStatus>("/health"),
   services: () => request<ServiceInfo[]>("/services"),
@@ -146,7 +153,15 @@ export const api = {
   artifactsTree: () => request<FileTreeNode[]>("/artifacts/tree"),
   artifact: (path: string) => request<ArtifactContent>(`/artifacts/${encodeURIComponent(path)}`),
   graph: () => request<GraphData>("/graph"),
-  timeline: () => request<TimelineEvent[]>("/timeline"),
+  timeline: (params?: { limit?: number; offset?: number; type?: string; service?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.offset) qs.set("offset", String(params.offset));
+    if (params?.type && params.type !== "all") qs.set("type", params.type);
+    if (params?.service && params.service !== "all") qs.set("service", params.service);
+    const query = qs.toString();
+    return request<TimelineResponse>(`/timeline${query ? `?${query}` : ""}`);
+  },
 };
 
 // ── WebSocket Client ────────────────────────────────────────────

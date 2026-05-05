@@ -99,7 +99,7 @@ export default function DashboardPage() {
     if (res.ok && res.data) {
       setData((prev) => ({
         ...prev,
-        timeline: res.data!.slice(0, 5),
+        timeline: res.data!.events.slice(0, 5),
         timelineLoading: false,
       }));
     } else {

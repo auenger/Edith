@@ -107,15 +107,42 @@ export function registerRoutes(
   // ── GET /api/timeline ───────────────────────────────────────
 
   fastify.get("/api/timeline", async (request, _reply) => {
-    const query = request.query as { limit?: string };
+    const query = request.query as {
+      limit?: string;
+      offset?: string;
+      type?: string;
+      service?: string;
+    };
     const limit = Math.min(parseInt(query.limit || "50", 10), 200);
+    const offset = Math.max(parseInt(query.offset || "0", 10), 0);
 
     const health = reader.getHealth();
     if (!health.repoExists) {
       return err(ErrorCodes.REPO_NOT_FOUND, `Knowledge repository not found: ${health.repoPath}`);
     }
 
-    const timeline = reader.getTimeline(limit);
-    return ok(timeline);
+    let timeline = reader.getTimeline(limit + offset);
+
+    // Filter by event type
+    if (query.type && query.type !== "all") {
+      const types = query.type.split(",");
+      timeline = timeline.filter((e: { type: string }) => types.includes(e.type));
+    }
+
+    // Filter by service name (match against file paths)
+    if (query.service && query.service !== "all") {
+      const svc = query.service.toLowerCase();
+      timeline = timeline.filter((e: { message: string; files: string[] }) => {
+        const inMessage = e.message.toLowerCase().includes(svc);
+        const inFiles = e.files.some((f: string) => f.toLowerCase().includes(svc));
+        return inMessage || inFiles;
+      });
+    }
+
+    // Apply offset after filtering
+    const total = timeline.length;
+    timeline = timeline.slice(offset, offset + limit);
+
+    return ok({ events: timeline, total, offset, limit });
   });
 }

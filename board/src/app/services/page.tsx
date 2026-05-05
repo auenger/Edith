@@ -244,7 +244,7 @@ export default function ServicesPage() {
 
 type ServiceStatus = "complete" | "partial" | "minimal";
 
-export function getServiceStatus(svc: ServiceInfo): {
+function getServiceStatus(svc: ServiceInfo): {
   status: ServiceStatus;
   label: string;
   dotColor: string;
