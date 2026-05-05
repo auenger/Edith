@@ -195,11 +195,20 @@ Scenario: WebSocket 断连重连
 ```
 
 ### General Checklist
-- [ ] Next.js + React 项目脚手架
-- [ ] Fastify API Server 骨架
-- [ ] Git 知识仓库只读读取层
-- [ ] 文件变更监听 + WebSocket 推送
-- [ ] 产出物解析器（routing-table / quick-ref / distillates / graph.json）
-- [ ] API 路由骨架（8 个端点）
-- [ ] Docker Compose 配置
-- [ ] TypeScript 全栈类型安全
+- [x] Next.js + React 项目脚手架
+- [x] Fastify API Server 骨架
+- [x] Git 知识仓库只读读取层
+- [x] 文件变更监听 + WebSocket 推送
+- [x] 产出物解析器（routing-table / quick-ref / distillates / graph.json）
+- [x] API 路由骨架（8 个端点）
+- [x] Docker Compose 配置
+- [x] TypeScript 全栈类型安全
+
+## Merge Record
+- **Completed:** 2026-05-05
+- **Branch:** feature/p2-board-scaffold
+- **Merge Commit:** 4fff9cf
+- **Archive Tag:** feat-p2-board-scaffold-20260505
+- **Conflicts:** none
+- **Verification:** passed (6/6 Gherkin scenarios, TypeScript clean, API tested with real data)
+- **Stats:** 20 files, 5376 insertions, 34 tasks, 1 commit
