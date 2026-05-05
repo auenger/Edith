@@ -210,7 +210,7 @@ export function mapLayer2(
 
     let mdFiles: string[];
     try {
-      mdFiles = readdirSync(distillatesDir).filter((f) => f.endsWith(".md"));
+      mdFiles = readdirSync(distillatesDir).filter((f: string) => f.endsWith(".md"));
     } catch {
       continue;
     }

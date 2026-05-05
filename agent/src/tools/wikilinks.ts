@@ -300,7 +300,7 @@ export function generateWikilinks(vaultRoot: string): WikilinkResult {
     if (existsSync(distillatesDir)) {
       try {
         distillateFiles = readdirSync(distillatesDir)
-          .filter((f) => f.endsWith(".md") && !f.startsWith("00-"))
+          .filter((f: string) => f.endsWith(".md") && !f.startsWith("00-"))
           .sort();
       } catch {
         // No distillates
