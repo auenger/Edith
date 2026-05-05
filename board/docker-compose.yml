@@ -1,0 +1,31 @@
+# EDITH Board Docker Compose
+#
+# Usage:
+#   docker compose up -d          # Start in background
+#   docker compose logs -f        # View logs
+#   docker compose down           # Stop
+#
+# The knowledge repository is mounted as a read-only volume.
+
+services:
+  board:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Next.js frontend
+      - "3001:3001"  # Fastify API server
+    environment:
+      - EDITH_REPO_PATH=/data/knowledge
+      - BOARD_PORT=3001
+      - WS_ENABLED=true
+    volumes:
+      # Mount the knowledge repository (read-only)
+      # Update the path to point to your EDITH knowledge repo
+      - ${EDITH_REPO_PATH:-./company-edith}:/data/knowledge:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
