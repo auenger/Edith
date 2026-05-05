@@ -5,8 +5,18 @@ import { api, getBoardWebSocket, type WsStatus } from "@/lib/api";
 import type { FileTreeNode, ArtifactContent } from "@/lib/api";
 import { FileTree } from "@/components/artifacts/FileTree";
 import { ArtifactPreview } from "@/components/artifacts/ArtifactPreview";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import {
+  ActivityIcon,
+  FolderTreeIcon,
+  FileIcon,
+  AlertCircleIcon,
+} from "lucide-react";
 
-// ── Artifacts Page ───────────────────────────────────────────────
+// -- Artifacts Page --
 
 export default function ArtifactsPage() {
   const [tree, setTree] = useState<FileTreeNode[]>([]);
@@ -19,7 +29,7 @@ export default function ArtifactsPage() {
   const [contentError, setContentError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"markdown" | "raw" | "tokens">("markdown");
 
-  // ── Fetch File Tree ───────────────────────────────────────────
+  // -- Fetch File Tree --
 
   const fetchTree = useCallback(async () => {
     setLoading(true);
@@ -37,7 +47,7 @@ export default function ArtifactsPage() {
     fetchTree();
   }, [fetchTree]);
 
-  // ── WebSocket ─────────────────────────────────────────────────
+  // -- WebSocket --
 
   useEffect(() => {
     const ws = getBoardWebSocket();
@@ -46,7 +56,6 @@ export default function ArtifactsPage() {
     const unsubStatus = ws.onStatusChange((status) => setWsStatus(status));
     const unsubChange = ws.on("change", () => {
       fetchTree();
-      // Re-fetch artifact if one is selected
       if (selectedPath) {
         fetchArtifact(selectedPath);
       }
@@ -58,7 +67,7 @@ export default function ArtifactsPage() {
     };
   }, [fetchTree, selectedPath]);
 
-  // ── Fetch Artifact Content ────────────────────────────────────
+  // -- Fetch Artifact Content --
 
   const fetchArtifact = useCallback(async (path: string) => {
     setContentLoading(true);
@@ -78,24 +87,24 @@ export default function ArtifactsPage() {
       setSelectedPath(path);
       fetchArtifact(path);
     },
-    [fetchArtifact],
+    [fetchArtifact]
   );
 
-  // ── Empty State ───────────────────────────────────────────────
+  // -- Empty State --
 
   const isEmpty = !loading && tree.length === 0;
 
-  // ── Render ────────────────────────────────────────────────────
+  // -- Render --
 
   return (
     <div className="p-6 space-y-4 h-full flex flex-col">
       {/* Page Header */}
       <div className="flex items-center justify-between flex-shrink-0">
-        <h2 className="text-2xl font-bold text-gray-900">Artifacts</h2>
-        <div className="flex items-center gap-3 text-sm text-gray-500">
+        <h2 className="text-2xl font-bold text-foreground">Artifacts</h2>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
           {wsStatus === "connected" && (
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+              <ActivityIcon className="size-3 text-success status-dot-live" />
               Live
             </span>
           )}
@@ -104,34 +113,32 @@ export default function ArtifactsPage() {
 
       {/* Empty State */}
       {isEmpty && (
-        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center">
-          <div className="mx-auto max-w-md">
-            <div className="text-4xl mb-4">&#x1f4c1;</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No artifacts found
-            </h3>
-            <p className="text-sm text-gray-500">
+        <EmptyState
+          icon={<FolderTreeIcon className="size-10 text-muted-foreground" />}
+          title="No artifacts found"
+          description={
+            <>
               The knowledge repository is empty. Run{" "}
-              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">
+              <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
                 edith_scan
               </code>{" "}
               and{" "}
-              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">
+              <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
                 edith_distill
               </code>{" "}
               to generate knowledge artifacts.
-            </p>
-          </div>
-        </div>
+            </>
+          }
+        />
       )}
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="bento-card border-danger/30 bg-danger-light/30">
+          <p className="text-sm text-danger">{error}</p>
           <button
             onClick={fetchTree}
-            className="mt-2 text-sm text-red-600 underline hover:text-red-800"
+            className="mt-2 text-sm text-danger underline hover:no-underline"
           >
             Retry
           </button>
@@ -142,19 +149,22 @@ export default function ArtifactsPage() {
       {!isEmpty && !error && (
         <div className="flex-1 flex gap-4 min-h-0">
           {/* Left: File Tree */}
-          <div className="w-72 flex-shrink-0 rounded-lg border border-gray-200 bg-white overflow-hidden flex flex-col">
-            <div className="px-3 py-2.5 border-b border-gray-200 bg-gray-50">
-              <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                File Explorer
-              </h3>
+          <div className="w-72 flex-shrink-0 bento-card flex flex-col overflow-hidden p-0">
+            <div className="px-3 py-2.5 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-2">
+                <FolderTreeIcon className="size-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  File Explorer
+                </span>
+              </div>
             </div>
 
             {loading ? (
               <div className="p-3 space-y-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div
+                  <Skeleton
                     key={i}
-                    className="animate-pulse h-4 rounded bg-gray-100"
+                    className="h-4 rounded"
                     style={{ width: `${60 + Math.random() * 40}%` }}
                   />
                 ))}
@@ -171,113 +181,52 @@ export default function ArtifactsPage() {
           </div>
 
           {/* Right: Preview */}
-          <div className="flex-1 flex flex-col rounded-lg border border-gray-200 bg-white overflow-hidden">
-            {/* Preview Header */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 bg-gray-50">
-              <div className="flex items-center gap-2 min-w-0">
-                {selectedPath ? (
-                  <>
-                    <span className="text-xs text-gray-400">File:</span>
-                    <span className="text-xs font-mono text-gray-700 truncate">
-                      {selectedPath}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-xs text-gray-400">
-                    Select a file to preview
-                  </span>
-                )}
+          <div className="flex-1 flex flex-col bento-card overflow-hidden p-0">
+            {!selectedPath && (
+              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                <div className="text-center">
+                  <FileIcon className="size-8 mx-auto mb-2 text-muted-foreground/50" />
+                  <p>Select a file from the tree to preview</p>
+                </div>
               </div>
+            )}
 
-              {/* View Mode Toggle */}
-              {selectedPath && (
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <ViewModeButton
-                    active={viewMode === "markdown"}
-                    onClick={() => setViewMode("markdown")}
-                  >
-                    Markdown
-                  </ViewModeButton>
-                  <ViewModeButton
-                    active={viewMode === "raw"}
-                    onClick={() => setViewMode("raw")}
-                  >
-                    Raw
-                  </ViewModeButton>
-                  <ViewModeButton
-                    active={viewMode === "tokens"}
-                    onClick={() => setViewMode("tokens")}
-                  >
-                    Token Count
-                  </ViewModeButton>
+            {selectedPath && contentLoading && (
+              <div className="flex items-center justify-center h-full">
+                <div className="space-y-3 w-full px-6">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Separator className="my-4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-4 w-3/5" />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Preview Content */}
-            <div className="flex-1 overflow-y-auto">
-              {!selectedPath && (
-                <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                  <div className="text-center">
-                    <div className="text-3xl mb-2">&#x1f4c4;</div>
-                    <p>Select a file from the tree to preview</p>
-                  </div>
+            {selectedPath && contentError && !contentLoading && (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center p-6">
+                  <AlertCircleIcon className="size-8 mx-auto mb-2 text-warning" />
+                  <p className="text-sm text-danger">{contentError}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    File may have been externally modified or deleted
+                  </p>
                 </div>
-              )}
+              </div>
+            )}
 
-              {selectedPath && contentLoading && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-                </div>
-              )}
-
-              {selectedPath && contentError && !contentLoading && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center p-6">
-                    <div className="text-3xl mb-2">&#x26a0;&#xfe0f;</div>
-                    <p className="text-sm text-red-600">{contentError}</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      File may have been externally modified or deleted
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {selectedPath && artifactContent && !contentLoading && !contentError && (
-                <ArtifactPreview
-                  content={artifactContent}
-                  viewMode={viewMode}
-                />
-              )}
-            </div>
+            {selectedPath && artifactContent && !contentLoading && !contentError && (
+              <ArtifactPreview
+                content={artifactContent}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+              />
+            )}
           </div>
         </div>
       )}
     </div>
-  );
-}
-
-// ── View Mode Button ────────────────────────────────────────────
-
-function ViewModeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-        active
-          ? "bg-blue-100 text-blue-700"
-          : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

@@ -3,23 +3,46 @@
 import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
 import type { ServiceDetail, LayerStatus } from "@/lib/api";
+import { getServiceStatus } from "@/lib/service-status";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import {
+  FileTextIcon,
+  LinkIcon,
+  AlertTriangleIcon,
+  CheckIcon,
+  CircleIcon,
+  LayersIcon,
+  CodeIcon,
+  ShieldIcon,
+} from "lucide-react";
 
-interface ServiceDetailModalProps {
+interface ServiceDetailSheetProps {
   serviceName: string;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function ServiceDetailModal({
+export function ServiceDetailSheet({
   serviceName,
-  onClose,
-}: ServiceDetailModalProps) {
+  open,
+  onOpenChange,
+}: ServiceDetailSheetProps) {
   const [detail, setDetail] = useState<ServiceDetail | null>(null);
   const [layers, setLayers] = useState<LayerStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showLayerConfirm, setShowLayerConfirm] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (!open) return;
     setLoading(true);
     setError(null);
 
@@ -39,22 +62,13 @@ export function ServiceDetailModal({
     }
 
     setLoading(false);
-  }, [serviceName]);
+  }, [serviceName, open]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Close on Escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
-
-  // Determine missing layers for completion actions
+  // Determine missing layers
   const missingLayers: string[] = [];
   if (layers) {
     if (!layers.layer0.exists) missingLayers.push("L0");
@@ -63,68 +77,48 @@ export function ServiceDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-      />
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-2xl overflow-y-auto"
+        showCloseButton
+      >
+        <SheetHeader>
+          <SheetTitle className="text-lg">{serviceName}</SheetTitle>
+          {detail && (
+            <SheetDescription className="text-sm">
+              {detail.role}
+            </SheetDescription>
+          )}
+        </SheetHeader>
 
-      {/* Modal */}
-      <div className="relative z-10 w-full max-w-3xl max-h-[85vh] mx-4 rounded-xl bg-white shadow-xl flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              {serviceName}
-            </h2>
-            {detail && (
-              <p className="text-sm text-gray-500 mt-0.5">{detail.role}</p>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-          >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="px-4 pb-6 space-y-6">
           {/* Loading */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-              <span className="ml-3 text-sm text-gray-500">
-                Loading service detail...
-              </span>
+            <div className="space-y-4">
+              <Skeleton className="h-20 w-full rounded-lg" />
+              <Skeleton className="h-32 w-full rounded-lg" />
+              <Skeleton className="h-24 w-full rounded-lg" />
             </div>
           )}
 
           {/* Error */}
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="bento-card border-danger/30 bg-danger-light/30">
+              <p className="text-sm text-danger">{error}</p>
+              <button
+                onClick={fetchData}
+                className="mt-2 text-sm text-danger underline hover:no-underline"
+              >
+                Retry
+              </button>
             </div>
           )}
 
           {/* Detail Content */}
           {detail && !loading && (
             <>
-              {/* Meta Information */}
+              {/* Meta Section */}
               <MetaSection detail={detail} />
 
               {/* Layer Status */}
@@ -132,30 +126,74 @@ export function ServiceDetailModal({
                 <LayerSection
                   layers={layers}
                   missingLayers={missingLayers}
-                  onLayerComplete={(layer) => setShowLayerConfirm(layer)}
+                  detail={detail}
                 />
               )}
 
               {/* API Endpoints */}
               {detail.quickRef?.apiEndpoints &&
                 detail.quickRef.apiEndpoints.length > 0 && (
-                  <EndpointsSection
-                    endpoints={detail.quickRef.apiEndpoints}
-                  />
+                  <SectionCard
+                    icon={<CodeIcon className="size-4" />}
+                    title={`API Endpoints (${detail.quickRef.apiEndpoints.length})`}
+                  >
+                    <div className="space-y-1.5">
+                      {detail.quickRef.apiEndpoints.map((ep, i) => (
+                        <code
+                          key={i}
+                          className="block rounded bg-muted px-2.5 py-1.5 text-xs font-mono"
+                        >
+                          {ep}
+                        </code>
+                      ))}
+                    </div>
+                  </SectionCard>
                 )}
 
               {/* Constraints */}
               {detail.quickRef?.constraints &&
                 detail.quickRef.constraints.length > 0 && (
-                  <ConstraintsSection
-                    constraints={detail.quickRef.constraints}
-                  />
+                  <SectionCard
+                    icon={<ShieldIcon className="size-4" />}
+                    title={`Key Constraints (${detail.quickRef.constraints.length})`}
+                  >
+                    <ul className="space-y-1.5">
+                      {detail.quickRef.constraints.map((c, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-muted-foreground"
+                        >
+                          <span className="text-info mt-0.5 flex-shrink-0">
+                            &bull;
+                          </span>
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </SectionCard>
                 )}
 
               {/* Pitfalls */}
               {detail.quickRef?.pitfalls &&
                 detail.quickRef.pitfalls.length > 0 && (
-                  <PitfallsSection pitfalls={detail.quickRef.pitfalls} />
+                  <SectionCard
+                    icon={<AlertTriangleIcon className="size-4" />}
+                    title={`Common Pitfalls (${detail.quickRef.pitfalls.length})`}
+                  >
+                    <ul className="space-y-1.5">
+                      {detail.quickRef.pitfalls.map((p, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-muted-foreground"
+                        >
+                          <span className="text-warning mt-0.5 flex-shrink-0">
+                            &bull;
+                          </span>
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </SectionCard>
                 )}
 
               {/* Distillates */}
@@ -165,93 +203,85 @@ export function ServiceDetailModal({
             </>
           )}
         </div>
-
-        {/* Layer Completion Confirmation Dialog */}
-        {showLayerConfirm && (
-          <LayerConfirmDialog
-            layer={showLayerConfirm}
-            serviceName={serviceName}
-            onConfirm={() => {
-              // In a real implementation, this would trigger edith_distill via Agent
-              alert(
-                `Triggering Agent to complete ${showLayerConfirm} for ${serviceName}. This requires EDITH Agent integration.`
-              );
-              setShowLayerConfirm(null);
-            }}
-            onCancel={() => setShowLayerConfirm(null)}
-          />
-        )}
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
-// ── Sub-components ──────────────────────────────────────────────
+// -- Sub-components --
 
 function MetaSection({ detail }: { detail: ServiceDetail }) {
+  const status = getServiceStatus(detail);
+
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">
-        Overview
-      </h3>
+    <SectionCard icon={<LayersIcon className="size-4" />} title="Overview">
       <div className="grid grid-cols-2 gap-3 text-sm">
         {detail.stack && (
           <div>
-            <span className="text-gray-500">Stack:</span>{" "}
-            <span className="font-medium text-gray-900">{detail.stack}</span>
+            <span className="text-muted-foreground">Stack:</span>{" "}
+            <span className="font-medium">{detail.stack}</span>
           </div>
         )}
         {detail.owner && (
           <div>
-            <span className="text-gray-500">Owner:</span>{" "}
-            <span className="font-medium text-gray-900">{detail.owner}</span>
+            <span className="text-muted-foreground">Owner:</span>{" "}
+            <span className="font-medium">{detail.owner}</span>
           </div>
         )}
+        <div>
+          <span className="text-muted-foreground">Status:</span>{" "}
+          <Badge
+            variant="outline"
+            className={`text-[10px] ${
+              status.status === "complete"
+                ? "border-success/30 text-success"
+                : status.status === "partial"
+                  ? "border-warning/30 text-warning"
+                  : "border-border text-muted-foreground"
+            }`}
+          >
+            {status.label}
+          </Badge>
+        </div>
         {detail.quickRef?.verify && detail.quickRef.verify.length > 0 && (
           <div className="col-span-2">
-            <span className="text-gray-500">Verify:</span>{" "}
-            <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono">
+            <span className="text-muted-foreground">Verify:</span>{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
               {detail.quickRef.verify[0]}
             </code>
           </div>
         )}
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
 function LayerSection({
   layers,
   missingLayers,
-  onLayerComplete,
+  detail,
 }: {
   layers: LayerStatus;
   missingLayers: string[];
-  onLayerComplete: (layer: string) => void;
+  detail: ServiceDetail;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Knowledge Layers
-        </h3>
-        {missingLayers.length > 0 && (
-          <span className="text-xs text-amber-600">
+    <SectionCard
+      icon={<LayersIcon className="size-4" />}
+      title="Knowledge Layers"
+      extra={
+        missingLayers.length > 0 && (
+          <Badge variant="outline" className="text-[10px] border-warning/30 text-warning">
             Missing: {missingLayers.join(", ")}
-          </span>
-        )}
-      </div>
-
+          </Badge>
+        )
+      }
+    >
       <div className="space-y-2">
         <LayerRow
           label="L0 - Routing Table"
           exists={layers.layer0.exists}
           path={layers.layer0.path}
-          missingAction={
-            !layers.layer0.exists
-              ? () => onLayerComplete("L0")
-              : undefined
-          }
         />
         <LayerRow
           label="L1 - Quick Ref"
@@ -260,11 +290,6 @@ function LayerSection({
           detail={
             layers.layer1.exists
               ? `${layers.layer1.sections.length} sections`
-              : undefined
-          }
-          missingAction={
-            !layers.layer1.exists
-              ? () => onLayerComplete("L1")
               : undefined
           }
         />
@@ -277,14 +302,9 @@ function LayerSection({
               ? `${layers.layer2.fragmentCount} fragments, ${layers.layer2.totalTokens.toLocaleString()} tokens`
               : undefined
           }
-          missingAction={
-            !layers.layer2.exists
-              ? () => onLayerComplete("L2")
-              : undefined
-          }
         />
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
@@ -293,98 +313,26 @@ function LayerRow({
   exists,
   path,
   detail,
-  missingAction,
 }: {
   label: string;
   exists: boolean;
   path: string;
   detail?: string;
-  missingAction?: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50">
+    <div className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-muted/50 transition-colors">
       <div className="flex items-center gap-3">
         <span
-          className={`inline-block h-2 w-2 rounded-full ${exists ? "bg-green-500" : "bg-gray-300"}`}
+          className={`inline-block h-2 w-2 rounded-full ${exists ? "bg-success" : "bg-muted-foreground"}`}
         />
         <div>
-          <p className="text-sm font-medium text-gray-900">{label}</p>
-          <p className="text-xs text-gray-400 font-mono">{path}</p>
-          {detail && <p className="text-xs text-gray-500 mt-0.5">{detail}</p>}
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground font-mono">{path}</p>
+          {detail && (
+            <p className="text-xs text-muted-foreground mt-0.5">{detail}</p>
+          )}
         </div>
       </div>
-      {!exists && missingAction && (
-        <button
-          onClick={missingAction}
-          className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors"
-        >
-          Complete
-        </button>
-      )}
-    </div>
-  );
-}
-
-function EndpointsSection({ endpoints }: { endpoints: string[] }) {
-  return (
-    <div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">
-        API Endpoints ({endpoints.length})
-      </h3>
-      <div className="rounded-lg border border-gray-200 divide-y divide-gray-100">
-        {endpoints.map((ep, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-2 px-3 py-2 text-sm"
-          >
-            <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-700">
-              {ep}
-            </code>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ConstraintsSection({ constraints }: { constraints: string[] }) {
-  return (
-    <div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">
-        Key Constraints ({constraints.length})
-      </h3>
-      <ul className="space-y-1.5">
-        {constraints.map((c, i) => (
-          <li
-            key={i}
-            className="flex items-start gap-2 text-sm text-gray-700"
-          >
-            <span className="text-blue-500 mt-0.5">&#x2022;</span>
-            {c}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function PitfallsSection({ pitfalls }: { pitfalls: string[] }) {
-  return (
-    <div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">
-        Common Pitfalls ({pitfalls.length})
-      </h3>
-      <ul className="space-y-1.5">
-        {pitfalls.map((p, i) => (
-          <li
-            key={i}
-            className="flex items-start gap-2 text-sm text-gray-700"
-          >
-            <span className="text-amber-500 mt-0.5">⚠</span>
-            {p}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
@@ -392,79 +340,73 @@ function PitfallsSection({ pitfalls }: { pitfalls: string[] }) {
 function DistillatesSection({
   distillates,
 }: {
-  distillates: Array<{ file: string; topic: string; summary: string; estimatedTokens: number }>;
+  distillates: Array<{
+    file: string;
+    topic: string;
+    summary: string;
+    estimatedTokens: number;
+  }>;
 }) {
   const totalTokens = distillates.reduce(
     (sum, d) => sum + d.estimatedTokens,
-    0,
+    0
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Distillate Fragments ({distillates.length})
-        </h3>
-        <span className="text-xs text-gray-500">
-          {totalTokens.toLocaleString()} estimated tokens
+    <SectionCard
+      icon={<FileTextIcon className="size-4" />}
+      title={`Distillate Fragments (${distillates.length})`}
+      extra={
+        <span className="text-xs text-muted-foreground">
+          {totalTokens.toLocaleString()} tokens
         </span>
-      </div>
-      <div className="rounded-lg border border-gray-200 divide-y divide-gray-100">
+      }
+    >
+      <div className="divide-y divide-border rounded-lg border border-border">
         {distillates.map((d, i) => (
           <div key={i} className="px-3 py-2.5">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-900">{d.topic}</p>
-              <span className="text-xs text-gray-400">
+              <p className="text-sm font-medium">{d.topic}</p>
+              <span className="text-xs text-muted-foreground">
                 {d.estimatedTokens.toLocaleString()} tokens
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
               {d.summary}
             </p>
-            <p className="text-xs text-gray-400 font-mono mt-1">{d.file}</p>
+            <p className="text-xs text-muted-foreground font-mono mt-1">
+              {d.file}
+            </p>
           </div>
         ))}
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
-function LayerConfirmDialog({
-  layer,
-  serviceName,
-  onConfirm,
-  onCancel,
+// -- Generic Section Card --
+
+function SectionCard({
+  icon,
+  title,
+  extra,
+  children,
 }: {
-  layer: string;
-  serviceName: string;
-  onConfirm: () => void;
-  onCancel: () => void;
+  icon: React.ReactNode;
+  title: string;
+  extra?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 rounded-b-xl">
-      <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-lg mx-4 max-w-sm">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">
-          Complete {layer} for {serviceName}?
-        </h3>
-        <p className="text-xs text-gray-500 mb-4">
-          This will trigger EDITH Agent to run the appropriate tool to generate
-          the missing knowledge layer. The process may take a few minutes.
-        </p>
-        <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={onCancel}
-            className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            Confirm
-          </button>
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground">{icon}</span>
+          <h3 className="text-sm font-semibold">{title}</h3>
         </div>
+        {extra}
       </div>
+      <div className="bento-card">{children}</div>
     </div>
   );
 }

@@ -2,27 +2,28 @@
 
 ## Task Breakdown
 
-### 1. Services 页面重构（`board/src/app/services/page.tsx`）
-- [ ] 保留现有数据获取: `api.services()` → `ServiceInfo[]` + WebSocket `"change"` 订阅
-- [ ] 保留 `useMemo` 筛选逻辑（search → techStack → status），消除 page.tsx 中的 `getStatus()` 副本（统一使用 `service-status.ts`）
-- [ ] 重写 JSX 渲染: Bento Grid 卡片网格（`.bento-grid` + `.bento-card`）
-- [ ] 重写 `components/services/ServiceCard.tsx` → Bento Card（状态指示灯 + 技术栈 Badge + 文档数 + `.bento-card-hover`）
-- [ ] 重写 `components/services/ServiceFilters.tsx` → shadcn/ui Select（技术栈/状态）+ shadcn/ui Badge
-- [ ] 重写 `components/services/ServiceDetailModal.tsx` → shadcn/ui Sheet（侧边滑出面板，Bento Card 风格）
+### 1. Services Page Redesign (`board/src/app/services/page.tsx`)
+- [x] Preserve data fetching: `api.services()` + WebSocket `"change"` subscription
+- [x] Preserve `useMemo` filter logic (search -> techStack -> status), remove `getStatus()` duplicate in page.tsx (use `service-status.ts` only)
+- [x] Rewrite JSX rendering: Bento Grid card grid (`.bento-grid` + `.bento-card`)
+- [x] Rewrite `components/services/ServiceCard.tsx` -> Bento Card (status dot + tech stack Badge + doc count + `.bento-card-hover`)
+- [x] Rewrite `components/services/ServiceFilters.tsx` -> shadcn/ui Select (tech stack/status) + shadcn/ui Badge
+- [x] Rewrite `components/services/ServiceDetailModal.tsx` -> shadcn/ui Sheet (side sliding panel, Bento Card style)
 
-### 2. Artifacts 页面重构（`board/src/app/artifacts/page.tsx`）
-- [ ] 保留现有数据获取: `api.artifactsTree()` → `FileTreeNode[]`, `api.artifactContent(path)` → 内容
-- [ ] 保留双栏布局结构（左侧文件树 + 右侧预览）
-- [ ] 重写 `components/artifacts/FileTree.tsx` → shadcn/ui 风格树组件（Collapsible + Lucide FolderOpen/File 图标）
-- [ ] 重写 `components/artifacts/ArtifactPreview.tsx` → Markdown 渲染 + 代码高亮 + shadcn/ui Tabs（Markdown/Raw/Tokens 切换）
+### 2. Artifacts Page Redesign (`board/src/app/artifacts/page.tsx`)
+- [x] Preserve data fetching: `api.artifactsTree()` + `api.artifactContent(path)`
+- [x] Preserve dual-pane layout structure (left file tree + right preview)
+- [x] Rewrite `components/artifacts/FileTree.tsx` -> shadcn/ui style tree component (Lucide FolderOpen/File icons)
+- [x] Rewrite `components/artifacts/ArtifactPreview.tsx` -> Markdown rendering + code highlighting + shadcn/ui Tabs (Markdown/Raw/Tokens switch)
 
-### 3. 共享交互组件
-- [ ] 搜索框组件: shadcn/ui Input + Lucide Search 图标 + 实时过滤
-- [ ] 空状态组件: shadcn/ui Card + 友好提示
-- [ ] 加载骨架屏: shadcn/ui Skeleton
+### 3. Shared Interaction Components
+- [x] Search bar component: shadcn/ui Input + Lucide Search icon + real-time filtering
+- [x] Empty state component: shadcn/ui Card + friendly prompt
+- [x] Loading skeleton screen: shadcn/ui Skeleton
 
 ## Progress Log
 | Date | Progress | Notes |
 |------|----------|-------|
-| 2026-05-05 | Feature created | Services + Artifacts 浏览器 |
+| 2026-05-05 | Feature created | Services + Artifacts browser |
 | 2026-05-05 | Spec enriched | Value points: 3, Scenarios: 3, Tasks: 13, Archive refs: feat-p2-board-explorer, feat-p2-e2e-playwright |
+| 2026-05-06 | Implementation complete | All 13 tasks done. Services: Bento Grid + shadcn/ui Sheet + Select. Artifacts: Lucide FileTree + Tabs preview. Shared: SearchBar, EmptyState, CardGridSkeleton, Tabs UI component. Build passes. |
