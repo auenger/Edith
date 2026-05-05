@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p2-board-explorer
+    name: "Services + Artifacts 浏览器"
+    priority: 65
+    size: M
+    dependencies: [feat-p2-board-scaffold]
+    parent: feat-phase2
+    completed: "2026-05-05T15:45:00+08:00"
+    tag: feat-p2-board-explorer-20260505
+    merge_commit: "2ea2549"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p2-board-explorer
+    worktree_deleted: true
+    worktree_path: ../EDITH-p2-board-explorer
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-05-05T15:00:00+08:00"
+      duration: "~45min"
+      commits: 1
+      files_changed: 8
+
   - id: feat-p2-board-dashboard
     name: "Dashboard 总览仪表盘"
     priority: 70

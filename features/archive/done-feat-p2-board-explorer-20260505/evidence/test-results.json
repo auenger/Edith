@@ -1,0 +1,59 @@
+{
+  "feature_id": "feat-p2-board-explorer",
+  "feature_name": "Services + Artifacts Browser",
+  "verification_date": "2026-05-05T15:30:00+08:00",
+  "method": "code_analysis",
+  "overall_status": "passed",
+  "tasks": {
+    "total": 18,
+    "completed": 18,
+    "pending": 0
+  },
+  "code_quality": {
+    "typescript": "pass",
+    "eslint": "not_configured",
+    "errors": 0
+  },
+  "scenarios": [
+    {
+      "name": "Browse service list",
+      "status": "passed",
+      "evidence": "ServiceCard renders name/role/stack/owner/layers"
+    },
+    {
+      "name": "Filter and search services",
+      "status": "passed",
+      "evidence": "Search filters by name/role/owner/stack, status filter by getServiceStatus()"
+    },
+    {
+      "name": "Browse artifact file tree",
+      "status": "passed",
+      "evidence": "FileTree recursive rendering, ArtifactPreview with Markdown/Raw/Token views"
+    },
+    {
+      "name": "Layer completion action",
+      "status": "passed",
+      "evidence": "ServiceDetailModal with LayerConfirmDialog, Complete button for missing layers"
+    },
+    {
+      "name": "Empty service list",
+      "status": "passed",
+      "evidence": "isEmpty state hides filters, shows empty message with edith_scan hint"
+    },
+    {
+      "name": "Artifact file not found",
+      "status": "passed",
+      "evidence": "contentError state shows warning message in preview area"
+    }
+  ],
+  "files_created": [
+    "board/src/app/services/page.tsx",
+    "board/src/app/artifacts/page.tsx",
+    "board/src/components/services/ServiceCard.tsx",
+    "board/src/components/services/ServiceDetailModal.tsx",
+    "board/src/components/services/ServiceFilters.tsx",
+    "board/src/components/artifacts/FileTree.tsx",
+    "board/src/components/artifacts/ArtifactPreview.tsx"
+  ],
+  "issues": []
+}

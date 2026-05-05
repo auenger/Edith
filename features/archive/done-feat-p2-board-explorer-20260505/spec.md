@@ -140,11 +140,21 @@ Scenario: 产出物文件不存在
 ```
 
 ### General Checklist
-- [ ] Services 列表页（卡片式布局）
-- [ ] 服务筛选（全部/技术栈/状态）和搜索
-- [ ] 服务详情卡片（技术栈、端点数、模型数、Owner、三层状态）
-- [ ] Artifacts 文件树导航
-- [ ] Markdown 实时预览（Monaco Editor 或 markdown-it）
-- [ ] Token 计数显示（实际 / 预算）
-- [ ] 多模态产物预览（图像语义描述）
-- [ ] Layer 补全操作入口
+- [x] Services 列表页（卡片式布局）
+- [x] 服务筛选（全部/技术栈/状态）和搜索
+- [x] 服务详情卡片（技术栈、端点数、模型数、Owner、三层状态）
+- [x] Artifacts 文件树导航
+- [x] Markdown 实时预览（Monaco Editor 或 markdown-it）
+- [x] Token 计数显示（实际 / 预算）
+- [ ] 多模态产物预览（图像语义描述）— deferred, depends on feat-p2-multimodal-ingestion
+- [x] Layer 补全操作入口
+
+## Merge Record
+- **Completed**: 2026-05-05T15:45:00+08:00
+- **Merged Branch**: feature/p2-board-explorer
+- **Merge Commit**: 2ea2549
+- **Archive Tag**: feat-p2-board-explorer-20260505
+- **Conflicts**: none
+- **Verification**: passed (6/6 scenarios via code analysis)
+- **Files Changed**: 8 files, 1717 lines added
+- **Commits**: 1 feature commit + 1 merge commit
