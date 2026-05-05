@@ -1,4 +1,31 @@
 archived:
+  - id: feat-redesign-system
+    name: "Design System 基础（Bento Grid + shadcn/ui + 配色/字体/间距）"
+    priority: 90
+    size: S
+    dependencies: []
+    parent: feat-board-redesign
+    completed: "2026-05-05T21:45:00+08:00"
+    tag: feat-redesign-system-20260505
+    merge_commit: "5e6b539"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/feat-redesign-system
+    worktree_deleted: true
+    worktree_path: ../EDITH-feat-redesign-system
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-05-05T21:30:00+08:00"
+      duration: "~15min"
+      commits: 2
+      files_changed: 18
+
   - id: feat-p2-e2e-playwright
     name: "Playwright E2E Browser Testing"
     priority: 75
