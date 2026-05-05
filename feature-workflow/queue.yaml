@@ -24,16 +24,6 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-  - id: feat-p2-graphify-index
-    name: "Graphify 认知图谱索引"
-    priority: 80
-    size: M
-    dependencies: []
-    parent: feat-phase2
-    description: |
-      集成 Graphify 作为 Layer 2 索引引擎。tree-sitter AST 提取 → graph.json
-      全局拓扑 → 自动生成 routing-table / distillates 骨架 / Board 图谱数据源。
-
   - id: feat-p2-board-scaffold
     name: "Board 项目脚手架 + Git 数据层"
     priority: 75
@@ -102,6 +92,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-p2-graphify-index
+    name: "Graphify 认知图谱索引"
+    priority: 80
+    size: M
+    dependencies: []
+    parent: feat-phase2
+    completed_at: "2026-05-05T11:15:00+08:00"
+    tag: feat-p2-graphify-index-20260505
+
   - id: feat-p2-multimodal-ingestion
     name: "MarkItDown 多模态摄入"
     priority: 85
@@ -482,7 +481,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-05T10:50:00+08:00"
+  last_updated: "2026-05-05T11:15:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"

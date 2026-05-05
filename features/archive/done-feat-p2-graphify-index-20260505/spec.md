@@ -169,3 +169,14 @@ Scenario: graph.json 损坏时的降级
 - [ ] 增量更新机制（文件变更检测 → 局部重扫）
 - [ ] config.ts 新增 GraphifyConfig 接口
 - [ ] 向后兼容：禁用 Graphify 时回退到全量扫描
+
+## Merge Record
+- **Completed**: 2026-05-05T11:15:00+08:00
+- **Merged Branch**: feature/p2-graphify-index
+- **Merge Commit**: 0fe35a0
+- **Feature Commit**: a47d604
+- **Archive Tag**: feat-p2-graphify-index-20260505
+- **Conflicts**: None
+- **Verification**: PASSED (6/6 Gherkin scenarios, 0 TypeScript errors)
+- **Evidence**: evidence/verification-report.md
+- **Stats**: started 2026-05-05T11:00:00, duration ~15min, 1 commit, 6 files changed, 1258 insertions

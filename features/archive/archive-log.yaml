@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p2-graphify-index
+    name: "Graphify 认知图谱索引"
+    priority: 80
+    size: M
+    dependencies: []
+    parent: feat-phase2
+    completed: "2026-05-05T11:15:00+08:00"
+    tag: feat-p2-graphify-index-20260505
+    merge_commit: "0fe35a0"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p2-graphify-index
+    worktree_deleted: true
+    worktree_path: ../EDITH-p2-graphify-index
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-05-05T11:00:00+08:00"
+      duration: "~15min"
+      commits: 1
+      files_changed: 6
+
   - id: feat-p2-multimodal-ingestion
     name: "MarkItDown 多模态摄入"
     priority: 85
