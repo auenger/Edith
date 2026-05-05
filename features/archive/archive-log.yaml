@@ -1,4 +1,31 @@
 archived:
+  - id: feat-p2-knowledge-map
+    name: "Knowledge Map 知识图谱可视化"
+    priority: 60
+    size: M
+    dependencies: [feat-p2-graphify-index, feat-p2-board-scaffold]
+    parent: feat-phase2
+    completed: "2026-05-05T16:50:00+08:00"
+    tag: feat-p2-knowledge-map-20260505
+    merge_commit: "01b5392"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p2-knowledge-map
+    worktree_deleted: true
+    worktree_path: ../EDITH-p2-knowledge-map
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-05-05T16:30:00+08:00"
+      duration: "~20min"
+      commits: 1
+      files_changed: 5
+
   - id: feat-p2-board-explorer
     name: "Services + Artifacts 浏览器"
     priority: 65

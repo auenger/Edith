@@ -24,17 +24,6 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-  - id: feat-p2-knowledge-map
-    name: "Knowledge Map 知识图谱可视化"
-    priority: 60
-    size: M
-    dependencies: [feat-p2-graphify-index, feat-p2-board-scaffold]
-    parent: feat-phase2
-    description: |
-      D3.js 力导向图可视化服务依赖关系。消费 graph.json 数据。
-      节点大小=知识完整度，线条粗细=调用频率。
-      服务依赖 + 概念拓扑双视图。置信度标注着色。
-
   - id: feat-p2-timeline
     name: "Timeline 知识时间线"
     priority: 55
@@ -62,6 +51,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-p2-knowledge-map
+    name: "Knowledge Map 知识图谱可视化"
+    priority: 60
+    size: M
+    dependencies: [feat-p2-graphify-index, feat-p2-board-scaffold]
+    parent: feat-phase2
+    completed_at: "2026-05-05T16:50:00+08:00"
+    tag: feat-p2-knowledge-map-20260505
+
   - id: feat-p2-board-explorer
     name: "Services + Artifacts 浏览器"
     priority: 65
@@ -478,7 +476,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-05T15:45:00+08:00"
+  last_updated: "2026-05-05T16:50:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
