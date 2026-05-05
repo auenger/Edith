@@ -9,6 +9,14 @@
 - **Parent**: feat-phase2
 - **Children**: []
 - **Created**: 2026-04-29
+- **Completed**: 2026-05-05
+- **Merge Record**:
+  - merged_to: main
+  - merge_commit: bbcdb91
+  - branch: feature/p2-board-dashboard (deleted)
+  - tag: feat-p2-board-dashboard-20260505
+  - verification: passed (5/5 Gherkin scenarios)
+  - files_changed: 8 (6 new, 2 modified, 1043 insertions)
 
 ## Description
 EDITH Board 首页，提供知识库的全局健康度视图：三层产物完整率、服务覆盖率、最近变更时间线、摄入状态面板、产出物统计、快速操作入口。
@@ -122,10 +130,10 @@ Scenario: 实时更新
 ```
 
 ### General Checklist
-- [ ] 知识库健康度面板（完整率、新鲜度、上次扫描时间）
-- [ ] 服务覆盖率面板（各服务状态列表）
-- [ ] 最近变更面板（最近 5 条变更）
-- [ ] 产出物统计面板
-- [ ] 快速操作按钮
-- [ ] WebSocket 实时更新
-- [ ] 响应式布局
+- [x] 知识库健康度面板（完整率、新鲜度、上次扫描时间）
+- [x] 服务覆盖率面板（各服务状态列表）
+- [x] 最近变更面板（最近 5 条变更）
+- [x] 产出物统计面板
+- [x] 快速操作按钮
+- [x] WebSocket 实时更新
+- [x] 响应式布局
