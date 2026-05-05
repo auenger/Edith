@@ -20,19 +20,6 @@ pending:
       以已完成的 Obsidian Vault 为基础，构建 Agent 治理引擎 + Board 生态可视化，
       形成"Agent 生产 → Vault 存储 → 治理追踪 → Board 可视化 → 人类决策 → Agent 更好上下文"闭环。
 
-  - id: feat-p3-governance-engine
-    name: "知识治理引擎（Agent 侧）"
-    priority: 85
-    size: M
-    dependencies: [feat-p3-obsidian-vault]
-    parent: feat-phase3
-    description: |
-      在 Obsidian Vault 基础设施之上构建知识治理引擎。
-      生命周期状态机（scaffold → reviewed → mature → stale）+
-      矛盾检测（复用 edit-detector.ts）+
-      知识健康度四维评分 +
-      治理 JSON 数据输出（.edith/governance/，供 Board 消费）。
-
   - id: feat-p3-board-ecosystem
     name: "Board 知识生态集成"
     priority: 80
@@ -114,7 +101,16 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-active: []
+active:
+  - id: feat-p3-governance-engine
+    name: "知识治理引擎（Agent 侧）"
+    priority: 85
+    size: M
+    dependencies: [feat-p3-obsidian-vault]
+    parent: feat-phase3
+    branch: feature/p3-governance-engine
+    worktree: ../EDITH-p3-governance-engine
+    started_at: "2026-05-06T00:00:00+08:00"
 
 blocked:
   - id: feat-workflow-orchestrator
@@ -600,7 +596,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-05T22:00:00+08:00"
+  last_updated: "2026-05-06T00:00:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
