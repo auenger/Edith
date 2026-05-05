@@ -31,21 +31,39 @@ Layer 2 — distillates/*.md    (无损压缩，按需加载)
 
   * `src/agent-startup.ts` — Agent 启动入口（配置加载 → Banner → Ink 渲染）
 
-  * `src/extension.ts` — Extension 路由层（工具注册 + 命令注册）
+  * `src/extension.ts` — Extension 路由层（消息拦截 + Skill 自动加载 + 工具注册 + 命令注册）
 
   * `src/config.ts` — `edith.yaml` 配置加载 + 多 Profile 管理 + `edith-init` 向导
 
-  * `src/system-prompt.ts` — System Prompt 构建 + Workspace Context 注入（repos + routing-table Layer 0）
+  * `src/system-prompt.ts` — System Prompt 构建 + Workspace Context 注入（repos + routing-table Layer 0 + 平台信息）
 
-  * `src/context-monitor.ts` — Token 计数 + 压力检测 + Cache 命中率（支持 DeepSeek/MiMo 等模型）
+  * `src/context-monitor.ts` — Token 计数 + 压力检测 + Cache 命中率（兼容非 Anthropic Provider）
 
-  * `src/query.ts` — `edith_query` 工具实现
+  * `src/query.ts` — `edith_query` 工具实现（跨平台路径处理）
 
   * `src/shared-stats.ts` — 跨组件共享状态
 
-  * `src/theme/` — TUI 品牌化（Banner 渐变色、主题配置、Context/SubAgent 面板）
+  * `src/e2e-pilot.ts` — E2E Pilot 测试脚本（scan → distill → query → route 全流程）
 
-  * `src/tui/` — React + Ink TUI 组件
+  * `src/agents/` — Agent 定义（base-agent / distill-agent / explore-agent .md prompts）
+
+  * `src/theme/` — TUI 品牌化
+
+    * `index.ts` — 主题入口
+
+    * `theme-config.ts` — 主题配置
+
+    * `color-engine.ts` — 渐变色引擎
+
+    * `banner.ts` — Banner 渐变色渲染
+
+    * `context-panel.ts` — Context 面板 UI
+
+    * `subagent-panel.ts` — SubAgent 面板
+
+    * `workspace-stats.ts` — 工作区统计
+
+  * `src/tui/` — React + Ink TUI 组件（16 个）
 
     * `App.tsx` — 主应用组件
 
@@ -59,19 +77,39 @@ Layer 2 — distillates/*.md    (无损压缩，按需加载)
 
     * `ThinkingBlock.tsx` — 截断预览式思考展示
 
+    * `ThinkingIndicator.tsx` — 思考动态指示器
+
     * `ToolCallBlock.tsx` — Claude Code 风格 Tool Call 渲染
 
     * `MarkdownRenderer.tsx` / `CodeBlock.tsx` — Markdown/代码渲染
 
-    * `CommandPalette.tsx` / `command-registry.ts` — Slash 命令系统
+    * `CommandPalette.tsx` / `command-registry.ts` — Slash 命令系统（9 个命令）
 
     * `WarningBar.tsx` — 压力警告条
 
-    * `useAgentSession.ts` — Session 管理 Hook（事件订阅 + 消息分发 + suppress 控制）
+    * `useAgentSession.ts` — Session 管理 Hook（事件订阅 + 消息分发 + suppress 控制 + Profile 切换）
 
     * `types.ts` — 消息/ToolCall/Thinking 类型定义 + Reducer
 
-  * `src/tools/` — edith_scan / edith_distill / edith_route / edith_explore / subagent
+  * `src/tools/` — 工具实现
+
+    * `scan.ts` — `edith_scan`（智能深度控制 + 函数级代码分析 + MD 分类挖掘）
+
+    * `distill.ts` — `edith_distill`（5 步无损压缩流水线 + 冲突检测 + 验证）
+
+    * `route.ts` — `edith_route`（多服务路由 + 复杂度分析 + 紧急事件检测）
+
+    * `index.ts` — `edith_index`（便携式知识索引生成）
+
+    * `explore.ts` — `edith_explore`（项目结构快速浏览）
+
+    * `subagent.ts` — 子代理管理（跨平台命令生成）
+
+  * `src/bin/edith.ts` — CLI 入口（`edith` 命令）
+
+  * `src/scripts/post-install.ts` — npm postinstall 脚本
+
+  * `src/__tests__/` — 测试（query / route / system-prompt / theme）
 
   * `edith.yaml` — Agent 运行配置（多 LLM Profile、workspace、repos、context_window、thresholds）
 
@@ -101,22 +139,31 @@ Layer 2 — distillates/*.md    (无损压缩，按需加载)
 
 ```text
 用户 (自然语言)
-  → TUI 层 (React + Ink 组件化终端界面)
+  → TUI 层 (React + Ink 组件化终端界面, 16 组件)
     → BannerArea / ContentArea / StatusBarMetrics / InputArea
-    → ThinkingBlock (截断预览) / ToolCallBlock (展开式渲染)
-    → Slash 命令 (/model, /new, /clear, /compact, /context, /delegate, /explore)
-  → Context Monitor (Token 计数 + 压力检测 + Cache 命中率)
-  → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册)
-  → System Prompt (Workspace Context 注入 + routing-table Layer 0)
+    → ThinkingBlock (截断预览) / ThinkingIndicator (动态指示) / ToolCallBlock (展开式渲染)
+    → Slash 命令 (/model, /new, /clear, /compact, /context, /status, /delegate, /explore, /init)
+  → Context Monitor (Token 计数 + 压力检测 + Cache 命中率, 兼容非 Anthropic Provider)
+  → Extension 路由层 (消息拦截 + Skill 自动加载 + 工具注册 + 命令注册)
+  → System Prompt (Workspace Context 注入 + routing-table Layer 0 + 平台信息)
   → Skill 执行层 (document-project / distillator / requirement-router)
-  → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_query / edith_explore / subagent)
+  → Tool 实现层 (edith_scan / edith_distill / edith_route / edith_index / edith_query / edith_explore / subagent)
   → pi SDK (AgentSession + 多 LLM Provider + Tool Calling + 流式输出)
   → 产出物 (纯 Markdown)
 ```
 
+### 跨平台支持
+
+Agent 在 Windows / macOS / Linux 上均可运行：
+
+* **路径处理** — 使用 `path.join()` 替代硬编码分隔符
+* **命令生成** — `subagent.ts` 根据 `process.platform` 选择命令格式（Windows `.cmd`）
+* **System Prompt** — 自动注入当前平台信息
+* **错误提示** — 平台相关的命令指导
+
 ### 配置模型
 
-用户通过 `edith.yaml` 定制（多 LLM Profile、workspace 路径、repos 列表、context_window、token budget thresholds 等），不改代码。支持环境变量（`${VAR_NAME}`）和交互式 `edith-init` 向导。
+用户通过 `edith.yaml` 定制（多 LLM Profile、workspace 路径、repos 列表、context_window、token budget thresholds 等），不改代码。支持环境变量（`${VAR_NAME}`）和交互式 `edith-init` 向导。已配置 Provider：DeepSeek / Xiaomi / Minimax / Zhipu / Moonshot / Ollama。
 
 ## 工作纪律
 

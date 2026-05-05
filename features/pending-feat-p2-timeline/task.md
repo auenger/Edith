@@ -31,3 +31,4 @@
 | Date | Progress | Notes |
 |------|----------|-------|
 | 2026-04-29 | Feature created | 初始拆分 |
+| 2026-05-05 | Spec enriched | Reference Code: 6 files, Related Features: 4 (1 前置 + 3 关联同层级) |

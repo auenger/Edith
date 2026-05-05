@@ -1,112 +1,115 @@
----
-type: edith-quick-ref
-layer: 1
-target_service: "DoNetMes"
-sources:
-  - "DoNetMes/project-context.md"
-  - "DoNetMes/CLAUDE.md"
-created: "2026-04-29T09:15:00.000Z"
----
+# DoNetMes Quick Reference (Layer 1)
 
-# DoNetMes Quick-Ref
+## 技术栈
+- **后端**: .NET 8/10 + Furion + SqlSugar
+- **前端**: Vue3 + Element Plus
+- **数据库**: 支持多库（MySQL/SqlServer/PostgreSQL/Oracle/Sqlite）
+- **认证**: JWT + 验证码 + LDAP + OAuth2
 
-> Admin.NET 通用权限管理开发框架 — 基于 .NET 8/10 + Furion + SqlSugar
-
-## Verify
-
-```bash
-# 后端
-cd Admin.NET
-dotnet build                              # 构建解决方案
-dotnet run --project Admin.NET.Web.Entry   # 运行应用程序
-dotnet test                               # 运行所有测试
-
-# 前端
-cd Web
-pnpm install                              # 安装依赖
-pnpm run dev                              # 开发服务器（端口 5005）
-pnpm run build                            # 生产构建
-
-# Docker
-docker-compose -f docker/docker-compose.yml up -d
-```
-
-## Key Constraints
-
+## 核心约束
 | 约束 | 说明 |
 |------|------|
-| **四层架构** | Web.Entry → Web.Core → Application → Core，严格分离不可跨层调用 |
-| **实体基类** | 必须使用 EntityBase/EntityBaseDel/EntityBaseTenant 等基类 |
-| **动态 API** | 服务继承 `BaseService<TEntity>` + `IDynamicApiController` |
-| **仓储模式** | 所有数据操作必须通过 `SqlSugarRepository<TEntity>` |
-| **雪花 ID** | 所有实体使用雪花 ID（Yitter.IdGenerator） |
-| **软删除** | 默认启用，通过 `IsDelete` 字段过滤 |
-| **多租户** | 通过 `TenantId` 字段自动过滤 |
+| 雪花ID主键 | 所有实体继承 `EntityBaseId`，主键为 `long` 类型雪花ID |
+| 软删除 | 继承 `EntityBase` 默认启用 `IsDelete` 字段 |
+| 多租户隔离 | 继承 `EntityTenant` 自动注入 `TenantId` 过滤 |
+| 数据权限 | 继承 `EntityBaseData` 自动注入 `CreateOrgId` 过滤 |
+| 动态API | 所有 Service 实现 `IDynamicApiController` 自动暴露 API |
 
-## Pitfalls
+## 实体基类选择
+```
+EntityBaseId        → 仅需主键
+EntityBase          → 主键 + 审计字段 + 软删除
+EntityBaseData      → + 数据权限（机构过滤）
+EntityTenant        → + 租户隔离
+EntityTenantBaseData → + 租户 + 数据权限
+```
 
-| 易错点 | 正确做法 |
-|--------|----------|
-| 禁止跳过仓储直接操作数据库 | 使用 `SqlSugarRepository` |
-| 禁止硬编码权限判断 | 使用 `[Authorize]` 特性或菜单权限配置 |
-| 禁止修改系统表实体 | 系统实体在 Core 层，修改需谨慎 |
-| 新需求要复用现有能力 | 角色/权限/租户等能力已内置，禁止重复开发 |
+## 权限模型 (RBAC)
+```
+用户(SysUser) → 用户角色(SysUserRole) → 角色(SysRole)
+                                         ↓
+                              角色菜单(SysRoleMenu) → 菜单(SysMenu)
+                              角色机构(SysRoleOrg) → 机构(SysOrg)
+                              角色数据权限(SysRoleDataPerm)
+```
 
-## API Endpoints
+## 账号类型
+| 类型 | 枚举值 | 权限范围 |
+|------|--------|----------|
+| SuperAdmin | 0 | 超级管理员，跨租户全权限 |
+| SysAdmin | 1 | 系统管理员，本租户全权限 |
+| Admin | 2 | 管理员，受权限控制 |
+| User | 3 | 普通用户 |
 
-| 模块 | 路由 | 说明 |
-|------|------|------|
-| 认证 | `/api/sysAuth/login`、`/api/sysAuth/refreshToken` | JWT 登录、Token 刷新 |
-| 用户 | `/api/sysUser/*` | 用户 CRUD |
-| 菜单 | `/api/sysMenu/*` | 菜单管理 |
-| 角色 | `/api/sysRole/*` | 角色管理 |
-| 机构 | `/api/sysOrg/*` | 机构管理 |
-| 租户 | `/api/sysTenant/*` | 租户管理 |
-| 代码生成 | `/api/sysCodeGen/*` | 代码生成器 |
-| 文件 | `/api/sysFile/*` | 文件管理 |
-| 定时任务 | `/api/sysJob/*` | 任务调度 |
+## API 路由规范
+- 基础路径: `/api/` + 服务名
+- 命名约定: `PascalCase` → `camelCase`
+- 方法名映射:
+  - `GetList` → `GET /api/xxx/list`
+  - `Add` → `POST /api/xxx/add`
+  - `Update` → `POST /api/xxx/update`
+  - `Delete` → `POST /api/xxx/delete`
+  - `Page` → `GET /api/xxx/page`
 
-## Data Models
+## 核心服务清单 (36个)
+| 服务 | 职责 | 关键表 |
+|------|------|--------|
+| SysAuthService | 认证登录 | SysUser |
+| SysUserService | 用户管理 | SysUser |
+| SysRoleService | 角色管理 | SysRole |
+| SysMenuService | 菜单管理 | SysMenu |
+| SysOrgService | 机构管理 | SysOrg |
+| SysTenantService | 租户管理 | SysTenant |
+| SysPosService | 职位管理 | SysPos |
+| SysDictService | 字典管理 | SysDictType/SysDictData |
+| SysConfigService | 系统配置 | SysConfig |
+| SysLogOpService | 操作日志 | SysLogOp |
+| SysLogExService | 异常日志 | SysLogEx |
+| SysLogHttpService | HTTP日志 | SysLogHttp |
+| SysCacheService | 缓存管理 | - |
+| SysCodeGenService | 代码生成 | SysCodeGen |
+| SysFileService | 文件管理 | SysFile |
+| SysJobService | 定时任务 | SysJobDetail |
+| SysNoticeService | 通知公告 | SysNotice |
+| SysOnlineUserService | 在线用户 | - |
 
-### 核心实体
+## 配置文件位置
+```
+Admin.NET.Application/Configuration/
+├── App.json              # 应用配置
+├── Database.json         # 数据库连接
+├── Cache.json            # 缓存配置
+├── JWT.json              # JWT配置
+├── Logging.json          # 日志配置
+├── OAuth.json            # OAuth配置
+└── ...
+```
 
-| 实体 | 说明 |
+## 菜单权限标识规范
+```
+{module}/{action}
+示例:
+- sysUser/page        # 用户分页查询
+- sysUser/add         # 新增用户
+- sysUser/update      # 更新用户
+- sysUser/delete      # 删除用户
+- sysRole/grantMenu   # 角色授权菜单
+```
+
+## 数据库种子数据 ID 范围
+- 菜单: `1310000000101` - `1310000000xxx`
+- 角色: 自增
+- 机构: 自增
+- 租户: 自增
+
+## 常用枚举
+| 枚举 | 用途 |
 |------|------|
-| `SysUser` | 系统用户 |
-| `SysRole` | 角色 |
-| `SysMenu` | 菜单（目录/菜单/按钮） |
-| `SysOrg` | 机构（树形结构） |
-| `SysPos` | 职位 |
-| `SysTenant` | 租户 |
+| StatusEnum | 启用/禁用状态 |
+| MenuTypeEnum | Dir/Menu/Btn |
+| AccountTypeEnum | 账号类型 |
+| GenderEnum | 性别 |
+| DataScopeEnum | 数据范围 |
 
-### 实体基类
-
-| 基类 | 字段 |
-|------|------|
-| `EntityBaseId` | Id（雪花 ID） |
-| `EntityBase` | + CreateTime, CreateUserId, CreateUserName, UpdateTime, UpdateUserId, UpdateUserName |
-| `EntityBaseDel` | + IsDelete, DeleteTime（软删除） |
-| `EntityBaseTenant` | + TenantId（多租户） |
-
-## Key Configs
-
-| 文件 | 说明 |
-|------|------|
-| `Configuration/App.json` | 应用设置、CORS、密码策略、JWT |
-| `Configuration/Database.json` | 数据库连接配置 |
-| `Configuration/Cache.json` | Redis/缓存配置 |
-| `Configuration/JWT.json` | Token 过期设置 |
-
-## Default Accounts
-
-| 账号 | 密码 | 说明 |
-|------|------|------|
-| superAdmin | Admin.NET++010101 | 默认超级管理员 |
-
-## Deep Dive
-
-- Overview: `DoNetMes/distillates/01-overview.md`
-- API contracts: `DoNetMes/distillates/02-api-contracts.md`
-- Data models: `DoNetMes/distillates/03-data-models.md`
-- Business logic: `DoNetMes/distillates/04-business-logic.md`
-- Development guide: `DoNetMes/distillates/05-development-guide.md`
+---
+*基于代码扫描自动生成，更新时间: 2026-05-02*

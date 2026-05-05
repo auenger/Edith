@@ -23,16 +23,23 @@
 
 ## Context Analysis
 ### Reference Code
-- `agent/src/tools/` — edith_scan 需对接 Graphify 索引
-- `agent/src/config.ts` — 需新增 GraphifyConfig 接口
+- `agent/src/tools/scan.ts` (2690 行) — edith_scan 主实现。Graphify 索引扫描作为 `executeScan()` 的前置步骤，定向扫描替代全量文件扫描。`classifyProject()` / `extractApiContracts()` 可复用于 graph.json 生成
+- `agent/src/tools/distill.ts` (1365 行) — 蒸馏管道。graph.json 产出驱动 routing-table 自动生成和 distillates 片段骨架拆分。`detectConflicts()` / `validateRoundTrip()` 可用于 graph.json 一致性校验
+- `agent/src/config.ts` (1088 行) — 新增 `GraphifyConfig` 接口，遵循 `ContextBudget` 嵌套模式。`IngestionConfig.graphify` 字段与 multimodal-ingestion 共享
+- `agent/src/tools/index.ts` (667 行) — `ServiceInfo` / `CrossServiceRelation` 类型定义，graph.json 节点/边结构应对齐这些类型，确保 Board Knowledge Map 可直接消费
+- `agent/src/extension.ts` (822 行) — 工具注册中心，需注册 `edith_graphify` 工具，遵循 `edith_index` 的注册模式
+- `agent/src/query.ts` (1052 行) — 三层渐进加载逻辑，graph.json 作为 Layer 0 索引层可加速查询
 
 ### Related Documents
 - EDITH-INTEGRATION-DESIGN.md §决策2、§三、§六 Phase 1.5
 - EDITH-PRODUCT-DESIGN.md §4.1 产出物格式
 
 ### Related Features
-- feat-p2-multimodal-ingestion — 同层级，可并行
-- feat-p2-knowledge-map — 下游消费者，消费 graph.json
+- feat-p2-multimodal-ingestion (同层级) — 可并行开发，共享 `IngestionConfig` 配置命名空间
+- feat-p2-knowledge-map (下游) — 消费 graph.json 数据源，`GraphData` 接口定义为本 feature 的产出契约
+- feat-tool-scan (已完成 2026-04-27) — scan.ts 是 Graphify 集成的主要修改目标，`ScanResult` / `ScanParams` 类型需扩展 graphify 相关字段
+- feat-skill-align-scan (已完成 2026-04-29) — Scan Skill 对齐后的代码考古逻辑，Graphify 索引可定向调用这些能力
+- feat-skill-align-distill (已完成 2026-04-29) — Distill 五步压缩管线，graph.json 驱动的片段骨架拆分需对齐 distill 输入格式
 
 ## Technical Solution
 
@@ -73,6 +80,40 @@ ingestion:
     rescan_interval: 24h
 ```
 
+### Scope
+**IN**: Graphify 集成 + graph.json 生成 + routing-table 自动生成 + 增量更新 + 置信度分级 + edith_scan 对接
+**OUT**: Board 可视化渲染（knowledge-map 负责）、人工编辑 graph.json、多模态文件索引
+
+### graph.json 核心结构
+```typescript
+interface GraphData {
+  nodes: Array<{
+    id: string;           // 服务/实体名
+    type: "service" | "concept";
+    knowledgeCompleteness: number;  // 0-1
+    endpoints?: number;
+  }>;
+  edges: Array<{
+    source: string;
+    target: string;
+    label: string;        // 调用描述
+    confidence: "EXTRACTED" | "INFERRED" | "AMBIGUOUS";
+    weight: number;       // 调用频率
+  }>;
+  metadata: {
+    generatedAt: string;
+    languages: string[];
+    nodeCount: number;
+    edgeCount: number;
+  };
+}
+
+// 置信度分级定义（权威来源，下游 feature 引用此定义）
+// EXTRACTED — 源码 AST 直接提取，高置信度
+// INFERRED  — 语义推断，中置信度（如根据命名规范推断依赖）
+// AMBIGUOUS — 存在歧义，需人工确认（如循环依赖、同名不同服务）
+```
+
 ## Acceptance Criteria (Gherkin)
 ### User Story
 作为 EDITH 用户，我希望系统能自动发现服务间的依赖关系，而不需要我手动维护路由表。
@@ -104,6 +145,20 @@ Scenario: 配置中禁用 Graphify
   Given edith.yaml 中 ingestion.graphify.enabled 为 false
   When 用户扫描项目
   Then 使用传统全量文件扫描方式（不依赖 Graphify）
+
+Scenario: 空代码仓库索引
+  Given 用户有一个空的项目仓库（0 个源文件）
+  And Graphify 已启用
+  When 用户执行 edith scan
+  Then graph.json 包含空 nodes 和 edges 数组
+  And edith_scan 回退到全量扫描但无文件可处理
+  And 不报错，正常返回空结果
+
+Scenario: graph.json 损坏时的降级
+  Given .edith/graphify-cache/graph.json 存在但内容损坏（非合法 JSON）
+  When 用户执行 edith scan
+  Then 忽略损坏的 graph.json，执行全量索引重扫
+  And 打印 warning 日志 "graph.json corrupted, regenerating..."
 ```
 
 ### General Checklist

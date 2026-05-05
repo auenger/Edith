@@ -25,15 +25,22 @@
 
 ## Context Analysis
 ### Reference Code
-- 依赖 feat-p2-board-scaffold 提供的 API 层
+- feat-p2-board-scaffold 的 `board/server/routes/` — API 端点：GET /api/services（列表+筛选）、GET /api/services/:name（详情）、GET /api/services/:name/layers（三层状态）、GET /api/artifacts/tree（文件树）、GET /api/artifacts/:path（内容）
+- feat-p2-board-scaffold 的 `board/server/services/data-reader.ts` — 统一数据读取，Services 页面消费服务列表和知识覆盖状态
+- feat-p2-board-scaffold 的 `board/server/services/artifact-parser.ts` — 产物解析器（routing-table / quick-ref / distillates / graph.json），Artifacts 页面消费文件树和 Markdown 内容
+- `agent/src/tools/scan.ts` (2690 行) — scan 产出物结构（workspace/{service}/docs/、quick-ref.md、distillates/），Explorer 需理解此目录结构以正确渲染文件树
+- `agent/src/tools/distill.ts` (1365 行) — 蒸馏产物元数据（片段名、Token 计数、scannedAt 时间戳），Token 计数组件消费此数据
+- `agent/src/tools/index.ts` (667 行) — `ServiceInfo` 类型（name、stack、endpoints、models、workflows），Services 页面卡片数据结构直接对齐
 
 ### Related Documents
 - EDITH-PRODUCT-DESIGN.md §3.3 Services / Artifacts 页面设计
 - EDITH-INTEGRATION-DESIGN.md §五 承接关系
 
 ### Related Features
-- feat-p2-board-scaffold (前置) — API 和数据层
-- feat-p2-multimodal-ingestion (关联) — 多模态产物预览
+- feat-p2-board-scaffold (前置) — API 和数据层，提供 Services / Artifacts 全部 API 端点
+- feat-p2-multimodal-ingestion (关联) — 多模态产物预览（延迟实现），图像语义描述和 OCR 产物需在 Artifacts 页面展示
+- feat-tool-scan (已完成 2026-04-27) — scan 产出物目录结构是 Services 页面和 Artifacts 文件树的基础数据源
+- feat-unlimited-storage (已完成 2026-04-28) — 存储与消费分离，Explorer 纯只读浏览，不提供编辑/删除操作
 
 ## Technical Solution
 
@@ -83,6 +90,10 @@
 - `GET /api/artifacts/tree` — 文件树
 - `GET /api/artifacts/:path` — 产出物内容
 
+### Scope
+**IN**: Services 列表页（卡片+筛选+搜索+详情）+ Artifacts 文件树+预览+Token 计数 + Layer 补全操作入口
+**OUT**: 多模态产物预览（依赖 multimodal-ingestion 完成后补充）、服务编辑/删除、文件上传
+
 ## Acceptance Criteria (Gherkin)
 ### User Story
 作为开发者，我希望在浏览器中浏览服务列表和知识产出物，以便快速了解各服务的知识状态和具体内容。
@@ -114,6 +125,18 @@ Scenario: Layer 补全操作
   When 用户点击 [补全 L2] 按钮
   Then 显示确认对话框
   And 确认后触发 Agent 执行 edith_distill 补全该服务的 Layer 2
+
+Scenario: 空服务列表
+  Given 知识库中没有已注册服务
+  When 用户访问 Services 页面
+  Then 显示空状态提示 "暂无服务，请先运行 edith_scan"
+  And 隐藏筛选和搜索组件
+
+Scenario: 产出物文件不存在
+  Given 用户在文件树中选中一个文件
+  When 该文件已被外部删除
+  Then 预览区显示 "文件不存在，可能已被外部修改" 提示
+  And 文件树标记该节点为失效状态
 ```
 
 ### General Checklist

@@ -32,11 +32,8 @@
 - [ ] Token 计数组件（实际 Token / 预算 Token）
 - [ ] 预算进度条
 
-### 6. 多模态产物预览
-- [ ] 图像语义描述展示
-- [ ] OCR 产物展示
-
 ## Progress Log
 | Date | Progress | Notes |
 |------|----------|-------|
 | 2026-04-29 | Feature created | 初始拆分 |
+| 2026-05-05 | Spec enriched | Reference Code: 6 files, Related Features: 4 (1 前置 + 1 关联 + 2 已完成归档) |

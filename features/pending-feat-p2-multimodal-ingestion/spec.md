@@ -23,16 +23,21 @@
 
 ## Context Analysis
 ### Reference Code
-- `agent/src/tools/` — 现有 edith_scan 工具，需扩展摄入管道
-- `agent/src/config.ts` — 需新增 MultimodalConfig、IngestionConfig 接口
+- `agent/src/tools/scan.ts` (2690 行) — edith_scan 主实现，`executeScan()` 入口函数，需扩展文件格式检测和路由逻辑。现有 `classifyProject()` / `detectArchitecture()` / `extractApiContracts()` 可复用
+- `agent/src/config.ts` (1088 行) — `EdithConfig` 接口定义 + `validateConfig()` 校验逻辑 + `DEFAULT_*` 常量模式。新增 `MultimodalConfig` / `IngestionConfig` / `MarkItDownConfig` 应遵循 `LlmProfile` → `LlmConfig` 嵌套模式
+- `agent/src/extension.ts` (822 行) — 工具注册中心，`pi.registerTool()` 模式。edith_scan handler 需扩展以支持新的 format 参数
+- `agent/src/tools/distill.ts` (1365 行) — 蒸馏管道，多模态产物输出为 Markdown 后统一进入 `executeDistill()` 五步流水线
+- `agent/src/tools/explore.ts` (436 行) — 项目浏览器，其文件遍历逻辑可参考用于多格式文件发现
 
 ### Related Documents
 - EDITH-INTEGRATION-DESIGN.md §决策3、§四、§六 Phase 1.5
 - EDITH-PRODUCT-DESIGN.md §2.3 Extension 设计
 
 ### Related Features
-- feat-tool-scan (已完成) — edith_scan 基础实现
-- feat-config-management (已完成) — edith.yaml 配置加载
+- feat-tool-scan (已完成 2026-04-27) — edith_scan 基础实现，本 feature 扩展其摄入管道。scan.ts 中 `ScanResult` / `ScanParams` 类型定义为本 feature 的扩展基线
+- feat-config-management (已完成 2026-04-27) — edith.yaml 配置加载 + 校验模式。新增配置字段需遵循 `validateConfig()` 校验模式和 `applyDefaults()` 默认值填充模式
+- feat-extension-core (已完成 2026-04-27) — 工具注册路由层，edith_scan handler 扩展需同步更新注册逻辑
+- feat-cross-platform-support (已完成 2026-04-30) — 跨平台模式：所有路径使用 `path.join()`，Python 调用需使用平台感知的 spawn（参考 `subagent.ts` 模式）
 
 ## Technical Solution
 
@@ -71,6 +76,23 @@ ingestion:
 - `IngestionConfig` — markitdown/graphify 配置
 - `MarkItDownConfig` — 格式、批量大小、排除规则
 
+### Python 环境策略
+```
+检测流程:
+  1. 执行 python3 -c "import markitdown" 检测 MarkItDown 可用性
+  2. 可用 → 启用多模态摄入管道
+  3. 不可用 → 降级到仅代码扫描，打印 info 日志 "MarkItDown not available, skipping non-code files"
+
+安装:
+  - 推荐: pip install markitdown（用户自行安装，edith.yaml 配置确认）
+  - 不自动安装 Python 依赖，避免污染用户环境
+  - edith.yaml ingestion.markitdown.enabled 可显式禁用
+```
+
+### Scope
+**IN**: PDF/Office/图片摄入 + LLM Vision 语义描述 + OCR + 本地隐私模式 + edith_scan 扩展 + 配置向后兼容
+**OUT**: 视频文件处理、音频转录（V2 预留）、OCR 后的语义校验、批量并发优化
+
 ## Acceptance Criteria (Gherkin)
 ### User Story
 作为 EDITH 用户，我希望能够扫描 PDF 和 Office 文档，让它们也被纳入知识库。
@@ -102,6 +124,20 @@ Scenario: 配置中禁用多模态
   Given edith.yaml 中 ingestion.markitdown.enabled 为 false
   When 用户扫描项目
   Then 只处理源代码文件，忽略 PDF/Office/图片
+
+Scenario: Python 环境不可用时的降级
+  Given 系统中未安装 Python 3 或 MarkItDown 包
+  And edith.yaml 中 ingestion.markitdown.enabled 为 true
+  When 用户扫描包含 PDF 文件的项目
+  Then 打印 info 日志 "MarkItDown not available, skipping non-code files"
+  And 跳过所有非代码文件，仅处理源代码
+  And 不中断扫描流程
+
+Scenario: 损坏文件优雅跳过
+  Given 用户项目目录中包含一个损坏的 PDF 文件（无法解析）
+  When 用户执行 edith_scan 扫描该项目
+  Then 损坏的 PDF 被跳过并记录 warning 日志（含文件名和错误原因）
+  And 其他文件正常处理，扫描不中断
 ```
 
 ### General Checklist

@@ -1,5 +1,5 @@
 {
-  "selected_file": null,
+  "selected_file": "/Users/ryan/mycode/HS_jarvis/CLAUDE.md",
   "expanded_dirs": [
     "/Users/ryan/mycode/HS_jarvis/jarvis-skills/document-project/agents",
     "/Users/ryan/mycode/HS_jarvis/jarvis-skills/document-project/resources",
@@ -7,11 +7,8 @@
     "/Users/ryan/mycode/HS_jarvis/jarvis-skills/distillator/resources",
     "/Users/ryan/mycode/HS_jarvis/jarvis-skills/distillator/scripts",
     "/Users/ryan/mycode/HS_jarvis/BMAD-METHOD/.github",
-    "/Users/ryan/mycode/HS_jarvis",
     "/Users/ryan/mycode/HS_jarvis/features/archive/done-feat-tui-branding-20260427/evidence",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/edith-repo/distillates",
-    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes/docs",
-    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes/distillates",
     "/Users/ryan/mycode/HS_jarvis/features/pending-feat-tui-ctx-refresh",
     "/Users/ryan/mycode/HS_jarvis/edith-skills/distillator",
     "/Users/ryan/mycode/HS_jarvis/edith-skills/distillator/agents",
@@ -21,8 +18,10 @@
     "/Users/ryan/mycode/HS_jarvis/agent/src/agents",
     "/Users/ryan/mycode/HS_jarvis/agent/src/tools",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/DoNetMes/distillates",
-    "/Users/ryan/mycode/HS_jarvis/features/pending-feat-skill-alignment",
-    "/Users/ryan/mycode/HS_jarvis/agent"
+    "/Users/ryan/mycode/HS_jarvis/agent/company-edith",
+    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes",
+    "/Users/ryan/mycode/HS_jarvis/.claude",
+    "/Users/ryan/mycode/HS_jarvis/.claude/skills"
   ],
   "agent_skip_permissions": false
 }

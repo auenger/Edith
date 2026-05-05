@@ -34,3 +34,4 @@
 | Date | Progress | Notes |
 |------|----------|-------|
 | 2026-04-29 | Feature created | 初始拆分 |
+| 2026-05-05 | Spec enriched | Reference Code: 5 files, Related Features: 3 (1 前置 + 1 关联 + 1 已完成归档), Gherkin 缩进修复 |

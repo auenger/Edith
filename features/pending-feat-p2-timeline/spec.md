@@ -24,14 +24,22 @@
 
 ## Context Analysis
 ### Reference Code
-- 依赖 feat-p2-board-scaffold 提供的 API 层和 Git 读取层
+- feat-p2-board-scaffold 的 `board/server/routes/` — GET /api/timeline 端点，返回变更事件列表（支持 limit / offset / type / service 参数）
+- feat-p2-board-scaffold 的 `board/server/services/data-reader.ts` — 历史层数据读取（Git commit history 解析），Timeline 页面的主要数据来源
+- feat-p2-board-scaffold 的 `board/server/services/file-watcher.ts` — 文件变更监听，Timeline 可通过 WebSocket 接收实时变更事件
+- `agent/src/tools/scan.ts` (2690 行) — scan 执行记录（`ScanResult.scannedAt` 时间戳），作为"扫描完成"事件的数据来源
+- `agent/src/tools/distill.ts` (1365 行) — distill 执行记录（`DistillResult.distilledAt` 时间戳），作为"蒸馏完成"事件的数据来源
+- `agent/src/tools/index.ts` (667 行) — `ServiceInfo` 类型，Timeline 事件与服务名的关联数据来源
 
 ### Related Documents
 - EDITH-PRODUCT-DESIGN.md §3.3 Timeline — 知识回写历史时间线
 - EDITH-INTEGRATION-DESIGN.md §五 Timeline 承接关系
 
 ### Related Features
-- feat-p2-board-scaffold (前置) — API 和数据层
+- feat-p2-board-scaffold (前置) — API 层、Git 读取层、WebSocket 推送，Timeline 页面的完整基础设施
+- feat-p2-board-dashboard (关联) — Dashboard "最近变更"面板消费相同 /api/timeline 端点（limit=5），可共享时间线事件渲染组件
+- feat-p2-multimodal-ingestion (关联) — MarkItDown 批处理日志作为"摄入完成"事件类型的数据来源
+- feat-p2-graphify-index (关联) — Graphify 重扫记录作为"图谱更新"事件类型的数据来源
 
 ## Technical Solution
 
@@ -79,6 +87,10 @@
 - YAML Frontmatter 时间戳
 - Agent 执行日志（未来扩展）
 
+### Scope
+**IN**: 知识变更时间线（按月分组）+ 6 种事件类型 + 按服务/类型筛选 + 分页加载
+**OUT**: 事件编辑/删除、自定义事件类型、导出时间线、实时推送（依赖 WebSocket）
+
 ## Acceptance Criteria (Gherkin)
 ### User Story
 作为团队成员，我希望查看知识库的变更历史，以便了解组织知识的演化过程。
@@ -108,6 +120,18 @@ Scenario: 分页加载
   Then 初始加载最近 20 条
   When 用户点击 "◀ 2026-03"
   Then 加载更早的记录
+
+Scenario: 空时间线
+  Given 知识库中没有任何变更记录
+  When 用户访问 Timeline 页面
+  Then 显示空状态提示 "暂无知识变更记录"
+  And 筛选器隐藏或置灰
+
+Scenario: API 请求失败
+  Given Timeline 页面已加载
+  When 用户请求加载更早的记录时 API 返回错误
+  Then 显示 "加载失败" 提示和 [重试] 按钮
+  And 已加载的事件保持显示（不丢失）
 ```
 
 ### General Checklist

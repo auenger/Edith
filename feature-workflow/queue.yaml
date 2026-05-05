@@ -2,62 +2,6 @@
 # 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
 pending:
-  # ═══ Phase 1.6: 挖掘与蒸馏深度增强 ═══
-
-  - id: feat-deep-excavation
-    name: "挖掘与蒸馏深度增强（scan + distill 深度提升）"
-    priority: 92
-    size: L
-    dependencies: []
-    parent: null
-    split: true
-    children:
-      - feat-excavate-smart-depth
-      - feat-excavate-md-mining
-      - feat-excavate-code-deep
-    description: |
-      将 scan 的默认行为从"表面扫描"提升为"智能深度挖掘"。
-      智能深度控制（根据项目规模自动选择深度）+ MD 文件分类分级挖掘 +
-      代码细节深度分析（函数级接口契约、依赖图、模式识别）。
-
-  - id: feat-excavate-md-mining
-    name: "MD 文件分类分级挖掘"
-    priority: 92
-    size: S
-    dependencies: [feat-excavate-smart-depth]
-    parent: feat-deep-excavation
-    description: |
-      将 MD 文件从"可选补充"提升为"一等知识源"。P0 必读（README/CHANGELOG）
-      全量提取，P1 高优按相关性评分，P2 标准建索引，与代码分析交叉验证。
-
-  - id: feat-excavate-code-deep
-    name: "代码细节深度分析（函数级知识提取）"
-    priority: 92
-    size: S
-    dependencies: [feat-excavate-md-mining]
-    parent: feat-deep-excavation
-    description: |
-      从目录级提升到函数级：提取接口签名、类型定义、依赖图、调用链、
-      错误处理模式、设计模式识别。多语言支持 TS/Go/Python/Java。
-
-  # ═══ Phase 1.5: Skill 能力对齐 ═══
-
-  - id: feat-skill-alignment
-    name: "Skill 能力对齐（agent/ → edith-skills/ 完整设计）"
-    priority: 90
-    size: L
-    dependencies: []
-    parent: null
-    split: true
-    children:
-      - feat-skill-align-scan
-      - feat-skill-align-distill
-      - feat-skill-align-route
-    description: |
-      将 agent/src/tools/ 中的内置 skill 实现对齐到 edith-skills/ 的完整版设计。
-      scan 从"文件计数器"→"代码考古器"，distill 从基础过滤→无损压缩引擎，
-      route 增加多服务路由和复杂度分析。
-
   # ═══ Phase 2: EDITH 全栈升级（Agent 集成 + Board） ═══
 
   - id: feat-phase2
@@ -168,6 +112,61 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-deep-excavation
+    name: "挖掘与蒸馏深度增强（scan + distill 深度提升）"
+    priority: 92
+    size: L
+    dependencies: []
+    parent: null
+    split: true
+    children:
+      - feat-excavate-smart-depth
+      - feat-excavate-md-mining
+      - feat-excavate-code-deep
+    completed_at: "2026-04-30T12:30:00+08:00"
+    tag: feat-deep-excavation-20260430
+
+  - id: feat-excavate-smart-depth
+    name: "智能深度控制（根据项目规模自动选择深度）"
+    priority: 92
+    size: S
+    dependencies: []
+    parent: feat-deep-excavation
+    completed_at: "2026-04-30T12:17:00+08:00"
+    tag: feat-excavate-smart-depth-20260430
+
+  - id: feat-excavate-md-mining
+    name: "MD 文件分类分级挖掘"
+    priority: 92
+    size: S
+    dependencies: [feat-excavate-smart-depth]
+    parent: feat-deep-excavation
+    completed_at: "2026-04-30T12:23:00+08:00"
+    tag: feat-excavate-md-mining-20260430
+
+  - id: feat-excavate-code-deep
+    name: "代码细节深度分析（函数级知识提取）"
+    priority: 92
+    size: S
+    dependencies: [feat-excavate-md-mining]
+    parent: feat-deep-excavation
+    completed_at: "2026-04-30T12:29:00+08:00"
+    tag: feat-excavate-code-deep-20260430
+
+  - id: feat-skill-alignment
+    name: "Skill 能力对齐（agent/ → edith-skills/ 完整设计）"
+    priority: 90
+    size: L
+    dependencies: []
+    parent: null
+    split: true
+    children:
+      - feat-skill-align-scan
+      - feat-skill-align-distill
+      - feat-skill-align-route
+    completed_at: "2026-04-30T00:20:00+08:00"
+    tag: feat-skill-alignment-20260429
+
   - id: feat-cross-platform-support
     name: "跨平台兼容性支持（Windows / macOS / Linux）"
     priority: 88

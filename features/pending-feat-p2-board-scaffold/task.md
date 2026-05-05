@@ -15,15 +15,15 @@
 - [ ] 实现 CORS 和 WebSocket 支持
 - [ ] 建立 server 目录结构（routes / services / types）
 
-### 3. Git 知识仓库读取层
-- [ ] 实现 git-reader.ts（Git 仓库只读访问）
-- [ ] 读取 routing-table.md 解析服务列表
-- [ ] 读取 quick-ref.md 解析服务速查卡
-- [ ] 读取 distillates/ 目录解析蒸馏片段
-- [ ] 读取 graph.json 解析图谱数据
+### 3. 数据读取层（多源）
+- [ ] 实现 data-reader.ts — 统一数据读取入口
+- [ ] 核心层：读取 routing-table.md / quick-ref.md / distillates/（知识仓库）
+- [ ] 索引层：读取 `.edith/graphify-cache/graph.json`（Graphify 缓存）
+- [ ] 历史层：读取 Git commit history（变更时间线数据源）
 
 ### 4. 文件变更监听
 - [ ] 实现 file-watcher.ts（chokidar 监听文件变更）
+- [ ] 监听范围覆盖知识仓库 + `.edith/` 缓存目录
 - [ ] 变更事件通过 WebSocket 推送到前端
 - [ ] 增量更新缓存（不每次全量重读）
 
@@ -54,3 +54,5 @@
 | Date | Progress | Notes |
 |------|----------|-------|
 | 2026-04-29 | Feature created | 初始拆分 |
+| 2026-05-05 | Spec review fix | 数据源分层：核心层/索引层/历史层/运行时 |
+| 2026-05-05 | Spec enriched | Reference Code: 6 files, Related Features: 6 (4 下游 + 2 已完成归档) |

@@ -18,5 +18,8 @@
 - [ ] Markdown 预览渲染测试
 - [ ] Token 计数准确性测试
 
+### Deferred (依赖 multimodal-ingestion)
+- [ ] 多模态产物预览（图像语义描述展示、OCR 产物展示）
+
 ### Documentation
 - [ ] spec.md technical solution filled
