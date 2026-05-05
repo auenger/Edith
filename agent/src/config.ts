@@ -86,12 +86,72 @@ export interface AgentConfig {
   refresh_interval: string;
 }
 
+// ── Multimodal & Ingestion Types ────────────────────────────────────
+
+/** Vision model provider configuration */
+export interface VisionConfig {
+  /** Provider type: openai | anthropic | local */
+  provider: "openai" | "anthropic" | "local";
+  /** Model name (e.g. gpt-4o, claude-sonnet-4-6) */
+  model?: string;
+  /** API key (resolved from env vars) */
+  api_key?: string;
+  /** Base URL for local/self-hosted deployments */
+  base_url?: string;
+  /** API type for the vision provider */
+  api_type?: ApiType;
+}
+
+/** OCR engine configuration */
+export interface OcrConfig {
+  /** OCR provider: azure | tesseract | local */
+  provider: "azure" | "tesseract" | "local";
+  /** Azure Computer Vision endpoint (for azure provider) */
+  endpoint?: string;
+  /** Azure API key */
+  api_key?: string;
+}
+
+/** Multimodal processing configuration */
+export interface MultimodalConfig {
+  /** Vision model settings for image understanding */
+  vision?: VisionConfig;
+  /** OCR engine settings */
+  ocr?: OcrConfig;
+}
+
+/** MarkItDown ingestion settings */
+export interface MarkItDownConfig {
+  /** Enable MarkItDown-based document ingestion */
+  enabled: boolean;
+  /** Enable OCR for scanned PDFs */
+  ocr: boolean;
+  /** Enable LLM Vision for image understanding */
+  vision: boolean;
+  /** Batch size for processing multiple files */
+  batch_size: number;
+  /** File extensions to process */
+  supported_formats: string[];
+  /** Glob patterns to exclude from ingestion */
+  exclude_patterns: string[];
+}
+
+/** Ingestion pipeline configuration */
+export interface IngestionConfig {
+  /** MarkItDown document ingestion settings */
+  markitdown: MarkItDownConfig;
+}
+
 export interface EdithConfig {
   llm: LlmConfig;
   workspace: WorkspaceConfig;
   repos: RepoConfig[];
   agent: AgentConfig;
   context_monitor: ContextMonitorConfig;
+  /** Multimodal processing configuration (optional, backward compat) */
+  multimodal?: MultimodalConfig;
+  /** Document ingestion pipeline configuration (optional, backward compat) */
+  ingestion?: IngestionConfig;
 }
 
 // ── Default Values ────────────────────────────────────────────────
@@ -116,6 +176,29 @@ const DEFAULT_CONTEXT_MONITOR: ContextMonitorConfig = {
     critical: 85,
     emergency: 95,
   },
+};
+
+const DEFAULT_MULTIMODAL: MultimodalConfig = {
+  vision: {
+    provider: "openai",
+    model: "gpt-4o",
+  },
+  ocr: {
+    provider: "tesseract",
+  },
+};
+
+const DEFAULT_MARKITDOWN: MarkItDownConfig = {
+  enabled: true,
+  ocr: true,
+  vision: true,
+  batch_size: 50,
+  supported_formats: ["pdf", "docx", "xlsx", "pptx", "png", "jpg", "jpeg", "gif", "bmp", "mp3", "wav"],
+  exclude_patterns: ["*.encrypted.*", "node_modules/**"],
+};
+
+const DEFAULT_INGESTION: IngestionConfig = {
+  markitdown: { ...DEFAULT_MARKITDOWN },
 };
 
 const CONFIG_FILENAME = "edith.yaml";
@@ -399,6 +482,49 @@ export function validateConfig(raw: unknown): void {
       }
     }
   }
+
+  // Validate multimodal section if present
+  if (config.multimodal && typeof config.multimodal === "object") {
+    const mm = config.multimodal as Record<string, unknown>;
+
+    if (mm.vision && typeof mm.vision === "object") {
+      const vision = mm.vision as Record<string, unknown>;
+      const validVisionProviders = ["openai", "anthropic", "local"];
+      if (vision.provider !== undefined && !validVisionProviders.includes(vision.provider as string)) {
+        throw new ConfigValidationError(
+          `multimodal.vision.provider 必须为 ${validVisionProviders.join(" / ")}，当前值: ${JSON.stringify(vision.provider)}`
+        );
+      }
+    }
+
+    if (mm.ocr && typeof mm.ocr === "object") {
+      const ocr = mm.ocr as Record<string, unknown>;
+      const validOcrProviders = ["azure", "tesseract", "local"];
+      if (ocr.provider !== undefined && !validOcrProviders.includes(ocr.provider as string)) {
+        throw new ConfigValidationError(
+          `multimodal.ocr.provider 必须为 ${validOcrProviders.join(" / ")}，当前值: ${JSON.stringify(ocr.provider)}`
+        );
+      }
+    }
+  }
+
+  // Validate ingestion section if present
+  if (config.ingestion && typeof config.ingestion === "object") {
+    const ingestion = config.ingestion as Record<string, unknown>;
+    if (ingestion.markitdown && typeof ingestion.markitdown === "object") {
+      const md = ingestion.markitdown as Record<string, unknown>;
+      if (md.enabled !== undefined && typeof md.enabled !== "boolean") {
+        throw new ConfigValidationError(
+          `ingestion.markitdown.enabled 必须为布尔值，当前值: ${JSON.stringify(md.enabled)}`
+        );
+      }
+      if (md.batch_size !== undefined && (typeof md.batch_size !== "number" || md.batch_size <= 0 || !Number.isInteger(md.batch_size))) {
+        throw new ConfigValidationError(
+          `ingestion.markitdown.batch_size 必须为正整数，当前值: ${JSON.stringify(md.batch_size)}`
+        );
+      }
+    }
+  }
 }
 
 // ── Default Value Application ─────────────────────────────────────
@@ -485,6 +611,40 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
     },
   };
 
+  // ── Multimodal & Ingestion defaults (backward compat) ──────────
+  const existingMultimodal = config.multimodal as Record<string, unknown> | undefined;
+  const existingVision = existingMultimodal?.vision as Record<string, unknown> | undefined;
+  const existingOcr = existingMultimodal?.ocr as Record<string, unknown> | undefined;
+
+  const multimodal: MultimodalConfig | undefined = existingMultimodal ? {
+    vision: {
+      provider: (existingVision?.provider as VisionConfig["provider"]) ?? DEFAULT_MULTIMODAL.vision!.provider,
+      model: (existingVision?.model as string) ?? DEFAULT_MULTIMODAL.vision!.model,
+      api_key: existingVision?.api_key as string | undefined,
+      base_url: existingVision?.base_url as string | undefined,
+      api_type: existingVision?.api_type as ApiType | undefined,
+    },
+    ocr: existingOcr ? {
+      provider: (existingOcr.provider as OcrConfig["provider"]) ?? DEFAULT_MULTIMODAL.ocr!.provider,
+      endpoint: existingOcr.endpoint as string | undefined,
+      api_key: existingOcr.api_key as string | undefined,
+    } : undefined,
+  } : undefined;
+
+  const existingIngestion = config.ingestion as Record<string, unknown> | undefined;
+  const existingMarkitdown = (existingIngestion?.markitdown ?? {}) as Record<string, unknown>;
+
+  const ingestion: IngestionConfig | undefined = existingIngestion ? {
+    markitdown: {
+      enabled: (existingMarkitdown.enabled as boolean) ?? DEFAULT_MARKITDOWN.enabled,
+      ocr: (existingMarkitdown.ocr as boolean) ?? DEFAULT_MARKITDOWN.ocr,
+      vision: (existingMarkitdown.vision as boolean) ?? DEFAULT_MARKITDOWN.vision,
+      batch_size: (existingMarkitdown.batch_size as number) ?? DEFAULT_MARKITDOWN.batch_size,
+      supported_formats: (existingMarkitdown.supported_formats as string[]) ?? DEFAULT_MARKITDOWN.supported_formats,
+      exclude_patterns: (existingMarkitdown.exclude_patterns as string[]) ?? DEFAULT_MARKITDOWN.exclude_patterns,
+    },
+  } : undefined;
+
   return {
     llm,
     workspace: {
@@ -498,6 +658,8 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
     })),
     agent,
     context_monitor,
+    ...(multimodal ? { multimodal } : {}),
+    ...(ingestion ? { ingestion } : {}),
   };
 }
 

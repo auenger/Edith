@@ -18,7 +18,16 @@ import {
 import { resolve, join, extname, relative, basename } from "node:path";
 
 import type { RepoConfig } from "../config.js";
+import type { MultimodalConfig, IngestionConfig } from "../config.js";
 import { addRepo, findConfigFile } from "../config.js";
+import {
+  ingestMultimodalFiles,
+  persistIngestionResults,
+  formatIngestionSummary,
+  detectPythonEnvironment,
+  type IngestionResult,
+  type BatchIngestionResult,
+} from "./ingest.js";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
@@ -204,6 +213,8 @@ export interface ScanResult {
   outputDir: string;
   files: string[];
   scannedAt: string;
+  /** Multimodal ingestion results (PDF/Office/Image files) */
+  multimodalResults?: BatchIngestionResult;
 }
 
 export type ScanErrorCode =
@@ -2448,6 +2459,8 @@ export async function executeScan(
   repos: RepoConfig[],
   workspaceRoot: string,
   timeout: number = DEFAULT_SCAN_TIMEOUT,
+  multimodalConfig?: MultimodalConfig,
+  ingestionConfig?: IngestionConfig,
 ): Promise<ScanOutcome> {
   // Step 1: Validate
   if (!params.target || params.target.trim() === "") {
@@ -2504,6 +2517,25 @@ export async function executeScan(
   const absWorkspaceRoot = resolve(workspaceRoot);
   const { outputDir, files } = persistScanResult(absWorkspaceRoot, name, techStack, scanData, projectPath);
 
+  // Step 8.5: Multimodal ingestion (if enabled)
+  let multimodalResults: BatchIngestionResult | undefined;
+  const shouldIngest = ingestionConfig?.markitdown.enabled ?? false;
+  if (shouldIngest) {
+    try {
+      multimodalResults = await ingestMultimodalFiles(projectPath, multimodalConfig, ingestionConfig);
+      if (multimodalResults.processedFiles > 0) {
+        const ingestionFiles = persistIngestionResults(outputDir, multimodalResults.results);
+        files.push(...ingestionFiles);
+      }
+      if (multimodalResults.totalFiles > 0) {
+        console.log(`[EDITH] Multimodal ingestion: ${multimodalResults.processedFiles}/${multimodalResults.totalFiles} files processed`);
+      }
+    } catch (err) {
+      const msg = (err as Error).message ?? String(err);
+      console.warn(`[EDITH] Multimodal ingestion failed (non-fatal): ${msg}`);
+    }
+  }
+
   // Step 9: Auto-register
   const cfgPath = findConfigFile();
   if (cfgPath) {
@@ -2536,6 +2568,7 @@ export async function executeScan(
     outputDir,
     files,
     scannedAt: new Date().toISOString(),
+    ...(multimodalResults ? { multimodalResults } : {}),
   };
 
   if (!supported && techStack.length > 0) {
@@ -2676,6 +2709,12 @@ export function formatScanSummary(result: ScanResult): string {
     `  生成文件: ${result.files.join(", ")}`,
     `  扫描时间: ${result.scannedAt}`,
   );
+
+  // Multimodal ingestion summary
+  if (result.multimodalResults) {
+    lines.push("", formatIngestionSummary(result.multimodalResults));
+  }
+
   return lines.join("\n");
 }
 
