@@ -1,4 +1,31 @@
 archived:
+  - id: feat-redesign-dashboard
+    name: "Dashboard Bento Grid 重设计"
+    priority: 80
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+    completed: "2026-05-05T22:50:00+08:00"
+    tag: feat-redesign-dashboard-20260505
+    merge_commit: "3f06555"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/redesign-dashboard
+    worktree_deleted: true
+    worktree_path: ../EDITH-redesign-dashboard
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-05-05T22:30:00+08:00"
+      duration: "~20min"
+      commits: 1
+      files_changed: 8
+
   - id: feat-p3-governance-engine
     name: "知识治理引擎（Agent 侧）"
     priority: 85

@@ -122,3 +122,12 @@ And 无需手动刷新页面
 - [ ] 卡片 hover + click 交互正常
 - [ ] WebSocket 实时更新正常
 - [ ] 数据为空时显示优雅的空状态
+
+## Merge Record
+- **Completed**: 2026-05-05T22:50:00+08:00
+- **Merged Branch**: feature/redesign-dashboard
+- **Merge Commit**: 3f06555
+- **Archive Tag**: feat-redesign-dashboard-20260505
+- **Conflicts**: none
+- **Verification**: PASSED (14/14 tasks, tsc clean, next build pass, API E2E 20/20, 3/3 Gherkin scenarios verified)
+- **Stats**: started 2026-05-05T22:30:00+08:00, duration ~20min, 1 commit, 8 files changed (235 insertions, 225 deletions)

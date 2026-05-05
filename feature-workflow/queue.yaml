@@ -94,16 +94,7 @@ pending:
       包含 Agent 侧集成（MarkItDown 多模态摄入 + Graphify 认知图谱索引）
       和 Board 侧（Web 看板 5 个页面 + 部署）。
 
-active:
-  - id: feat-redesign-dashboard
-    name: "Dashboard Bento Grid 重设计"
-    priority: 80
-    size: M
-    dependencies: [feat-redesign-layout]
-    parent: feat-board-redesign
-    branch: feature/redesign-dashboard
-    worktree: ../EDITH-redesign-dashboard
-    started: "2026-05-05T22:30:00+08:00"
+active: []
 
 blocked:
   - id: feat-workflow-orchestrator
@@ -119,6 +110,15 @@ blocked:
       当前工具层完成 ~90%，编排层为 0%。
 
 completed:
+  - id: feat-redesign-dashboard
+    name: "Dashboard Bento Grid 重设计"
+    priority: 80
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+    completed_at: "2026-05-05T22:50:00+08:00"
+    tag: feat-redesign-dashboard-20260505
+
   - id: feat-p3-governance-engine
     name: "知识治理引擎（Agent 侧）"
     priority: 85
@@ -598,7 +598,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-05T22:30:00+08:00"
+  last_updated: "2026-05-05T22:50:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
