@@ -24,6 +24,7 @@ import { executeExplore, formatExploreSummary, formatExploreError } from "./tool
 import { executeDistill, formatDistillSummary, formatDistillError } from "./tools/distill.js";
 import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/route.js";
 import { executeIndex, formatIndexSummary, formatIndexError } from "./tools/index.js";
+import { executeGraphify, formatGraphifySummary, formatGraphifyError } from "./tools/graphify.js";
 import { renderContextPanel, type SessionStats, type ContextUsage } from "./theme/context-panel.js";
 import { detectColorSupport } from "./theme/color-engine.js";
 import {
@@ -70,12 +71,19 @@ const IndexParams = Type.Object({
   services: Type.Optional(Type.Array(Type.String({ description: "限定索引的服务列表（为空时包含全部）" }), { description: "限定索引的服务范围" })),
 });
 
+const GraphifyParams = Type.Object({
+  target: Type.String({ description: "项目名或路径" }),
+  force: Type.Optional(Type.Boolean({ description: "强制全量重扫（忽略缓存）" })),
+  languages: Type.Optional(Type.Array(Type.String({ description: "指定扫描语言" }), { description: "指定扫描语言（覆盖配置）" })),
+});
+
 type ScanInput = Static<typeof ScanParams>;
 type DistillInput = Static<typeof DistillParams>;
 type RouteInput = Static<typeof RouteParams>;
 type QueryInput = Static<typeof QueryParams>;
 type ExploreInput = Static<typeof ExploreParams>;
 type IndexInput = Static<typeof IndexParams>;
+type GraphifyInput = Static<typeof GraphifyParams>;
 
 // ── Skill Routing Map (internal, never exposed to users) ───────────
 
@@ -122,6 +130,7 @@ const FRIENDLY_ACTION: Record<string, string> = {
   edith_route: "正在进行需求路由分析...",
   edith_query: "正在查询知识库...",
   edith_index: "正在生成知识索引...",
+  edith_graphify: "正在生成认知图谱索引...",
 };
 
 // ── Extension Entry Point ──────────────────────────────────────────
@@ -449,6 +458,68 @@ export default function edithExtension(pi: ExtensionAPI): void {
           console.error(`[EDITH] Index error: ${message}`);
           return {
             content: [{ type: "text" as const, text: `[EDITH] 索引生成失败: ${message}` }],
+            isError: true,
+          };
+        }
+      },
+    },
+    {
+      name: "edith_graphify",
+      label: "EDITH Graphify",
+      description:
+        "生成认知图谱索引（graph.json）。通过 AST 分析提取服务间依赖关系、API 调用链、" +
+        "模块依赖拓扑。支持增量更新和置信度分级（EXTRACTED / INFERRED / AMBIGUOUS）。",
+      parameters: GraphifyParams,
+      execute: async (_toolCallId, params: GraphifyInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
+        console.log(FRIENDLY_ACTION["edith_graphify"]);
+
+        try {
+          const config = loadConfig();
+          const graphifyConfig = config.ingestion?.graphify;
+
+          if (!graphifyConfig || !graphifyConfig.enabled) {
+            return {
+              content: [{ type: "text" as const, text: "[EDITH] Graphify 未启用。请在 edith.yaml 中设置 ingestion.graphify.enabled: true" }],
+              isError: true,
+            };
+          }
+
+          // Resolve target project path
+          const targetRepo = config.repos.find(
+            (r) => r.name === params.target || r.path === params.target,
+          );
+          const projectPath = targetRepo?.path ?? params.target;
+
+          const outcome = executeGraphify(
+            {
+              target: params.target,
+              force: params.force,
+              languages: params.languages,
+            },
+            projectPath,
+            graphifyConfig,
+            config.workspace.root,
+          );
+
+          if (outcome.ok) {
+            const summary = formatGraphifySummary(outcome.result);
+            console.log(`[EDITH] Graphify completed: ${outcome.result.nodes} nodes, ${outcome.result.edges} edges → ${outcome.result.graphPath}`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatGraphifyError(outcome.error);
+            console.warn(`[EDITH] Graphify failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[EDITH] Graphify error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[EDITH] 认知图谱生成失败: ${message}` }],
             isError: true,
           };
         }

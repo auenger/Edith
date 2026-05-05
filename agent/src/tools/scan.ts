@@ -28,6 +28,12 @@ import {
   type IngestionResult,
   type BatchIngestionResult,
 } from "./ingest.js";
+import {
+  executeGraphify,
+  loadGraphForWorkspace,
+  type GraphData,
+  type GraphifyResult,
+} from "./graphify.js";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
@@ -215,6 +221,8 @@ export interface ScanResult {
   scannedAt: string;
   /** Multimodal ingestion results (PDF/Office/Image files) */
   multimodalResults?: BatchIngestionResult;
+  /** Graphify cognitive graph index results (when enabled) */
+  graphifyResults?: GraphifyResult;
 }
 
 export type ScanErrorCode =
@@ -2490,6 +2498,35 @@ export async function executeScan(
   const moduleBoundaries = detectModuleBoundaries(projectPath);
   const depth = resolveScanDepth(projectSize, architecture, params.depth);
 
+  // Step 6.5: Graphify index scan (when enabled)
+  let graphifyResults: GraphifyResult | undefined;
+  const graphifyConfig = ingestionConfig?.graphify;
+  if (graphifyConfig && graphifyConfig.enabled) {
+    try {
+      const graphifyOutcome = executeGraphify(
+        { target: name },
+        projectPath,
+        graphifyConfig,
+        resolve(workspaceRoot),
+      );
+      if (graphifyOutcome.ok) {
+        graphifyResults = graphifyOutcome.result;
+        console.log(
+          `[EDITH] Graphify index: ${graphifyOutcome.result.nodes} nodes, ` +
+          `${graphifyOutcome.result.edges} edges ` +
+          `(${graphifyOutcome.result.incremental ? "incremental" : "full scan"}, ` +
+          `${graphifyOutcome.result.duration}ms)`,
+        );
+      } else {
+        console.warn(
+          `[EDITH] Graphify scan failed (non-fatal, falling back to full scan): ${graphifyOutcome.error.message}`,
+        );
+      }
+    } catch (err) {
+      console.warn(`[EDITH] Graphify error (non-fatal): ${(err as Error).message}`);
+    }
+  }
+
   // Step 7: Deep analysis (with timeout)
   let scanData: DeepScanData;
   try {
@@ -2569,6 +2606,7 @@ export async function executeScan(
     files,
     scannedAt: new Date().toISOString(),
     ...(multimodalResults ? { multimodalResults } : {}),
+    ...(graphifyResults ? { graphifyResults } : {}),
   };
 
   if (!supported && techStack.length > 0) {
@@ -2713,6 +2751,18 @@ export function formatScanSummary(result: ScanResult): string {
   // Multimodal ingestion summary
   if (result.multimodalResults) {
     lines.push("", formatIngestionSummary(result.multimodalResults));
+  }
+
+  // Graphify index summary
+  if (result.graphifyResults) {
+    const gr = result.graphifyResults;
+    lines.push(
+      "",
+      "  Graphify 认知图谱:",
+      `    节点: ${gr.nodes} | 边: ${gr.edges}`,
+      `    置信度: EXTRACTED=${gr.confidenceBreakdown.extracted} INFERRED=${gr.confidenceBreakdown.inferred} AMBIGUOUS=${gr.confidenceBreakdown.ambiguous}`,
+      `    模式: ${gr.incremental ? "增量" : "全量"} (${gr.duration}ms)`,
+    );
   }
 
   return lines.join("\n");

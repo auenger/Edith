@@ -20,6 +20,7 @@ import {
 import { resolve, join, basename, extname } from "node:path";
 
 import type { EdithConfig, ContextBudget, RepoConfig } from "../config.js";
+import { loadGraphForWorkspace, extractRoutingRelations, type GraphData, type GraphifyConfidence } from "./graphify.js";
 
 // ── Type Definitions ──────────────────────────────────────────────
 
@@ -788,9 +789,23 @@ export function generateLayer0(
   workspaceRoot: string,
   service: string,
   documents: SourceDocument[],
+  config?: EdithConfig,
 ): { content: string; tokens: number } {
   const entry = extractRoutingEntry(service, documents);
   const entryLine = generateRoutingTableEntry(entry);
+
+  // Load graph.json for auto-discovered service relations (when Graphify is enabled)
+  let graphRelations: Array<{ from: string; to: string; detail: string; confidence: GraphifyConfidence }> = [];
+  if (config?.ingestion?.graphify?.enabled) {
+    try {
+      const graph = loadGraphForWorkspace(workspaceRoot, config.ingestion.graphify);
+      if (graph) {
+        graphRelations = extractRoutingRelations(graph);
+      }
+    } catch {
+      // Graph not available, skip auto-generated relations
+    }
+  }
 
   const routingTablePath = findRoutingTablePath(workspaceRoot);
   let existingEntries: string[] = [];
@@ -815,11 +830,15 @@ export function generateLayer0(
   }
 
   const allEntries = [...existingEntries, entryLine];
-  const content = buildRoutingTableContent(service, allEntries);
+  const content = buildRoutingTableContent(service, allEntries, graphRelations);
   return { content, tokens: estimateTokens(content) };
 }
 
-function buildRoutingTableContent(currentService: string, entries: string[]): string {
+function buildRoutingTableContent(
+  currentService: string,
+  entries: string[],
+  graphRelations?: Array<{ from: string; to: string; detail: string; confidence: GraphifyConfidence }>,
+): string {
   const lines: string[] = [];
   lines.push("---");
   lines.push("name: company-edith-routing-table");
@@ -835,6 +854,24 @@ function buildRoutingTableContent(currentService: string, entries: string[]): st
   lines.push("|---------|------|-------|-------|-----------------|");
   lines.push(...entries);
   lines.push("");
+
+  // Auto-generated service dependencies from graph.json (when Graphify is enabled)
+  if (graphRelations && graphRelations.length > 0) {
+    lines.push("## Service Dependencies (Graphify Auto-Generated)");
+    lines.push("");
+    lines.push("| From | To | Detail | Confidence |");
+    lines.push("|------|----|--------|------------|");
+    for (const rel of graphRelations) {
+      const confidenceLabel = rel.confidence === "EXTRACTED"
+        ? "AST Direct"
+        : rel.confidence === "INFERRED"
+          ? "Inferred"
+          : "Ambiguous";
+      lines.push(`| ${rel.from} | ${rel.to} | ${rel.detail} | ${confidenceLabel} |`);
+    }
+    lines.push("");
+  }
+
   lines.push("## Quick-Ref Paths");
   lines.push("");
   lines.push("| Service | Quick-Ref (Layer 1) | Full Distillates (Layer 2) |");
@@ -1263,7 +1300,7 @@ export function executeDistill(
   }
 
   // Generate layers
-  const layer0 = generateLayer0(workspaceRoot, service, documents);
+  const layer0 = generateLayer0(workspaceRoot, service, documents, config);
   const layer1 = generateLayer1(service, documents);
   const layer2 = generateLayer2(service, documents, warnings, compressionResult);
 

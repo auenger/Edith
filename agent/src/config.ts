@@ -120,6 +120,23 @@ export interface MultimodalConfig {
   ocr?: OcrConfig;
 }
 
+/** Graphify confidence levels for extracted relationships */
+export type GraphifyConfidence = "EXTRACTED" | "INFERRED" | "AMBIGUOUS";
+
+/** Graphify cognitive graph index configuration */
+export interface GraphifyConfig {
+  /** Enable Graphify-based index scanning */
+  enabled: boolean;
+  /** Languages to index via tree-sitter AST analysis */
+  languages: string[];
+  /** Enable Obsidian-style markdown linking integration */
+  obsidian_integration: boolean;
+  /** Directory for cached graph.json and intermediate data */
+  cache_dir: string;
+  /** Interval for automatic rescan (e.g. "24h", "1h", "never") */
+  rescan_interval: string;
+}
+
 /** MarkItDown ingestion settings */
 export interface MarkItDownConfig {
   /** Enable MarkItDown-based document ingestion */
@@ -140,6 +157,8 @@ export interface MarkItDownConfig {
 export interface IngestionConfig {
   /** MarkItDown document ingestion settings */
   markitdown: MarkItDownConfig;
+  /** Graphify cognitive graph index settings (optional, backward compat) */
+  graphify?: GraphifyConfig;
 }
 
 export interface EdithConfig {
@@ -195,6 +214,14 @@ const DEFAULT_MARKITDOWN: MarkItDownConfig = {
   batch_size: 50,
   supported_formats: ["pdf", "docx", "xlsx", "pptx", "png", "jpg", "jpeg", "gif", "bmp", "mp3", "wav"],
   exclude_patterns: ["*.encrypted.*", "node_modules/**"],
+};
+
+const DEFAULT_GRAPHIFY: GraphifyConfig = {
+  enabled: false,
+  languages: ["typescript", "python", "go", "java", "markdown"],
+  obsidian_integration: false,
+  cache_dir: ".edith/graphify-cache",
+  rescan_interval: "24h",
 };
 
 const DEFAULT_INGESTION: IngestionConfig = {
@@ -524,6 +551,25 @@ export function validateConfig(raw: unknown): void {
         );
       }
     }
+    // Validate graphify section if present
+    if (ingestion.graphify && typeof ingestion.graphify === "object") {
+      const gf = ingestion.graphify as Record<string, unknown>;
+      if (gf.enabled !== undefined && typeof gf.enabled !== "boolean") {
+        throw new ConfigValidationError(
+          `ingestion.graphify.enabled 必须为布尔值，当前值: ${JSON.stringify(gf.enabled)}`
+        );
+      }
+      if (gf.languages !== undefined && !Array.isArray(gf.languages)) {
+        throw new ConfigValidationError(
+          `ingestion.graphify.languages 必须为数组，当前值: ${JSON.stringify(gf.languages)}`
+        );
+      }
+      if (gf.rescan_interval !== undefined && typeof gf.rescan_interval !== "string") {
+        throw new ConfigValidationError(
+          `ingestion.graphify.rescan_interval 必须为字符串，当前值: ${JSON.stringify(gf.rescan_interval)}`
+        );
+      }
+    }
   }
 }
 
@@ -633,6 +679,7 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
 
   const existingIngestion = config.ingestion as Record<string, unknown> | undefined;
   const existingMarkitdown = (existingIngestion?.markitdown ?? {}) as Record<string, unknown>;
+  const existingGraphify = (existingIngestion?.graphify ?? {}) as Record<string, unknown>;
 
   const ingestion: IngestionConfig | undefined = existingIngestion ? {
     markitdown: {
@@ -643,6 +690,15 @@ export function applyDefaults(config: Partial<EdithConfig>): EdithConfig {
       supported_formats: (existingMarkitdown.supported_formats as string[]) ?? DEFAULT_MARKITDOWN.supported_formats,
       exclude_patterns: (existingMarkitdown.exclude_patterns as string[]) ?? DEFAULT_MARKITDOWN.exclude_patterns,
     },
+    ...(existingIngestion.graphify ? {
+      graphify: {
+        enabled: (existingGraphify.enabled as boolean) ?? DEFAULT_GRAPHIFY.enabled,
+        languages: (existingGraphify.languages as string[]) ?? DEFAULT_GRAPHIFY.languages,
+        obsidian_integration: (existingGraphify.obsidian_integration as boolean) ?? DEFAULT_GRAPHIFY.obsidian_integration,
+        cache_dir: (existingGraphify.cache_dir as string) ?? DEFAULT_GRAPHIFY.cache_dir,
+        rescan_interval: (existingGraphify.rescan_interval as string) ?? DEFAULT_GRAPHIFY.rescan_interval,
+      },
+    } : {}),
   } : undefined;
 
   return {
