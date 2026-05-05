@@ -1,0 +1,45 @@
+{
+  "name": "@edith/board",
+  "version": "0.1.0",
+  "private": true,
+  "description": "EDITH Board - Web Dashboard for AI Knowledge Infrastructure",
+  "scripts": {
+    "dev": "next dev",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
+    "build": "next build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "next start",
+    "start:server": "node dist/server/index.js",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@fastify/websocket": "^11.0.0",
+    "chokidar": "^4.0.0",
+    "classnames": "^2.5.1",
+    "d3": "^7.9.0",
+    "fastify": "^5.2.0",
+    "js-yaml": "^4.1.0",
+    "lucide-react": "^0.460.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/ws": "^8.18.1",
+    "concurrently": "^9.1.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
