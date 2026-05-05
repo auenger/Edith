@@ -65,9 +65,9 @@ test.describe("Knowledge Map Page", () => {
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(3000);
 
-    // D3 renders SVG elements
-    const svg = page.locator("svg");
-    await expect(svg).toBeVisible({ timeout: 10_000 });
+    // react-flow renders a container div with the graph
+    const reactFlowContainer = page.locator(".react-flow");
+    await expect(reactFlowContainer).toBeVisible({ timeout: 10_000 });
   });
 
   test("displays nodes in the graph", async ({ page }) => {
@@ -75,9 +75,9 @@ test.describe("Knowledge Map Page", () => {
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(3000);
 
-    // Should have circles (nodes) in SVG
-    const circles = page.locator("svg circle");
-    const count = await circles.count();
+    // react-flow renders custom HTML nodes with data-testid or bento card classes
+    const nodes = page.locator(".react-flow__node");
+    const count = await nodes.count();
     expect(count).toBeGreaterThan(0);
   });
 
@@ -88,10 +88,10 @@ test.describe("Knowledge Map Page", () => {
 
     const body = await page.textContent("body");
     const hasControls =
-      body?.includes("service") ||
-      body?.includes("concept") ||
-      body?.includes("Legend") ||
-      body?.includes("legend");
+      body?.includes("Service") ||
+      body?.includes("Concept") ||
+      body?.includes("Confidence") ||
+      body?.includes("Interactions");
     expect(hasControls).toBeTruthy();
   });
 
@@ -100,7 +100,8 @@ test.describe("Knowledge Map Page", () => {
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(3000);
 
-    const node = page.locator("svg circle").first();
+    // Click the first react-flow node (Bento Card)
+    const node = page.locator(".react-flow__node").first();
     if (await node.isVisible()) {
       await node.click();
       await page.waitForTimeout(500);
@@ -108,11 +109,27 @@ test.describe("Knowledge Map Page", () => {
       // Detail panel should show node info
       const body = await page.textContent("body");
       const hasDetail =
-        body?.includes("payment-service") ||
-        body?.includes("user-service") ||
-        body?.includes("payment") ||
-        body?.includes("Completeness");
+        body?.includes("Completeness") ||
+        body?.includes("Connections") ||
+        body?.includes("Confidence Breakdown");
       expect(hasDetail).toBeTruthy();
+    }
+  });
+
+  test("view mode toggle works", async ({ page }) => {
+    await page.goto("/knowledge-map");
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(3000);
+
+    // Click Concept Topology toggle
+    const conceptButton = page.locator("button", { hasText: "Concept Topology" });
+    if (await conceptButton.isVisible()) {
+      await conceptButton.click();
+      await page.waitForTimeout(500);
+
+      // Page should still show graph
+      const reactFlowContainer = page.locator(".react-flow");
+      await expect(reactFlowContainer).toBeVisible();
     }
   });
 });

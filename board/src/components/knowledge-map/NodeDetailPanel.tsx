@@ -1,6 +1,7 @@
 "use client";
 
 import type { GraphData } from "@/lib/api";
+import { CONFIDENCE_STYLES, NODE_TYPE_STYLES } from "./graphMapper";
 
 interface NodeDetailPanelProps {
   nodeId: string | null;
@@ -9,6 +10,10 @@ interface NodeDetailPanelProps {
   onNavigateToService: (serviceName: string) => void;
 }
 
+/**
+ * Bento Card styled side panel for node details.
+ * Shows service info, connections, confidence breakdown, and related services.
+ */
 export function NodeDetailPanel({
   nodeId,
   data,
@@ -20,32 +25,38 @@ export function NodeDetailPanel({
   const node = data.nodes.find((n) => n.id === nodeId);
   if (!node) return null;
 
-  // Find connected edges
   const incoming = data.edges.filter((e) => e.target === nodeId);
   const outgoing = data.edges.filter((e) => e.source === nodeId);
 
-  // Confidence counts
   const confidenceCounts = {
     EXTRACTED: 0,
     INFERRED: 0,
     AMBIGUOUS: 0,
-  };
+  } as Record<string, number>;
   for (const edge of [...incoming, ...outgoing]) {
-    confidenceCounts[edge.confidence]++;
+    confidenceCounts[edge.confidence] =
+      (confidenceCounts[edge.confidence] || 0) + 1;
   }
 
   const completenessPercent = Math.round(node.knowledgeCompleteness * 100);
+  const typeStyle = NODE_TYPE_STYLES[node.type] || NODE_TYPE_STYLES.service;
 
   return (
-    <div className="w-72 border-l border-gray-200 bg-white flex flex-col overflow-hidden">
+    <div className="w-80 border-l border-border bg-card flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-900 truncate">
-          {node.id}
-        </h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: typeStyle.color }}
+          />
+          <h3 className="text-sm font-semibold text-foreground truncate">
+            {node.id}
+          </h3>
+        </div>
         <button
           onClick={onClose}
-          className="flex-shrink-0 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+          className="flex-shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
           <svg
             className="h-4 w-4"
@@ -65,16 +76,16 @@ export function NodeDetailPanel({
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-4 space-y-4">
-        {/* Type Badge */}
+        {/* Type Badge + Link */}
         <div className="flex items-center gap-2">
           <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-              node.type === "service"
-                ? "bg-blue-50 text-blue-700"
-                : "bg-purple-50 text-purple-700"
-            }`}
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+            style={{
+              backgroundColor: typeStyle.bgColor,
+              color: typeStyle.color,
+            }}
           >
-            {node.type === "service" ? "Service" : "Concept"}
+            {typeStyle.label}
           </span>
           {node.type === "service" && (
             <a
@@ -83,39 +94,39 @@ export function NodeDetailPanel({
                 e.preventDefault();
                 onNavigateToService(node.id);
               }}
-              className="text-[10px] text-blue-600 hover:text-blue-800 underline"
+              className="text-[10px] text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
             >
               View in Services
             </a>
           )}
         </div>
 
-        {/* Knowledge Completeness */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-gray-500">
+        {/* Knowledge Completeness — Bento progress */}
+        <div className="bento-card !p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
               Knowledge Completeness
             </span>
             <span
-              className={`text-xs font-medium ${
+              className={`text-xs font-bold ${
                 completenessPercent >= 80
-                  ? "text-green-600"
+                  ? "text-success"
                   : completenessPercent >= 50
-                    ? "text-yellow-600"
-                    : "text-red-600"
+                    ? "text-warning"
+                    : "text-danger"
               }`}
             >
               {completenessPercent}%
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
                 completenessPercent >= 80
-                  ? "bg-green-500"
+                  ? "bg-success"
                   : completenessPercent >= 50
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
+                    ? "bg-warning"
+                    : "bg-danger"
               }`}
               style={{ width: `${completenessPercent}%` }}
             />
@@ -124,79 +135,72 @@ export function NodeDetailPanel({
 
         {/* Endpoints */}
         {node.endpoints !== undefined && (
-          <div>
-            <span className="text-xs text-gray-500">API Endpoints</span>
-            <p className="text-sm font-medium text-gray-900">{node.endpoints}</p>
+          <div className="bento-card !p-3">
+            <span className="text-xs text-muted-foreground">API Endpoints</span>
+            <p className="text-lg font-bold text-foreground mt-1">
+              {node.endpoints}
+            </p>
           </div>
         )}
 
-        {/* Connections Summary */}
+        {/* Connections Summary — Bento grid */}
         <div>
-          <h4 className="text-xs text-gray-500 mb-2">Connections</h4>
+          <h4 className="text-xs text-muted-foreground mb-2">Connections</h4>
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-md bg-gray-50 p-2 text-center">
-              <div className="text-sm font-semibold text-gray-900">
+            <div className="bento-card !p-3 text-center">
+              <div className="text-lg font-bold text-foreground">
                 {incoming.length}
               </div>
-              <div className="text-[10px] text-gray-500">Incoming</div>
+              <div className="text-[10px] text-muted-foreground">Incoming</div>
             </div>
-            <div className="rounded-md bg-gray-50 p-2 text-center">
-              <div className="text-sm font-semibold text-gray-900">
+            <div className="bento-card !p-3 text-center">
+              <div className="text-lg font-bold text-foreground">
                 {outgoing.length}
               </div>
-              <div className="text-[10px] text-gray-500">Outgoing</div>
+              <div className="text-[10px] text-muted-foreground">Outgoing</div>
             </div>
           </div>
         </div>
 
         {/* Confidence Breakdown */}
         <div>
-          <h4 className="text-xs text-gray-500 mb-2">
+          <h4 className="text-xs text-muted-foreground mb-2">
             Confidence Breakdown
           </h4>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 rounded-full bg-green-600" />
-                EXTRACTED
-              </span>
-              <span className="font-medium text-gray-700">
-                {confidenceCounts.EXTRACTED}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 rounded-full bg-amber-600" />
-                INFERRED
-              </span>
-              <span className="font-medium text-gray-700">
-                {confidenceCounts.INFERRED}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 rounded-full bg-red-600" />
-                AMBIGUOUS
-              </span>
-              <span className="font-medium text-gray-700">
-                {confidenceCounts.AMBIGUOUS}
-              </span>
-            </div>
+          <div className="space-y-1.5">
+            {Object.entries(CONFIDENCE_STYLES).map(([key, style]) => (
+              <div
+                key={key}
+                className="flex items-center justify-between text-xs rounded-md bg-muted/50 px-2.5 py-2"
+              >
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: style.color }}
+                  />
+                  <span className="font-medium text-foreground">{key}</span>
+                </span>
+                <span className="font-bold text-foreground">
+                  {confidenceCounts[key] || 0}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Incoming Relations */}
         {incoming.length > 0 && (
           <div>
-            <h4 className="text-xs text-gray-500 mb-2">Depended by</h4>
+            <h4 className="text-xs text-muted-foreground mb-2">Depended by</h4>
             <div className="space-y-1.5">
               {incoming.map((edge, i) => (
                 <RelationItem
                   key={`in-${i}`}
-                  source={edge.source}
-                  label={edge.label}
+                  label={edge.source}
+                  relation={edge.label}
                   confidence={edge.confidence}
                   weight={edge.weight}
+                  onClick={() => onNavigateToService(edge.source)}
                 />
               ))}
             </div>
@@ -206,15 +210,16 @@ export function NodeDetailPanel({
         {/* Outgoing Relations */}
         {outgoing.length > 0 && (
           <div>
-            <h4 className="text-xs text-gray-500 mb-2">Depends on</h4>
+            <h4 className="text-xs text-muted-foreground mb-2">Depends on</h4>
             <div className="space-y-1.5">
               {outgoing.map((edge, i) => (
                 <RelationItem
                   key={`out-${i}`}
-                  source={edge.target}
-                  label={edge.label}
+                  label={edge.target}
+                  relation={edge.label}
                   confidence={edge.confidence}
                   weight={edge.weight}
+                  onClick={() => onNavigateToService(edge.target)}
                 />
               ))}
             </div>
@@ -228,36 +233,41 @@ export function NodeDetailPanel({
 // ── Sub-component ──────────────────────────────────────────────────
 
 function RelationItem({
-  source,
   label,
+  relation,
   confidence,
   weight,
+  onClick,
 }: {
-  source: string;
   label: string;
+  relation: string;
   confidence: string;
   weight: number;
+  onClick: () => void;
 }) {
-  const dotColor: Record<string, string> = {
-    EXTRACTED: "bg-green-500",
-    INFERRED: "bg-amber-500",
-    AMBIGUOUS: "bg-red-500",
-  };
+  const style =
+    CONFIDENCE_STYLES[confidence] || CONFIDENCE_STYLES.INFERRED;
 
   return (
-    <div className="flex items-center gap-2 rounded-md bg-gray-50 px-2.5 py-1.5">
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-2 rounded-md bg-muted/50 px-2.5 py-2 hover:bg-accent transition-colors text-left"
+    >
       <span
-        className={`inline-block h-1.5 w-1.5 rounded-full flex-shrink-0 ${dotColor[confidence] || "bg-gray-300"}`}
+        className="inline-block h-1.5 w-1.5 rounded-full flex-shrink-0"
+        style={{ backgroundColor: style.color }}
       />
       <div className="flex-1 min-w-0">
-        <div className="text-xs font-medium text-gray-700 truncate">
-          {source}
+        <div className="text-xs font-medium text-foreground truncate">
+          {label}
         </div>
-        <div className="text-[10px] text-gray-400 truncate">{label}</div>
+        <div className="text-[10px] text-muted-foreground truncate">
+          {relation}
+        </div>
       </div>
-      <span className="text-[10px] text-gray-400 flex-shrink-0">
+      <span className="text-[10px] text-muted-foreground flex-shrink-0">
         w:{weight.toFixed(1)}
       </span>
-    </div>
+    </button>
   );
 }
