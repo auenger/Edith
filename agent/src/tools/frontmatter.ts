@@ -38,11 +38,36 @@ export interface FrontmatterData {
   confidence?: "EXTRACTED" | "INFERRED" | "AMBIGUOUS";
   /** Related artifact wikilinks */
   related?: string[];
+  /** Governance extension (lifecycle, governance, quality fields) — optional */
+  governance_extension?: GovernanceExtension;
 }
 
 export interface ParsedFrontmatter {
   data: FrontmatterData;
   body: string;
+}
+
+/** Governance extension data for frontmatter */
+export interface GovernanceExtension {
+  lifecycle: {
+    status: "scaffold" | "reviewed" | "mature" | "stale";
+    created_at: string;
+    reviewed_at: string | null;
+    reviewed_by: string | null;
+    matured_at: string | null;
+    stale_at: string | null;
+    stale_reason: string | null;
+  };
+  governance: {
+    conflict_detected: boolean;
+    last_hash: string | null;
+    source_files: string[];
+    source_hash: string | null;
+  };
+  quality: {
+    completeness: number;
+    freshness: number;
+  };
 }
 
 // ── Constants ──────────────────────────────────────────────────────
@@ -92,6 +117,36 @@ export function generateFrontmatter(data: FrontmatterData): string {
     }
   }
 
+  // Governance extension fields
+  if (data.governance_extension) {
+    const ext = data.governance_extension;
+    lines.push("lifecycle:");
+    lines.push(`  status: ${ext.lifecycle.status}`);
+    lines.push(`  created_at: "${ext.lifecycle.created_at}"`);
+    lines.push(`  reviewed_at: ${ext.lifecycle.reviewed_at ? `"${ext.lifecycle.reviewed_at}"` : "null"}`);
+    lines.push(`  reviewed_by: ${ext.lifecycle.reviewed_by ?? "null"}`);
+    lines.push(`  matured_at: ${ext.lifecycle.matured_at ? `"${ext.lifecycle.matured_at}"` : "null"}`);
+    lines.push(`  stale_at: ${ext.lifecycle.stale_at ? `"${ext.lifecycle.stale_at}"` : "null"}`);
+    lines.push(`  stale_reason: ${ext.lifecycle.stale_reason ?? "null"}`);
+
+    lines.push("governance:");
+    lines.push(`  conflict_detected: ${ext.governance.conflict_detected}`);
+    lines.push(`  last_hash: ${ext.governance.last_hash ?? "null"}`);
+    if (ext.governance.source_files.length > 0) {
+      lines.push("  source_files:");
+      for (const sf of ext.governance.source_files) {
+        lines.push(`    - "${sf}"`);
+      }
+    } else {
+      lines.push("  source_files: []");
+    }
+    lines.push(`  source_hash: ${ext.governance.source_hash ?? "null"}`);
+
+    lines.push("quality:");
+    lines.push(`  completeness: ${ext.quality.completeness}`);
+    lines.push(`  freshness: ${ext.quality.freshness}`);
+  }
+
   lines.push(FRONTMATTER_DELIMITER);
 
   return lines.join("\n");
@@ -107,8 +162,14 @@ export function createFrontmatter(params: {
   token_actual?: number;
   confidence?: "EXTRACTED" | "INFERRED" | "AMBIGUOUS";
   related?: string[];
+  /** Include governance extension fields (lifecycle, governance, quality) */
+  governance?: boolean;
+  /** Source files for governance tracking */
+  source_files?: string[];
+  /** Source hash for governance tracking */
+  source_hash?: string;
 }): FrontmatterData {
-  return {
+  const data: FrontmatterData = {
     edith_id: params.edith_id,
     layer: params.layer,
     token_budget: params.token_budget,
@@ -119,6 +180,33 @@ export function createFrontmatter(params: {
     confidence: params.confidence ?? "EXTRACTED",
     related: params.related ?? [],
   };
+
+  if (params.governance) {
+    const now = new Date().toISOString();
+    data.governance_extension = {
+      lifecycle: {
+        status: "scaffold",
+        created_at: now,
+        reviewed_at: null,
+        reviewed_by: null,
+        matured_at: null,
+        stale_at: null,
+        stale_reason: null,
+      },
+      governance: {
+        conflict_detected: false,
+        last_hash: null,
+        source_files: params.source_files ?? [],
+        source_hash: params.source_hash ?? null,
+      },
+      quality: {
+        completeness: 0,
+        freshness: 1.0,
+      },
+    };
+  }
+
+  return data;
 }
 
 // ── Parsing ────────────────────────────────────────────────────────

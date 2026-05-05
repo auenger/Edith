@@ -25,6 +25,7 @@ import { executeDistill, formatDistillSummary, formatDistillError } from "./tool
 import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/route.js";
 import { executeIndex, formatIndexSummary, formatIndexError } from "./tools/index.js";
 import { executeGraphify, formatGraphifySummary, formatGraphifyError } from "./tools/graphify.js";
+import { executeGovernance, formatGovernanceResult, formatGovernanceError } from "./tools/governance.js";
 import { renderContextPanel, type SessionStats, type ContextUsage } from "./theme/context-panel.js";
 import { detectColorSupport } from "./theme/color-engine.js";
 import {
@@ -77,6 +78,14 @@ const GraphifyParams = Type.Object({
   languages: Type.Optional(Type.Array(Type.String({ description: "指定扫描语言" }), { description: "指定扫描语言（覆盖配置）" })),
 });
 
+const GovernanceParams = Type.Object({
+  action: Type.Union([Type.Literal("status"), Type.Literal("review"), Type.Literal("resolve"), Type.Literal("refresh")], { description: "治理操作: status | review | resolve | refresh" }),
+  file: Type.Optional(Type.String({ description: "文件路径（review/resolve 操作需要）" })),
+  confirm: Type.Optional(Type.Boolean({ description: "确认审阅（review 操作需要）" })),
+  resolution: Type.Optional(Type.Union([Type.Literal("accept"), Type.Literal("preserve"), Type.Literal("merge")], { description: "冲突裁决: accept | preserve | merge" })),
+  new_content: Type.Optional(Type.String({ description: "新内容（merge/accept 操作可选）" })),
+});
+
 type ScanInput = Static<typeof ScanParams>;
 type DistillInput = Static<typeof DistillParams>;
 type RouteInput = Static<typeof RouteParams>;
@@ -84,6 +93,7 @@ type QueryInput = Static<typeof QueryParams>;
 type ExploreInput = Static<typeof ExploreParams>;
 type IndexInput = Static<typeof IndexParams>;
 type GraphifyInput = Static<typeof GraphifyParams>;
+type GovernanceInput = Static<typeof GovernanceParams>;
 
 // ── Skill Routing Map (internal, never exposed to users) ───────────
 
@@ -131,6 +141,7 @@ const FRIENDLY_ACTION: Record<string, string> = {
   edith_query: "正在查询知识库...",
   edith_index: "正在生成知识索引...",
   edith_graphify: "正在生成认知图谱索引...",
+  edith_governance: "正在执行知识治理...",
 };
 
 // ── Extension Entry Point ──────────────────────────────────────────
@@ -143,7 +154,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
     name: string;
     label: string;
     description: string;
-    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams | typeof ExploreParams | typeof IndexParams;
+    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams | typeof ExploreParams | typeof IndexParams | typeof GovernanceParams;
     execute: (toolCallId: string, params: any, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) => Promise<any>;
   }> = [
     {
@@ -520,6 +531,54 @@ export default function edithExtension(pi: ExtensionAPI): void {
           console.error(`[EDITH] Graphify error: ${message}`);
           return {
             content: [{ type: "text" as const, text: `[EDITH] 认知图谱生成失败: ${message}` }],
+            isError: true,
+          };
+        }
+      },
+    },
+    {
+      name: "edith_governance",
+      label: "EDITH Governance",
+      description:
+        "知识治理引擎。追踪知识片段生命周期（scaffold/reviewed/mature/stale），" +
+        "审阅确认、冲突检测与裁决、健康度评分。支持 status / review / resolve / refresh 四种操作。",
+      parameters: GovernanceParams,
+      execute: async (_toolCallId, params: GovernanceInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
+        console.log(FRIENDLY_ACTION["edith_governance"]);
+
+        try {
+          const config = loadConfig();
+
+          const outcome = executeGovernance(
+            {
+              action: params.action,
+              file: params.file,
+              confirm: params.confirm,
+              resolution: params.resolution,
+              new_content: params.new_content,
+            },
+            config,
+          );
+
+          if (outcome.ok) {
+            const summary = formatGovernanceResult(outcome.result);
+            console.log(`[EDITH] Governance ${params.action} completed`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatGovernanceError(outcome.error);
+            console.warn(`[EDITH] Governance failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[EDITH] Governance error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[EDITH] 知识治理失败: ${message}` }],
             isError: true,
           };
         }
