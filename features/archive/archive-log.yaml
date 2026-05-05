@@ -1,4 +1,33 @@
 archived:
+  - id: feat-redesign-explorer
+    name: "Services + Artifacts 浏览器重设计"
+    priority: 75
+    size: M
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+    completed: "2026-05-06T23:45:00+08:00"
+    tag: feat-redesign-explorer-20260506
+    merge_commit: "5bfe4fe"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/redesign-explorer
+    worktree_deleted: true
+    worktree_path: ../EDITH-redesign-explorer
+    conflicts:
+      had_conflict: true
+      conflict_files: [features/active-feat-redesign-explorer/checklist.md, features/active-feat-redesign-explorer/task.md]
+      resolved_at: "2026-05-06T23:40:00+08:00"
+      re_verified: false
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-05-05T23:30:00+08:00"
+      duration: "~24h"
+      commits: 2
+      files_changed: 14
+
   - id: feat-redesign-dashboard
     name: "Dashboard Bento Grid 重设计"
     priority: 80

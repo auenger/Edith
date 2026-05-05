@@ -116,3 +116,12 @@ And 预览面板支持 Markdown 渲染
 - [ ] 搜索筛选功能正常
 - [ ] 详情面板/模态框正常
 - [ ] 加载和空状态处理
+
+## Merge Record
+- **Completed**: 2026-05-06T23:45:00+08:00
+- **Branch**: feature/redesign-explorer
+- **Merge Commit**: 5bfe4fe
+- **Archive Tag**: feat-redesign-explorer-20260506
+- **Conflicts**: checklist.md, task.md (resolved: kept feature branch versions with completed status)
+- **Verification**: PASS (13/13 tasks, build passes, 3/3 Gherkin scenarios verified)
+- **Stats**: 14 files changed, 881 insertions, 733 deletions, 4 new files
