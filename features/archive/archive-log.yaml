@@ -1,4 +1,58 @@
 archived:
+  - id: feat-p3-board-ecosystem
+    name: "Board 知识生态集成"
+    priority: 80
+    size: M
+    dependencies: [feat-p3-governance-engine, feat-board-redesign]
+    parent: feat-phase3
+    completed: "2026-05-06T13:30:00+08:00"
+    tag: feat-p3-board-ecosystem-20260506
+    merge_commit: "318bb1a"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/p3-board-ecosystem
+    worktree_deleted: true
+    worktree_path: ../EDITH-p3-board-ecosystem
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 6
+      scenarios_passed: 6
+    stats:
+      started: "2026-05-06T13:00:00+08:00"
+      duration: "~30 min"
+      commits: 2
+      files_changed: 16
+
+  - id: feat-obsidian-runtime-integration
+    name: "Obsidian Runtime 集成（Agent 运行时接入 edith_obsidian）"
+    priority: 85
+    size: S
+    dependencies: [feat-p3-obsidian-vault]
+    parent: null
+    completed: "2026-05-06T12:35:00+08:00"
+    tag: feat-obsidian-runtime-integration-20260506
+    merge_commit: "9150e8b"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/obsidian-runtime-integration
+    worktree_deleted: true
+    worktree_path: ../EDITH-obsidian-runtime-integration
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 4
+      scenarios_passed: 4
+    stats:
+      started: "2026-05-06T12:30:00+08:00"
+      duration: "~5min"
+      commits: 1
+      files_changed: 3
+
   - id: feat-redesign-timeline
     name: "Timeline 时间线 Bento Grid 重设计"
     priority: 65
