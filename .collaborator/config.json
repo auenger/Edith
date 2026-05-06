@@ -19,9 +19,14 @@
     "/Users/ryan/mycode/HS_jarvis/agent/src/tools",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith/DoNetMes/distillates",
     "/Users/ryan/mycode/HS_jarvis/agent/company-edith",
-    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes",
     "/Users/ryan/mycode/HS_jarvis",
-    "/Users/ryan/mycode/HS_jarvis/feature-workflow"
+    "/Users/ryan/mycode/HS_jarvis/feature-workflow",
+    "/Users/ryan/mycode/HS_jarvis/board/server/services",
+    "/Users/ryan/mycode/HS_jarvis/board/server/routes",
+    "/Users/ryan/mycode/HS_jarvis/board/server/types",
+    "/Users/ryan/mycode/HS_jarvis/agent",
+    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes",
+    "/Users/ryan/mycode/HS_jarvis/agent/company-edith/LiteMes/distillates"
   ],
   "agent_skip_permissions": false
 }

@@ -87,6 +87,14 @@ context_monitor:
     critical: 85               # 橙色预警
     emergency: 95              # 红色紧急
 
+# ═══ Governance ═════════════════════════════════════════════════
+
+governance:
+  enabled: true
+  stale_threshold: "168h"          # 7 天无更新视为 stale
+  conflict_policy: "preserve_human" # 冲突时保留人工编辑
+  quality_scoring: true             # 启用健康度评分
+
 # Optional theme configuration (defaults shown)
 # theme:
 #   style: "arc-reactor"        # arc-reactor (default) | minimal | classic
