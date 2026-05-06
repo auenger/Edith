@@ -140,6 +140,18 @@
   --sidebar-text: #e2e8f0;
   --sidebar-hover: #1e293b;
   --sidebar-active: #1e40af;
+
+  /* ── Governance Status Colors ─────────────────────────────────── */
+  --gov-scaffold: var(--semantic-info);
+  --gov-scaffold-light: var(--semantic-info-light);
+  --gov-reviewed: var(--semantic-success);
+  --gov-reviewed-light: var(--semantic-success-light);
+  --gov-mature: #7c3aed;
+  --gov-mature-light: #ede9fe;
+  --gov-stale: var(--semantic-warning);
+  --gov-stale-light: var(--semantic-warning-light);
+  --gov-conflict: var(--semantic-danger);
+  --gov-conflict-light: var(--semantic-danger-light);
 }
 
 /* ── Dark Theme ───────────────────────────────────────────────────── */
@@ -263,6 +275,18 @@
   --shadow-bento-sm: var(--shadow-sm);
   --shadow-bento-md: var(--shadow-md);
   --shadow-bento-lg: var(--shadow-lg);
+
+  /* Governance status colors */
+  --color-gov-scaffold: var(--gov-scaffold);
+  --color-gov-scaffold-light: var(--gov-scaffold-light);
+  --color-gov-reviewed: var(--gov-reviewed);
+  --color-gov-reviewed-light: var(--gov-reviewed-light);
+  --color-gov-mature: var(--gov-mature);
+  --color-gov-mature-light: var(--gov-mature-light);
+  --color-gov-stale: var(--gov-stale);
+  --color-gov-stale-light: var(--gov-stale-light);
+  --color-gov-conflict: var(--gov-conflict);
+  --color-gov-conflict-light: var(--gov-conflict-light);
 }
 
 /* ── Base Layer ───────────────────────────────────────────────────── */

@@ -18,6 +18,7 @@ import { loadConfig } from "./types/index.js";
 import { DataReader } from "./services/data-reader.js";
 import { FileWatcher } from "./services/file-watcher.js";
 import { registerRoutes } from "./routes/index.js";
+import { registerGovernanceRoutes } from "./routes/governance.js";
 
 // ── Server Bootstrap ────────────────────────────────────────────
 
@@ -78,10 +79,27 @@ async function main() {
   watcher.onChange((events) => {
     console.log(`[Watcher] ${events.length} file change(s) detected`);
 
+    // Detect governance-related changes
+    const governanceEvents = events.filter((e: { path: string }) =>
+      e.path.includes(".edith/governance"),
+    );
+
     // Push changes to connected WebSocket clients
     for (const socket of connectedClients) {
       try {
         socket.send(JSON.stringify({ type: "change", data: events }));
+
+        // Send governance-specific events
+        if (governanceEvents.length > 0) {
+          const govEvent = {
+            type: "governance:update",
+            data: {
+              type: inferGovernanceEventType(governanceEvents),
+              files: governanceEvents.map((e: { path: string }) => e.path),
+            },
+          };
+          socket.send(JSON.stringify(govEvent));
+        }
       } catch {
         // Socket might be closed
         connectedClients.delete(socket);
@@ -92,6 +110,7 @@ async function main() {
   // ── Register API Routes ───────────────────────────────────────
 
   registerRoutes(fastify, reader);
+  registerGovernanceRoutes(fastify, reader);
 
   // ── Start Server ──────────────────────────────────────────────
 
@@ -120,6 +139,21 @@ async function main() {
 
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
+}
+
+// ── Governance Event Inference ────────────────────────────────────
+
+function inferGovernanceEventType(
+  events: Array<{ path: string }>,
+): "health_change" | "lifecycle_change" | "conflict_detected" | "conflict_resolved" {
+  const paths = events.map((e) => e.path).join(" ");
+
+  if (paths.includes("conflicts")) return "conflict_detected";
+  if (paths.includes("health")) return "health_change";
+  if (paths.includes("lifecycle")) return "lifecycle_change";
+
+  // Default to health_change for unknown governance file changes
+  return "health_change";
 }
 
 main();
