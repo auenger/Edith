@@ -152,6 +152,19 @@ Layer 2 — distillates/*.md    (无损压缩，按需加载)
   → 产出物 (纯 Markdown)
 ```
 
+### Board 前端（Next.js + Tailwind v4）
+
+Board 使用 Next.js 15 + Tailwind CSS v4（纯 CSS 模式，无 `tailwind.config.*`）。
+
+**关键：** Tailwind v4 需要 `@tailwindcss/postcss` 作为 PostCSS 插件 + `postcss.config.mjs`，否则 Tailwind utility classes 不会生成，页面只渲染自定义 CSS class，表现为"CSS 没加载"但无报错。
+
+**相关文件：**
+* `board/postcss.config.mjs` — PostCSS 配置（必须包含 `@tailwindcss/postcss`）
+* `board/src/app/globals.css` — Tailwind v4 入口（`@import "tailwindcss"` + `@theme inline` + 自定义 CSS 变量）
+* `board/components.json` — shadcn/ui 配置
+
+**依赖链：** `@tailwindcss/postcss` → PostCSS → Next.js CSS pipeline → `globals.css` 中的 `@import "tailwindcss"` 触发 utility class 扫描与生成。
+
 ### 跨平台支持
 
 Agent 在 Windows / macOS / Linux 上均可运行：
