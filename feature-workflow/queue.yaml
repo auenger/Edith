@@ -1,31 +1,22 @@
 # EDITH Feature Queue
 # 基于 EDITH-PRODUCT-DESIGN.md + EDITH-INTEGRATION-DESIGN.md 路线图生成
 
-pending:
-  - id: feat-obsidian-runtime-integration
-    name: "Obsidian Runtime 集成（Agent 运行时接入 edith_obsidian）"
-    priority: 75
-    size: S
-    dependencies: [feat-p3-obsidian-vault]
-    parent: null
-    description: |
-      将已完成的 Obsidian Vault 工具代码接入 Agent 运行时：
-      在 extension.ts 注册 edith_obsidian 工具、edith.yaml 添加 obsidian 配置段、
-      system-prompt.ts 注入 Obsidian 能力描述。
-      完成后 Agent 可调用 edith_obsidian 将三层知识产物映射为 Obsidian Vault。
+pending: []
 
+active:
   - id: feat-p3-board-ecosystem
     name: "Board 知识生态集成"
     priority: 80
     size: M
     dependencies: [feat-p3-governance-engine, feat-board-redesign]
     parent: feat-phase3
+    branch: feature/p3-board-ecosystem
+    worktree: ../EDITH-p3-board-ecosystem
+    started_at: "2026-05-06T13:00:00+08:00"
     description: |
       Board 从"知识浏览器"升级为"知识生态中枢"。
       Dashboard 治理面板（Bento Grid）+ Explorer Vault 视图 +
       治理 API（4 端点）+ WebSocket 治理事件推送 + 生态飞轮可视化。
-
-active: []
 
 blocked:
   - id: feat-workflow-orchestrator
@@ -58,6 +49,20 @@ blocked:
       形成"Agent 生产 → Vault 存储 → 治理追踪 → Board 可视化 → 人类决策 → Agent 更好上下文"闭环。
 
 completed:
+  - id: feat-obsidian-runtime-integration
+    name: "Obsidian Runtime 集成（Agent 运行时接入 edith_obsidian）"
+    priority: 85
+    size: S
+    dependencies: [feat-p3-obsidian-vault]
+    parent: null
+    completed_at: "2026-05-06T12:35:00+08:00"
+    tag: feat-obsidian-runtime-integration-20260506
+    description: |
+      将已完成的 Obsidian Vault 工具代码接入 Agent 运行时：
+      在 extension.ts 注册 edith_obsidian 工具、edith.yaml 添加 obsidian 配置段、
+      system-prompt.ts 注入 Obsidian 能力描述。
+      完成后 Agent 可调用 edith_obsidian 将三层知识产物映射为 Obsidian Vault。
+
   - id: feat-board-redesign
     name: "Board 前端全部页面重构（Bento Grid + shadcn/ui）"
     priority: 80
@@ -613,7 +618,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-06T12:00:00+08:00"
+  last_updated: "2026-05-06T13:00:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
