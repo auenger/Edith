@@ -6,12 +6,18 @@ import type {
   HealthStatus,
   ServiceInfo,
   TimelineEvent,
+  GovernanceHealth,
+  GovernanceLifecycle,
+  GovernanceConflict,
 } from "@/lib/api";
 import { HealthPanel } from "@/components/dashboard/HealthPanel";
 import { ServiceCoveragePanel } from "@/components/dashboard/ServiceCoveragePanel";
 import { RecentChangesPanel } from "@/components/dashboard/RecentChangesPanel";
 import { ArtifactStatsPanel } from "@/components/dashboard/ArtifactStatsPanel";
 import { QuickActionsPanel } from "@/components/dashboard/QuickActionsPanel";
+import { GovernancePanel } from "@/components/dashboard/GovernancePanel";
+import { StaleItemsList } from "@/components/dashboard/StaleItemsList";
+import { GovernanceEvents } from "@/components/dashboard/GovernanceEvents";
 import { formatTimeAgo } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -27,6 +33,13 @@ interface DashboardData {
   timelineLoading: boolean;
   wsStatus: WsStatus;
   lastRefreshed: string | null;
+  // Governance data
+  governanceHealth: GovernanceHealth | null;
+  governanceHealthLoading: boolean;
+  governanceLifecycle: GovernanceLifecycle | null;
+  governanceLifecycleLoading: boolean;
+  governanceConflicts: GovernanceConflict[];
+  governanceConflictsLoading: boolean;
 }
 
 // ── Dashboard Page ──────────────────────────────────────────────
@@ -42,6 +55,12 @@ export default function DashboardPage() {
     timelineLoading: true,
     wsStatus: "disconnected",
     lastRefreshed: null,
+    governanceHealth: null,
+    governanceHealthLoading: true,
+    governanceLifecycle: null,
+    governanceLifecycleLoading: true,
+    governanceConflicts: [],
+    governanceConflictsLoading: true,
   });
 
   // ── Data Fetching ────────────────────────────────────────────
@@ -93,11 +112,58 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // ── Governance Data Fetching ──────────────────────────────────
+
+  const fetchGovernanceHealth = useCallback(async () => {
+    setData((prev) => ({ ...prev, governanceHealthLoading: true }));
+    const res = await api.governanceHealth();
+    if (res.ok && res.data) {
+      setData((prev) => ({
+        ...prev,
+        governanceHealth: res.data!,
+        governanceHealthLoading: false,
+      }));
+    } else {
+      setData((prev) => ({ ...prev, governanceHealthLoading: false }));
+    }
+  }, []);
+
+  const fetchGovernanceLifecycle = useCallback(async () => {
+    setData((prev) => ({ ...prev, governanceLifecycleLoading: true }));
+    const res = await api.governanceLifecycle();
+    if (res.ok && res.data) {
+      setData((prev) => ({
+        ...prev,
+        governanceLifecycle: res.data!,
+        governanceLifecycleLoading: false,
+      }));
+    } else {
+      setData((prev) => ({ ...prev, governanceLifecycleLoading: false }));
+    }
+  }, []);
+
+  const fetchGovernanceConflicts = useCallback(async () => {
+    setData((prev) => ({ ...prev, governanceConflictsLoading: true }));
+    const res = await api.governanceConflicts();
+    if (res.ok && res.data) {
+      setData((prev) => ({
+        ...prev,
+        governanceConflicts: res.data!.conflicts,
+        governanceConflictsLoading: false,
+      }));
+    } else {
+      setData((prev) => ({ ...prev, governanceConflictsLoading: false }));
+    }
+  }, []);
+
   const fetchAll = useCallback(() => {
     fetchHealth();
     fetchServices();
     fetchTimeline();
-  }, [fetchHealth, fetchServices, fetchTimeline]);
+    fetchGovernanceHealth();
+    fetchGovernanceLifecycle();
+    fetchGovernanceConflicts();
+  }, [fetchHealth, fetchServices, fetchTimeline, fetchGovernanceHealth, fetchGovernanceLifecycle, fetchGovernanceConflicts]);
 
   // ── Initial Load ─────────────────────────────────────────────
 
@@ -217,7 +283,19 @@ export default function DashboardPage() {
             loading={data.servicesLoading}
           />
 
-          {/* Row 2: Artifact Stats (span 1) + Recent Changes (span 1) */}
+          {/* Row 2: Governance Panel (span 2) + Governance Events (span 1) */}
+          <GovernancePanel
+            health={data.governanceHealth}
+            loading={data.governanceHealthLoading}
+            conflictCount={data.governanceConflicts.length}
+            onRetry={fetchGovernanceHealth}
+          />
+          <GovernanceEvents
+            lifecycle={data.governanceLifecycle}
+            loading={data.governanceLifecycleLoading}
+          />
+
+          {/* Row 3: Artifact Stats (span 1) + Recent Changes (span 1) + Stale Items (span 1) */}
           <ArtifactStatsPanel
             stats={artifactStats}
             servicesCount={data.health?.servicesCount ?? 0}
@@ -227,8 +305,12 @@ export default function DashboardPage() {
             timeline={data.timeline}
             loading={data.timelineLoading}
           />
+          <StaleItemsList
+            conflicts={data.governanceConflicts}
+            loading={data.governanceConflictsLoading}
+          />
 
-          {/* Row 3: Quick Actions (span 1) */}
+          {/* Row 4: Quick Actions (span 1) */}
           <QuickActionsPanel
             servicesCount={data.health?.servicesCount ?? 0}
             onRefresh={fetchAll}

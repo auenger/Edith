@@ -117,6 +117,65 @@ export interface ChangeEvent {
   timestamp: string;
 }
 
+// ── Governance Types ──────────────────────────────────────────────
+
+export interface GovernanceHealth {
+  overall: number;
+  breakdown: {
+    freshness: number;
+    confidence: number;
+    completeness: number;
+    humanReviewed: number;
+  };
+  lifecycle: {
+    scaffold: number;
+    reviewed: number;
+    mature: number;
+    stale: number;
+  };
+  last_updated: string;
+  _noData?: boolean;
+}
+
+export interface GovernanceLifecycle {
+  services: Array<{
+    name: string;
+    status_counts: {
+      scaffold: number;
+      reviewed: number;
+      mature: number;
+      stale: number;
+    };
+  }>;
+  updated_at: string;
+  _noData?: boolean;
+}
+
+export interface GovernanceConflict {
+  file: string;
+  type: "content_overlap";
+  summary: string;
+  new_content_excerpt: string;
+  human_content_excerpt: string;
+  detected_at: string;
+}
+
+export interface VaultFileNode {
+  name: string;
+  path: string;
+  type: "file" | "directory";
+  governance_status?: "scaffold" | "reviewed" | "mature" | "stale" | "none";
+  children?: VaultFileNode[];
+}
+
+export interface GovernanceWsEvent {
+  type: "governance:update";
+  data: {
+    type: "lifecycle_change" | "conflict_detected" | "conflict_resolved" | "health_change";
+    files?: string[];
+  };
+}
+
 // ── API Client ──────────────────────────────────────────────────
 
 const API_BASE = "/api";
@@ -162,6 +221,11 @@ export const api = {
     const query = qs.toString();
     return request<TimelineResponse>(`/timeline${query ? `?${query}` : ""}`);
   },
+  // Governance API
+  governanceHealth: () => request<GovernanceHealth>("/governance/health"),
+  governanceLifecycle: () => request<GovernanceLifecycle>("/governance/lifecycle"),
+  governanceConflicts: () => request<{ conflicts: GovernanceConflict[]; count: number }>("/governance/conflicts"),
+  vaultTree: () => request<{ tree: VaultFileNode[]; _noData?: boolean }>("/vault/tree"),
 };
 
 // ── WebSocket Client ────────────────────────────────────────────

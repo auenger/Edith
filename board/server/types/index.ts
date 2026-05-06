@@ -151,3 +151,14 @@ export function loadConfig(): BoardConfig {
     wsEnabled: process.env.WS_ENABLED !== "false",
   };
 }
+
+// ── Governance Types (re-export) ─────────────────────────────────
+
+export type {
+  GovernanceHealth,
+  GovernanceLifecycle,
+  GovernanceConflict,
+  VaultFileNode,
+  GovernanceEventType,
+  GovernanceWsEvent,
+} from "./governance.js";

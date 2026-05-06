@@ -12,6 +12,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Menu,
+  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +34,7 @@ import { getBoardWebSocket, type WsStatus } from "@/lib/api";
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/services", label: "Services", icon: Server },
-  { href: "/artifacts", label: "Artifacts", icon: FolderOpen },
+  { href: "/explorer", label: "Explorer", icon: Compass },
   { href: "/knowledge-map", label: "Knowledge Map", icon: Brain },
   { href: "/timeline", label: "Timeline", icon: Clock },
 ] as const;

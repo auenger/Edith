@@ -23,6 +23,10 @@ import type {
   ArtifactContent,
   GraphData,
   TimelineEvent,
+  GovernanceHealth,
+  GovernanceLifecycle,
+  GovernanceConflict,
+  VaultFileNode,
 } from "../types/index.js";
 import {
   loadRoutingTable,
@@ -42,6 +46,10 @@ interface DataCache {
   services: ServiceInfo[] | null;
   routingTableEntries: ReturnType<typeof loadRoutingTable> | null;
   graphData: GraphData | null;
+  governanceHealth: GovernanceHealth | null;
+  governanceLifecycle: GovernanceLifecycle | null;
+  governanceConflicts: GovernanceConflict[] | null;
+  vaultTree: VaultFileNode[] | null;
   lastRefresh: number;
 }
 
@@ -49,6 +57,10 @@ let cache: DataCache = {
   services: null,
   routingTableEntries: null,
   graphData: null,
+  governanceHealth: null,
+  governanceLifecycle: null,
+  governanceConflicts: null,
+  vaultTree: null,
   lastRefresh: 0,
 };
 
@@ -57,6 +69,10 @@ export function invalidateCache(): void {
     services: null,
     routingTableEntries: null,
     graphData: null,
+    governanceHealth: null,
+    governanceLifecycle: null,
+    governanceConflicts: null,
+    vaultTree: null,
     lastRefresh: 0,
   };
 }
@@ -249,6 +265,190 @@ export class DataReader {
     }
 
     return null;
+  }
+
+  // ── Governance Data ────────────────────────────────────────────
+
+  getGovernanceHealth(): GovernanceHealth | null {
+    if (cache.governanceHealth !== null) return cache.governanceHealth;
+
+    const govDir = join(this.repoPath, ".edith", "governance");
+    const healthPath = join(govDir, "health.json");
+
+    if (!existsSync(healthPath)) return null;
+
+    try {
+      const content = readFileSync(healthPath, "utf-8");
+      cache.governanceHealth = JSON.parse(content) as GovernanceHealth;
+      return cache.governanceHealth;
+    } catch {
+      return null;
+    }
+  }
+
+  getGovernanceLifecycle(): GovernanceLifecycle | null {
+    if (cache.governanceLifecycle !== null) return cache.governanceLifecycle;
+
+    const govDir = join(this.repoPath, ".edith", "governance");
+    const lifecyclePath = join(govDir, "lifecycle.json");
+
+    if (!existsSync(lifecyclePath)) return null;
+
+    try {
+      const content = readFileSync(lifecyclePath, "utf-8");
+      cache.governanceLifecycle = JSON.parse(content) as GovernanceLifecycle;
+      return cache.governanceLifecycle;
+    } catch {
+      return null;
+    }
+  }
+
+  getGovernanceConflicts(): GovernanceConflict[] {
+    if (cache.governanceConflicts !== null) return cache.governanceConflicts;
+
+    const govDir = join(this.repoPath, ".edith", "governance");
+    const conflictsPath = join(govDir, "conflicts.json");
+
+    if (!existsSync(conflictsPath)) {
+      cache.governanceConflicts = [];
+      return [];
+    }
+
+    try {
+      const content = readFileSync(conflictsPath, "utf-8");
+      const parsed = JSON.parse(content);
+      // Support both { conflicts: [...] } and direct array formats
+      cache.governanceConflicts = Array.isArray(parsed)
+        ? parsed
+        : parsed.conflicts || [];
+      return cache.governanceConflicts;
+    } catch {
+      cache.governanceConflicts = [];
+      return [];
+    }
+  }
+
+  // ── Vault Tree ─────────────────────────────────────────────────
+
+  getVaultTree(): VaultFileNode[] {
+    if (cache.vaultTree !== null) return cache.vaultTree;
+
+    // Find Vault directory — check common locations
+    const vaultCandidates = [
+      join(this.repoPath, ".edith", "vault"),
+      join(this.repoPath, "vault"),
+    ];
+
+    let vaultPath: string | null = null;
+    for (const candidate of vaultCandidates) {
+      if (existsSync(candidate)) {
+        vaultPath = candidate;
+        break;
+      }
+    }
+
+    if (!vaultPath) {
+      cache.vaultTree = [];
+      return [];
+    }
+
+    // Load governance status map for files
+    const statusMap = this.buildGovernanceStatusMap();
+
+    cache.vaultTree = this.buildVaultTree(vaultPath, vaultPath, statusMap);
+    return cache.vaultTree;
+  }
+
+  private buildGovernanceStatusMap(): Map<string, string> {
+    const statusMap = new Map<string, string>();
+    const govDir = join(this.repoPath, ".edith", "governance");
+
+    // Try to extract status from lifecycle.json
+    const lifecyclePath = join(govDir, "lifecycle.json");
+    if (existsSync(lifecyclePath)) {
+      try {
+        const content = readFileSync(lifecyclePath, "utf-8");
+        // The lifecycle file may contain file-level status info
+        // For now, we use a simple heuristic from the health lifecycle counts
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    // Try to read per-file governance status from health.json or a dedicated map
+    const statusFiles = [
+      join(govDir, "file-status.json"),
+      join(govDir, "health.json"),
+    ];
+
+    for (const statusFile of statusFiles) {
+      if (!existsSync(statusFile)) continue;
+      try {
+        const content = readFileSync(statusFile, "utf-8");
+        const data = JSON.parse(content);
+        if (data.file_statuses && typeof data.file_statuses === "object") {
+          for (const [path, status] of Object.entries(data.file_statuses)) {
+            statusMap.set(path, status as string);
+          }
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    return statusMap;
+  }
+
+  private buildVaultTree(
+    dir: string,
+    baseDir: string,
+    statusMap: Map<string, string>,
+  ): VaultFileNode[] {
+    if (!existsSync(dir)) return [];
+
+    const nodes: VaultFileNode[] = [];
+
+    try {
+      const entries = readdirSync(dir, { withFileTypes: true });
+
+      const sorted = entries.sort((a, b) => {
+        if (a.isDirectory() && !b.isDirectory()) return -1;
+        if (!a.isDirectory() && b.isDirectory()) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      for (const entry of sorted) {
+        if (entry.name.startsWith(".")) continue;
+
+        const fullPath = join(dir, entry.name);
+        const relPath = relative(baseDir, fullPath);
+
+        if (entry.isDirectory()) {
+          const children = this.buildVaultTree(fullPath, baseDir, statusMap);
+          nodes.push({
+            name: entry.name,
+            path: relPath,
+            type: "directory",
+            children,
+          });
+        } else if (
+          entry.name.endsWith(".md") ||
+          entry.name.endsWith(".json")
+        ) {
+          const govStatus = statusMap.get(relPath) || statusMap.get(entry.name);
+          nodes.push({
+            name: entry.name,
+            path: relPath,
+            type: "file",
+            governance_status: (govStatus as VaultFileNode["governance_status"]) || "none",
+          });
+        }
+      }
+    } catch {
+      // Directory read error
+    }
+
+    return nodes;
   }
 
   // ── Timeline (History Layer) ──────────────────────────────────
