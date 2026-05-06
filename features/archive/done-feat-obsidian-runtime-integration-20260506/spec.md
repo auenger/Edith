@@ -3,7 +3,7 @@
 ## Basic Information
 - **ID**: feat-obsidian-runtime-integration
 - **Name**: Obsidian Runtime 集成（Agent 运行时接入已完成的 Obsidian 工具）
-- **Priority**: 75
+- **Priority**: 85
 - **Size**: S
 - **Dependencies**: [feat-p3-obsidian-vault]
 - **Parent**: null
@@ -113,8 +113,19 @@ Then Prompt 中包含 edith_obsidian 工具的能力描述和使用说明
 ```
 
 ### General Checklist
-- [ ] edith_obsidian 在 extension.ts 正确注册
-- [ ] edith.yaml 包含完整 obsidian 配置段
-- [ ] System Prompt 包含 Obsidian 工具描述
-- [ ] 已有测试通过
-- [ ] 无 TypeScript 编译错误
+- [x] edith_obsidian 在 extension.ts 正确注册
+- [x] edith.yaml 包含完整 obsidian 配置段
+- [x] System Prompt 包含 Obsidian 工具描述
+- [x] 已有测试通过
+- [x] 无 TypeScript 编译错误
+
+## Merge Record
+
+- **Completed**: 2026-05-06
+- **Merged Branch**: feature/obsidian-runtime-integration
+- **Merge Commit**: 9150e8b
+- **Archive Tag**: feat-obsidian-runtime-integration-20260506
+- **Conflicts**: None
+- **Verification**: PASS (4/4 tasks, 0 new test failures, 4/4 Gherkin scenarios)
+- **Files Changed**: 3 (extension.ts, edith.yaml, system-prompt.ts)
+- **Lines Added**: 121

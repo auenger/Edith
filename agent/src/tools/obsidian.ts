@@ -355,9 +355,10 @@ function discoverServices(vaultRoot: string, filter?: string[]): string[] {
   try {
     const entries = readdirSync(servicesDir, { withFileTypes: true });
     for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const prefixedName = `${entry.name}.quick-ref.md`;
       if (
-        entry.isDirectory() &&
-        existsSync(join(servicesDir, entry.name, "quick-ref.md"))
+        existsSync(join(servicesDir, entry.name, prefixedName))
       ) {
         if (filter && filter.length > 0) {
           if (filter.includes(entry.name)) {

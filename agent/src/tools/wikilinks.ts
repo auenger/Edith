@@ -54,19 +54,19 @@ export function makeWikilink(target: string, displayText?: string): string {
 
 /**
  * Extract the vault-relative path for a service quick-ref.
- * e.g., "user-service" -> "01-services/user-service/quick-ref"
+ * e.g., "user-service" -> "01-services/user-service/user-service.quick-ref"
  */
 export function serviceQuickRefPath(serviceName: string): string {
-  return `01-services/${serviceName}/quick-ref`;
+  return `01-services/${serviceName}/${serviceName}.quick-ref`;
 }
 
 /**
  * Extract the vault-relative path for a distillate file.
- * e.g., ("user-service", "01-api-contracts.md") -> "02-distillates/user-service/01-api-contracts"
+ * e.g., ("user-service", "01-api-contracts.md") -> "02-distillates/user-service/user-service.01-api-contracts"
  */
 export function distillatePath(serviceName: string, filename: string): string {
   const nameWithoutExt = basename(filename, ".md");
-  return `02-distillates/${serviceName}/${nameWithoutExt}`;
+  return `02-distillates/${serviceName}/${serviceName}.${nameWithoutExt}`;
 }
 
 // ── Routing Table Wikilinks ────────────────────────────────────────
@@ -128,7 +128,7 @@ export function injectRoutingTableLinks(
 // ── Quick-Ref Wikilinks ────────────────────────────────────────────
 
 /**
- * Inject [[wikilinks]] into quick-ref.md for each service.
+ * Inject [[wikilinks]] into quick-ref for each service.
  * Adds links to related distillate fragments in the Deep Dive section.
  */
 export function injectQuickRefLinks(
@@ -136,7 +136,8 @@ export function injectQuickRefLinks(
   serviceName: string,
   distillateFiles: string[],
 ): { modified: boolean; links: WikilinkRef[] } {
-  const quickRefPath = join(vaultRoot, "01-services", serviceName, "quick-ref.md");
+  const quickRefName = `${serviceName}.quick-ref.md`;
+  const quickRefPath = join(vaultRoot, "01-services", serviceName, quickRefName);
   const links: WikilinkRef[] = [];
 
   if (!existsSync(quickRefPath) || distillateFiles.length === 0) {
@@ -163,7 +164,7 @@ export function injectQuickRefLinks(
     links.push({
       target: distillatePath(serviceName, distFile),
       displayText: distName,
-      sourceFile: `01-services/${serviceName}/quick-ref.md`,
+      sourceFile: `01-services/${serviceName}/${quickRefName}`,
       relation: "service-to-distillate",
     });
   }
@@ -191,7 +192,8 @@ export function injectDistillateLinks(
   let modifiedCount = 0;
 
   for (const distFile of distillateFiles) {
-    const distPath = join(vaultRoot, "02-distillates", serviceName, distFile);
+    const prefixedName = `${serviceName}.${distFile}`;
+    const distPath = join(vaultRoot, "02-distillates", serviceName, prefixedName);
 
     if (!existsSync(distPath)) continue;
 
@@ -208,7 +210,7 @@ export function injectDistillateLinks(
       );
       links.push({
         target: serviceQuickRefPath(serviceName),
-        sourceFile: `02-distillates/${serviceName}/${distFile}`,
+        sourceFile: `02-distillates/${serviceName}/${prefixedName}`,
         relation: "distillate-to-service",
       });
 
@@ -228,7 +230,7 @@ export function injectDistillateLinks(
         );
         links.push({
           target: serviceQuickRefPath(related),
-          sourceFile: `02-distillates/${serviceName}/${distFile}`,
+          sourceFile: `02-distillates/${serviceName}/${prefixedName}`,
           relation: "cross-service",
         });
       }
@@ -264,7 +266,7 @@ export function generateWikilinks(vaultRoot: string): WikilinkResult {
     links: [],
   };
 
-  // Step 1: Discover services
+  // Step 1: Discover services (look for service-prefixed quick-ref files)
   const servicesDir = join(vaultRoot, "01-services");
   const services: string[] = [];
 
@@ -272,7 +274,7 @@ export function generateWikilinks(vaultRoot: string): WikilinkResult {
     try {
       const entries = readdirSync(servicesDir, { withFileTypes: true });
       for (const entry of entries) {
-        if (entry.isDirectory() && existsSync(join(servicesDir, entry.name, "quick-ref.md"))) {
+        if (entry.isDirectory() && existsSync(join(servicesDir, entry.name, `${entry.name}.quick-ref.md`))) {
           services.push(entry.name);
         }
       }
@@ -310,7 +312,7 @@ export function generateWikilinks(vaultRoot: string): WikilinkResult {
     // Quick-ref links
     const qrResult = injectQuickRefLinks(vaultRoot, service, distillateFiles);
     if (qrResult.modified) {
-      result.filesModified.push(`01-services/${service}/quick-ref.md`);
+      result.filesModified.push(`01-services/${service}/${service}.quick-ref.md`);
       result.links.push(...qrResult.links);
     }
 
@@ -319,7 +321,8 @@ export function generateWikilinks(vaultRoot: string): WikilinkResult {
     const distResult = injectDistillateLinks(vaultRoot, service, distillateFiles, relatedServices);
     if (distResult.modified > 0) {
       for (const distFile of distillateFiles) {
-        result.filesModified.push(`02-distillates/${service}/${distFile}`);
+        const prefixedName = `${service}.${distFile}`;
+        result.filesModified.push(`02-distillates/${service}/${prefixedName}`);
       }
       result.links.push(...distResult.links);
     }

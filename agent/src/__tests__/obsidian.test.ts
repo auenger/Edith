@@ -194,14 +194,14 @@ describe("vault-structure", () => {
     // Verify Layer 0
     assert.ok(existsSync(join(vaultRoot, "00-routing", "routing-table.md")));
 
-    // Verify Layer 1
-    assert.ok(existsSync(join(vaultRoot, "01-services", "user-service", "quick-ref.md")));
-    assert.ok(existsSync(join(vaultRoot, "01-services", "order-service", "quick-ref.md")));
+    // Verify Layer 1 (service-prefixed filenames)
+    assert.ok(existsSync(join(vaultRoot, "01-services", "user-service", "user-service.quick-ref.md")));
+    assert.ok(existsSync(join(vaultRoot, "01-services", "order-service", "order-service.quick-ref.md")));
 
-    // Verify Layer 2
-    assert.ok(existsSync(join(vaultRoot, "02-distillates", "user-service", "01-overview.md")));
-    assert.ok(existsSync(join(vaultRoot, "02-distillates", "user-service", "02-api-contracts.md")));
-    assert.ok(existsSync(join(vaultRoot, "02-distillates", "order-service", "01-overview.md")));
+    // Verify Layer 2 (service-prefixed filenames)
+    assert.ok(existsSync(join(vaultRoot, "02-distillates", "user-service", "user-service.01-overview.md")));
+    assert.ok(existsSync(join(vaultRoot, "02-distillates", "user-service", "user-service.02-api-contracts.md")));
+    assert.ok(existsSync(join(vaultRoot, "02-distillates", "order-service", "order-service.01-overview.md")));
 
     // Verify decisions README
     assert.ok(existsSync(join(vaultRoot, "03-decisions", "README.md")));
@@ -232,11 +232,11 @@ describe("wikilinks", () => {
   it("should generate correct service paths", () => {
     assert.strictEqual(
       serviceQuickRefPath("user-service"),
-      "01-services/user-service/quick-ref",
+      "01-services/user-service/user-service.quick-ref",
     );
     assert.strictEqual(
       distillatePath("user-service", "01-overview.md"),
-      "02-distillates/user-service/01-overview",
+      "02-distillates/user-service/user-service.01-overview",
     );
   });
 
@@ -253,8 +253,8 @@ describe("wikilinks", () => {
       join(vaultRoot, "00-routing", "routing-table.md"),
       "utf-8",
     );
-    assert.ok(content.includes("[[01-services/user-service/quick-ref"));
-    assert.ok(content.includes("[[01-services/order-service/quick-ref"));
+    assert.ok(content.includes("[[01-services/user-service/user-service.quick-ref"));
+    assert.ok(content.includes("[[01-services/order-service/order-service.quick-ref"));
   });
 
   it("should inject links into quick-ref", () => {
@@ -266,12 +266,12 @@ describe("wikilinks", () => {
     assert.ok(result.links.length >= 2);
 
     const content = readFileSync(
-      join(vaultRoot, "01-services", "user-service", "quick-ref.md"),
+      join(vaultRoot, "01-services", "user-service", "user-service.quick-ref.md"),
       "utf-8",
     );
     assert.ok(
-      content.includes("[[02-distillates/user-service/01-overview") ||
-      content.includes("[[02-distillates/user-service/02-api-contracts"),
+      content.includes("[[02-distillates/user-service/user-service.01-overview") ||
+      content.includes("[[02-distillates/user-service/user-service.02-api-contracts"),
     );
   });
 
@@ -455,7 +455,7 @@ describe("edit-detector", () => {
 
   it("should detect human-edited files", () => {
     // Create a file with human_edited frontmatter
-    const testFile = join(vaultRoot, "01-services", "user-service", "quick-ref.md");
+    const testFile = join(vaultRoot, "01-services", "user-service", "user-service.quick-ref.md");
     const fm = createFrontmatter({ edith_id: "user-service/quick-ref", layer: 1 });
     fm.human_edited = true;
     writeFileSync(

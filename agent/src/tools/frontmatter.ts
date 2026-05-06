@@ -466,7 +466,7 @@ export function injectVaultFrontmatter(
         edith_id: "routing-table",
         layer: 0,
         token_budget: tokenBudget?.routing_table ?? 500,
-        related: services.map((s) => `[[01-services/${s}/quick-ref]]`),
+        related: services.map((s) => `[[01-services/${s}/${s}.quick-ref]]`),
       });
       const injectResult = injectFrontmatter(routingPath, fm);
       if (injectResult.written) {
@@ -480,8 +480,9 @@ export function injectVaultFrontmatter(
 
   // Layer 1 & 2: per service
   for (const service of services) {
-    // Quick-ref
-    const quickRefPath = join(vaultRoot, "01-services", service, "quick-ref.md");
+    // Quick-ref (service-prefixed filename)
+    const quickRefName = `${service}.quick-ref.md`;
+    const quickRefPath = join(vaultRoot, "01-services", service, quickRefName);
     if (existsSync(quickRefPath)) {
       try {
         const fm = createFrontmatter({
@@ -513,7 +514,7 @@ export function injectVaultFrontmatter(
               layer: 2,
               token_budget: tokenBudget?.distillate_per_query ?? 6000,
               related: [
-                `[[01-services/${service}/quick-ref]]`,
+                `[[01-services/${service}/${service}.quick-ref]]`,
               ],
             });
             const injectResult = injectFrontmatter(distPath, fm);

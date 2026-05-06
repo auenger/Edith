@@ -153,8 +153,17 @@ export function mapLayer0(
 }
 
 /**
+ * Build a service-prefixed vault filename so Graph View nodes are unique.
+ * e.g. ("user-service", "quick-ref") -> "user-service.quick-ref"
+ */
+export function prefixedFilename(serviceName: string, baseName: string): string {
+  const withoutExt = baseName.replace(/\.md$/, "");
+  return `${serviceName}.${withoutExt}.md`;
+}
+
+/**
  * Map Layer 1 (quick-ref.md) to vault.
- * Copies each {service}/quick-ref.md -> 01-services/{service}/quick-ref.md
+ * Copies each {service}/quick-ref.md -> 01-services/{service}/{service}.quick-ref.md
  */
 export function mapLayer1(
   workspaceRoot: string,
@@ -176,10 +185,11 @@ export function mapLayer1(
     const targetDir = join(vaultRoot, "01-services", entry.name);
     mkdirSync(targetDir, { recursive: true });
 
+    const targetName = prefixedFilename(entry.name, "quick-ref");
     const content = readFileSync(quickRefPath, "utf-8");
-    writeFileSync(join(targetDir, "quick-ref.md"), content, "utf-8");
+    writeFileSync(join(targetDir, targetName), content, "utf-8");
 
-    files.push(`01-services/${entry.name}/quick-ref.md`);
+    files.push(`01-services/${entry.name}/${targetName}`);
     services.push(entry.name);
   }
 
@@ -188,7 +198,7 @@ export function mapLayer1(
 
 /**
  * Map Layer 2 (distillates) to vault.
- * Copies each {service}/distillates/*.md -> 02-distillates/{service}/*.md
+ * Copies each {service}/distillates/*.md -> 02-distillates/{service}/{service}.{name}.md
  */
 export function mapLayer2(
   workspaceRoot: string,
@@ -216,9 +226,10 @@ export function mapLayer2(
     }
 
     for (const mdFile of mdFiles) {
+      const targetName = prefixedFilename(entry.name, mdFile);
       const content = readFileSync(join(distillatesDir, mdFile), "utf-8");
-      writeFileSync(join(targetDir, mdFile), content, "utf-8");
-      files.push(`02-distillates/${entry.name}/${mdFile}`);
+      writeFileSync(join(targetDir, targetName), content, "utf-8");
+      files.push(`02-distillates/${entry.name}/${targetName}`);
     }
 
     services.push(entry.name);
@@ -354,8 +365,8 @@ export function generateVaultStructure(
       "This directory contains human-written architecture decision records.",
       "",
       "Use Wikilinks to link decisions to related knowledge artifacts:",
-      "- `[[user-service/quick-ref]]`",
-      "- `[[01-api-contracts]]`",
+      "- `[[user-service/user-service.quick-ref]]`",
+      "- `[[user-service/user-service.01-api-contracts]]`",
       "",
       "Organize by month: `YYYY-MM/decision-name.md`",
     ].join("\n");

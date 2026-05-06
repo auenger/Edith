@@ -18,6 +18,7 @@ blocked:
       阶段间数据流、人工确认门控、工具调度、stop condition 检查。
       当前工具层完成 ~90%，编排层为 0%。
 
+completed:
   - id: feat-phase3
     name: "EDITH Phase 3 知识生态"
     priority: 85
@@ -25,17 +26,17 @@ blocked:
     dependencies: []
     parent: null
     split: true
+    all_children_completed: true
     children:
       - feat-p3-obsidian-vault
       - feat-p3-governance-engine
       - feat-p3-board-ecosystem
-    blocked_reason: "所有子 feature 已完成 — 可 unblock 并完成"
+    completed_at: "2026-05-06T13:35:00+08:00"
+    tag: feat-phase3-20260506
     description: |
       将 EDITH 从"知识生产工具"升级为"知识生态飞轮"。
       以已完成的 Obsidian Vault 为基础，构建 Agent 治理引擎 + Board 生态可视化，
       形成"Agent 生产 → Vault 存储 → 治理追踪 → Board 可视化 → 人类决策 → Agent 更好上下文"闭环。
-
-completed:
   - id: feat-p3-board-ecosystem
     name: "Board 知识生态集成"
     priority: 80
@@ -618,7 +619,7 @@ completed:
     tag: feat-extension-core-20260427
 
 meta:
-  last_updated: "2026-05-06T13:30:00+08:00"
+  last_updated: "2026-05-06T13:35:00+08:00"
   phase_label:
     phase1: "EDITH Agent MVP"
     phase1_5: "Skill 能力对齐 + Agent 增强"
