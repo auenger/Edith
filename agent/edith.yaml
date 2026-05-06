@@ -100,3 +100,13 @@ governance:
 #   style: "arc-reactor"        # arc-reactor (default) | minimal | classic
 #   color_scheme: "iron-man"    # iron-man (default) | warm | monochrome
 #   show_reactor: true           # show Arc Reactor LOGO on startup
+
+# ═══ Obsidian ════════════════════════════════════════════════════
+
+obsidian:
+  enabled: true
+  vault_path: ./obsidian-vault
+  wikilinks: true
+  graph_view: true
+  frontmatter: true
+  human_edit_detection: true

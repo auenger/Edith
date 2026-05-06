@@ -26,6 +26,7 @@ import { executeRoute, formatRouteSummary, formatRouteError } from "./tools/rout
 import { executeIndex, formatIndexSummary, formatIndexError } from "./tools/index.js";
 import { executeGraphify, formatGraphifySummary, formatGraphifyError } from "./tools/graphify.js";
 import { executeGovernance, formatGovernanceResult, formatGovernanceError } from "./tools/governance.js";
+import { executeObsidian, formatObsidianResult, formatObsidianError } from "./tools/obsidian.js";
 import { renderContextPanel, type SessionStats, type ContextUsage } from "./theme/context-panel.js";
 import { detectColorSupport } from "./theme/color-engine.js";
 import {
@@ -86,6 +87,11 @@ const GovernanceParams = Type.Object({
   new_content: Type.Optional(Type.String({ description: "新内容（merge/accept 操作可选）" })),
 });
 
+const ObsidianParams = Type.Object({
+  action: Type.Union([Type.Literal("generate"), Type.Literal("refresh"), Type.Literal("status")], { description: "Obsidian 操作: generate | refresh | status" }),
+  services: Type.Optional(Type.Array(Type.String({ description: "限定处理的服务列表（为空时处理全部）" }), { description: "限定处理的服务范围" })),
+});
+
 type ScanInput = Static<typeof ScanParams>;
 type DistillInput = Static<typeof DistillParams>;
 type RouteInput = Static<typeof RouteParams>;
@@ -94,6 +100,7 @@ type ExploreInput = Static<typeof ExploreParams>;
 type IndexInput = Static<typeof IndexParams>;
 type GraphifyInput = Static<typeof GraphifyParams>;
 type GovernanceInput = Static<typeof GovernanceParams>;
+type ObsidianInput = Static<typeof ObsidianParams>;
 
 // ── Skill Routing Map (internal, never exposed to users) ───────────
 
@@ -142,6 +149,7 @@ const FRIENDLY_ACTION: Record<string, string> = {
   edith_index: "正在生成知识索引...",
   edith_graphify: "正在生成认知图谱索引...",
   edith_governance: "正在执行知识治理...",
+  edith_obsidian: "正在生成 Obsidian Vault...",
 };
 
 // ── Extension Entry Point ──────────────────────────────────────────
@@ -154,7 +162,7 @@ export default function edithExtension(pi: ExtensionAPI): void {
     name: string;
     label: string;
     description: string;
-    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams | typeof ExploreParams | typeof IndexParams | typeof GovernanceParams;
+    parameters: typeof ScanParams | typeof DistillParams | typeof RouteParams | typeof QueryParams | typeof ExploreParams | typeof IndexParams | typeof GovernanceParams | typeof ObsidianParams;
     execute: (toolCallId: string, params: any, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) => Promise<any>;
   }> = [
     {
@@ -579,6 +587,52 @@ export default function edithExtension(pi: ExtensionAPI): void {
           console.error(`[EDITH] Governance error: ${message}`);
           return {
             content: [{ type: "text" as const, text: `[EDITH] 知识治理失败: ${message}` }],
+            isError: true,
+          };
+        }
+      },
+    },
+    {
+      name: "edith_obsidian",
+      label: "EDITH Obsidian",
+      description:
+        "将三层知识产物映射为 Obsidian Vault 结构。" +
+        "支持 Graph View 浏览、[[wikilink]] 双向链接、YAML Frontmatter 元数据。" +
+        "三种操作: generate（生成 Vault）、refresh（刷新并保留人工编辑）、status（查看状态）。",
+      parameters: ObsidianParams,
+      execute: async (_toolCallId, params: ObsidianInput, _signal, _onUpdate, _ctx: ExtensionContext) => {
+        console.log(FRIENDLY_ACTION["edith_obsidian"]);
+
+        try {
+          const config = loadConfig();
+
+          const outcome = executeObsidian(
+            {
+              action: params.action,
+              services: params.services,
+            },
+            config,
+          );
+
+          if (outcome.ok) {
+            const summary = formatObsidianResult(outcome.result);
+            console.log(`[EDITH] Obsidian ${params.action} completed: ${outcome.result.vault_path}`);
+            return {
+              content: [{ type: "text" as const, text: summary }],
+            };
+          } else {
+            const errorMsg = formatObsidianError(outcome.error);
+            console.warn(`[EDITH] Obsidian failed: ${outcome.error.code} - ${outcome.error.message}`);
+            return {
+              content: [{ type: "text" as const, text: errorMsg }],
+              isError: true,
+            };
+          }
+        } catch (err) {
+          const message = (err as Error).message ?? String(err);
+          console.error(`[EDITH] Obsidian error: ${message}`);
+          return {
+            content: [{ type: "text" as const, text: `[EDITH] Obsidian Vault 操作失败: ${message}` }],
             isError: true,
           };
         }

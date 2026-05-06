@@ -96,6 +96,9 @@ function buildChinesePrompt(config?: EdithConfig): string {
   if (config) {
     sections.push(buildWorkspaceContext(config, "zh"));
   }
+  if (config?.obsidian?.enabled) {
+    sections.push(chineseObsidianCapability());
+  }
   sections.push(
     chineseTriggerMappingTable(),
     chineseBehaviorConstraints(),
@@ -316,6 +319,31 @@ function chineseContextManagement(): string {
 - 正在进行中的操作状态`;
 }
 
+function chineseObsidianCapability(): string {
+  return `# 9. Obsidian Vault 集成
+
+你可以将三层知识产物（路由表 / 速查卡 / 蒸馏片段）映射为 Obsidian Vault 结构，供团队在 Obsidian 中浏览知识网络。
+
+## 支持的操作
+
+- **generate**: 从知识库生成完整的 Obsidian Vault，包含 .obsidian 配置目录、按服务分类的目录结构、[[wikilink]] 双向链接、YAML Frontmatter 元数据。
+- **refresh**: 刷新 Vault 内容。使用 SHA-256 检测人工编辑，仅更新机器生成的文件，保留用户手动编辑的内容。
+- **status**: 查看 Vault 当前状态（路径、服务数、Manifest 信息）。
+
+## 触发场景
+
+当用户提到以下意图时，推荐使用 Obsidian 功能：
+- "导出到 Obsidian"、"生成 Vault"、"Obsidian 笔记"
+- "知识图谱浏览"、"Graph View"、"双向链接"
+- "更新 Vault"、"刷新 Obsidian"
+- "Vault 状态"
+
+## 使用方式
+
+告诉用户："我来为您将知识产物映射为 Obsidian Vault，您可以在 Obsidian 中用 Graph View 浏览知识网络。"
+然后执行对应操作，报告结果。`;
+}
+
 // ── English System Prompt ──────────────────────────────────────────
 
 function buildEnglishPrompt(config?: EdithConfig): string {
@@ -325,6 +353,9 @@ function buildEnglishPrompt(config?: EdithConfig): string {
   ];
   if (config) {
     sections.push(buildWorkspaceContext(config, "en"));
+  }
+  if (config?.obsidian?.enabled) {
+    sections.push(englishObsidianCapability());
   }
   sections.push(
     englishTriggerMappingTable(),
@@ -524,6 +555,31 @@ During compression, never lose:
 - User-specified target service names
 - User-requested specific versions or branches
 - Ongoing operation status`;
+}
+
+function englishObsidianCapability(): string {
+  return `# 9. Obsidian Vault Integration
+
+You can map three-layer knowledge artifacts (routing table / quick-ref / distillate fragments) into an Obsidian Vault structure, allowing teams to browse the knowledge network in Obsidian.
+
+## Supported Operations
+
+- **generate**: Generate a complete Obsidian Vault from the knowledge base, including .obsidian config directory, service-categorized directory structure, [[wikilink]] bidirectional links, and YAML Frontmatter metadata.
+- **refresh**: Refresh Vault content. Uses SHA-256 to detect human edits, only updating machine-generated files while preserving user-edited content.
+- **status**: View current Vault status (path, service count, manifest info).
+
+## Trigger Scenarios
+
+Recommend Obsidian functionality when users mention:
+- "export to Obsidian", "generate Vault", "Obsidian notes"
+- "knowledge graph browsing", "Graph View", "bidirectional links"
+- "update Vault", "refresh Obsidian"
+- "Vault status"
+
+## Usage
+
+Tell the user: "I'll map the knowledge artifacts into an Obsidian Vault for you. You can browse the knowledge network using Graph View in Obsidian."
+Then execute the operation and report results.`;
 }
 
 // ── Validation Helpers ─────────────────────────────────────────────
