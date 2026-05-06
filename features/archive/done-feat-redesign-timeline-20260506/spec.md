@@ -114,8 +114,17 @@ Then 自动加载更多事件（无限滚动或分页按钮）
 ```
 
 ### General Checklist
-- [ ] 时间线 Bento Grid 布局
-- [ ] 事件卡片样式统一
-- [ ] 筛选功能正常
-- [ ] 分页/加载更多正常
-- [ ] 空状态处理
+- [x] 时间线 Bento Grid 布局
+- [x] 事件卡片样式统一
+- [x] 筛选功能正常
+- [x] 分页/加载更多正常
+- [x] 空状态处理
+
+## Merge Record
+- **Completed**: 2026-05-07T00:20:00+08:00
+- **Branch**: feature/redesign-timeline
+- **Merge Commit**: 25ede62
+- **Archive Tag**: feat-redesign-timeline-20260506
+- **Conflicts**: none
+- **Verification**: passed (3/3 scenarios)
+- **Stats**: started 2026-05-06T23:50:00+08:00, duration ~30min, commits: 1, files_changed: 5

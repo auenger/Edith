@@ -1,4 +1,31 @@
 archived:
+  - id: feat-redesign-timeline
+    name: "Timeline 时间线 Bento Grid 重设计"
+    priority: 65
+    size: S
+    dependencies: [feat-redesign-layout]
+    parent: feat-board-redesign
+    completed: "2026-05-07T00:20:00+08:00"
+    tag: feat-redesign-timeline-20260506
+    merge_commit: "25ede62"
+    merged_to: main
+    branch_deleted: true
+    branch_name: feature/redesign-timeline
+    worktree_deleted: true
+    worktree_path: ../EDITH-redesign-timeline
+    conflicts:
+      had_conflict: false
+      conflict_files: []
+    verification:
+      status: passed
+      scenarios_total: 3
+      scenarios_passed: 3
+    stats:
+      started: "2026-05-06T23:50:00+08:00"
+      duration: "~30min"
+      commits: 1
+      files_changed: 5
+
   - id: feat-redesign-knowledge-map
     name: "Knowledge Map 可视化重设计（D3.js → 现代方案）"
     priority: 70
